@@ -22,20 +22,20 @@
     </item>
     
     <item>
-      <title>Audio Test</title>
-      <link>https://kjlafoll.github.io/project/dsp-test/</link>
-      <pubDate>Mon, 03 Aug 2020 07:41:12 +0000</pubDate>
-      <guid>https://kjlafoll.github.io/project/dsp-test/</guid>
-      <description>&lt;p&gt;Pre-alpha experiment for online spatial dsp.&lt;/p&gt;
-</description>
-    </item>
-    
-    <item>
       <title>Customizable Fear Conditioning Tool</title>
       <link>https://kjlafoll.github.io/project/customizable-fear-conditioning-tool/</link>
       <pubDate>Mon, 03 Aug 2020 07:41:12 +0000</pubDate>
       <guid>https://kjlafoll.github.io/project/customizable-fear-conditioning-tool/</guid>
       <description>&lt;p&gt;Fully customizable PsychoPy program for fear conditioning. Easy to use GUI and several preset options for pseudo-randomly generated trials.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>DSP-Test</title>
+      <link>https://kjlafoll.github.io/project/dsp-test/</link>
+      <pubDate>Mon, 03 Aug 2020 07:41:12 +0000</pubDate>
+      <guid>https://kjlafoll.github.io/project/dsp-test/</guid>
+      <description>&lt;p&gt;Pre-alpha experiment for online spatial dsp.&lt;/p&gt;
 </description>
     </item>
     
