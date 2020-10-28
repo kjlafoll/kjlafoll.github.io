@@ -1,4 +1,3 @@
-import os
 import json
 from math import ceil, trunc
 from random import *
@@ -66,10 +65,8 @@ ABSENT_LIST = ['2280.jpg',
 					'9120.jpg',
 					'9210.jpg']
 
-DATA_FOLDER = os.path.expanduser("~/Documents/Data_CONDexp/")
 DATA_SUBFOLDER = 'ANL_%s/'
 RESOURCE_FOLDER = "Resources_CONDexp/"
-# RESOURCE_FOLDER = os.path.join(os.path.dirname(sys.executable), "Resources_CONDexp/")
 US_PRESENT_FOLDER = "US_PRESENT_IMAGES/"
 US_ABSENT_FOLDER = "US_ABSENT_IMAGES/"
 CS_FOLDER = "CS_IMAGES/"
