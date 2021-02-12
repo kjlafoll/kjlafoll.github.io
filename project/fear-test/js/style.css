@@ -36,6 +36,7 @@ h2 {
 }
 
 stimPres {
+  height: 25%;
   text-decoration-thickness: 3px;
   font-size:200%;
   font-weight: bold;
@@ -58,6 +59,7 @@ red {
 }
 
 button {
+  height: 75%;
   position: absolute;
   top: 50%;
   left: 50%;
