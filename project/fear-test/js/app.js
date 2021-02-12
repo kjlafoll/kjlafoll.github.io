@@ -31,9 +31,9 @@ function instructions(text) {
 }
 
 function runFixation() {
-	prestext.innerHTML = "<stimPres>" +
+	prestext.innerHTML = "<fixation>" +
 		"+" +
-		"</stimPres>";
+		"</fixation>";
 	nextscreen = setTimeout(runCS, 1000*mysetup[listc-1]["iti_duration"])
 }
 

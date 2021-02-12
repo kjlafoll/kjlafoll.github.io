@@ -47,6 +47,18 @@ stimPres {
   transform: translate(-50%, -50%);
 }
 
+fixation {
+  text-decoration-thickness: 3px;
+  font-size:600%;
+  font-weight: bold;
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -ms-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+}
+
 red {
 	color: red;
 }
