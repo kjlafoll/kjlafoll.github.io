@@ -45,6 +45,13 @@ function runCS() {
 		'<div id="controls">' +
 		'<button id="continueButton">Continue</button>' +
 		'</div>';
+	var img = document.createElement("img");
+	if (mysetup[listc-1]["cs_type"] == "CS-") {
+		srcfile = 'CS_NEG.png'
+	} else if (mysetup[listc-1]["cs_type"] == "CS+") {
+		srcfile = 'CS_POS.png'
+	}
+	img.src = 'Resources_CONDexp/CS_IMAGES/' + srcfile
 }
 
 function stopAction() {
