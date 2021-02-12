@@ -39,7 +39,7 @@ function runFixation() {
 }
 
 function runCS() {
-	trialtext = JSON.stringify(mysetup[listc-1])
+	trialtext = JSON.stringify(mysetup[listc-1]);
 	if (mysetup[listc-1]["cs_type"] == "CS-") {
 		srcfile = '<image src=' + '"Resources_CONDexp/CS_IMAGES/CS_NEG.png"' +
 			' style="width:25%"' + '>';
@@ -51,6 +51,48 @@ function runCS() {
 		trialtext +
 		"</body>" +
 		srcfile;
+	duration = mysetup[listc-1]["cs_duration"];
+	nextscreen = setTimeout(runTI, 1000*duration);
+}
+
+function runTI() {
+	trialtext = JSON.stringify(mysetup[listc-1]);
+	prestext.innerHTML = "<body>" +
+		trialtext +
+		"</body>";
+	nextscreen = setTimeout(runUS, 1000*mysetup[listc-1]["traceinterval_duration"]);
+}
+
+function runUS() {
+	usexist = "True"
+	trialtext = JSON.stringify(mysetup[listc-1]);
+	if ((mysetup[listc-1]["cs_type"] == "CS+") && (mysetup[listc-1]["reinforced"] == "True")) {
+		srcfile = '<image src=' + '"Resources_CONDexp/US_PRESENT_IMAGES/' +
+		mysetup[listc-1]["us_stimulus_name"] + '" style="width:25%"' + '>';
+	} else if ((mysetup[listc-1]["cs_type"] == "CS-") && (mysetup[listc-1]["reinforced"] == "True")) {
+		srcfile = '<image src=' + '"Resources_CONDexp/US_ABSENT_IMAGES/' +
+		mysetup[listc-1]["us_stimulus_name"] + '" style="width:25%"' + '>';
+	} else {
+		mysetup[listc-1]["us_onset"] = "NA - Habituation";
+		mysetup[listc-1]["us_rt"] = "NA - Habituation";
+		mysetup[listc-1]["us_offset"] = "NA - Habituation";
+		usexist = "False";
+	}
+	if (usexist == "True") {
+		prestext.innerHTML = "<body>" +
+			trialtext +
+			"</body>" +
+			srcfile;
+		duration = mysetup[listc-1]["us_duration"];
+		nextscreen = setTimeout(savedata, 1000*duration);
+	} else {
+		savedata();
+	}
+}
+
+function savedata() {
+	listc++;
+	runFixation();
 }
 
 function stopAction() {
