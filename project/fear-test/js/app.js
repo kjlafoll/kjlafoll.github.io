@@ -35,7 +35,7 @@ function runFixation() {
 	prestext.innerHTML = "<fixation>" +
 		"+" +
 		"</fixation>";
-	nextscreen = setTimeout(runCS, 1000*mysetup[listc-1]["iti_duration"])
+	nextscreen = setTimeout(runCS, 1000*mysetup[listc-1]["iti_duration"]);
 }
 
 function runCS() {
@@ -45,11 +45,12 @@ function runCS() {
 		"</body>";
 	var img = document.createElement("img");
 	if (mysetup[listc-1]["cs_type"] == "CS-") {
-		srcfile = 'CS_NEG.png'
+		srcfile = 'CS_NEG.png';
 	} else if (mysetup[listc-1]["cs_type"] == "CS+") {
-		srcfile = 'CS_POS.png'
+		srcfile = 'CS_POS.png';
 	}
-	img.src = 'Resources_CONDexp/CS_IMAGES/' + srcfile
+	img.src = 'Resources_CONDexp/CS_IMAGES/' + srcfile;
+	img.style.position = 'absolute';
 	document.body.appendChild(img);
 }
 
