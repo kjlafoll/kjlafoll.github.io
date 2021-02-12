@@ -13,31 +13,33 @@ var inst;
 var continueButton = document.getElementById("continueButton");
 var prestext = document.getElementById("screen");
 var endButton;
+var mysetup = JSON.parse(localStorage.getItem('mysetup'));
+var nextscreen = "instructions";
 
 continueButton.addEventListener("click", continueAction);
 
-function instructions() {
-	var checkers = JSON.parse(localStorage.getItem('mysetup'))
-	insttext = JSON.stringify(checkers[listc-1])
-	// insttext = textlist[listc]
+function instructions(text) {
 	prestext.innerHTML = "<body>" +
-		insttext +
+		text +
 		"</body>" +
 		'<div id="controls">' +
   	 	'<button id="continueButton">Continue</button>' +
     	'</div>';
     var continueButton = document.getElementById("continueButton");
     continueButton.addEventListener("click", continueAction);
-	listc++; 
+	nextscreen = "trial";
 }
 
 function trial() {
-	var s = document.createElement("script");
-	s.type = "text/javascript";
-	s.innerHTML = 'document.body.style.cursor = "none"'
-	$("head").append(s);
-	prestext.innerHTML = '<span id="circle" class="circle">' +
-		'</span>';
+	trialtext = JSON.stringify(mysetup[listc-1])
+	prestext.innerHTML = "<body>" +
+		trialtext +
+		'<div id="controls">' +
+		'<button id="continueButton">Continue</button>' +
+		'</div>';
+	var continueButton = document.getElementById("continueButton");
+	continueButton.addEventListener("click", continueAction);
+	listc++;
 }
 
 function stopAction() {
@@ -51,13 +53,13 @@ function stopAction() {
 	}
 }
 
-function continueAction() {
+function continueAction(nextscreen) {
 	// if (listc == 1 || listc == 2 || listc == 3) {
 	// 	instructions();
-	if (listc <=14){
-		instructions();
-	} else if (listc > 14) {
-		// trial();
+	if (mysetup[listc-1]["us_stimulus_name"] == "NA - Habituation" && nextscreen == "instructions") {
+		instructions(textlist["1"]);
+	} else if (mysetup[listc-1]["us_stimulus_name"] == "NA - Habituation" && nextscreen == "trial") {
+		trial();
 	}
 }
 
