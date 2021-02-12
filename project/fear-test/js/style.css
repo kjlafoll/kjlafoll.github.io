@@ -96,6 +96,7 @@ image {
   margin-right: auto;
   width: 30px;
   height: 30px;
+  border: 20px solid darkblue;
 }
 
 /*button {
