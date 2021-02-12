@@ -42,10 +42,10 @@ function runCS() {
 	trialtext = JSON.stringify(mysetup[listc-1])
 	if (mysetup[listc-1]["cs_type"] == "CS-") {
 		srcfile = '<image src=' + '"Resources_CONDexp/CS_IMAGES/CS_NEG.png"' +
-			' style="width:30px;height:px"' + '>';
+			' style="width:25%;height:25%"' + '>';
 	} else if (mysetup[listc-1]["cs_type"] == "CS+") {
 		srcfile = '<image src=' + '"Resources_CONDexp/CS_IMAGES/CS_POS.png"' +
-			' style="width:30px;height:px"' + '>';
+			' style="width:25%;height:25%"' + '>';
 	}
 	prestext.innerHTML = "<body>" +
 		trialtext +
