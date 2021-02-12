@@ -53,7 +53,7 @@ function stopAction() {
 	}
 }
 
-function continueAction(nextscreen) {
+function continueAction() {
 	// if (listc == 1 || listc == 2 || listc == 3) {
 	// 	instructions();
 	if ((mysetup[listc-1]["us_stimulus_name"] == "NA - Habituation") && (nextscreen == "instructions")) {
