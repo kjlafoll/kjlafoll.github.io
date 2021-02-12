@@ -96,8 +96,8 @@ image {
   left: 50%;
   -ms-transform: translate(-50%, -50%);
   transform: translate(-50%, -50%);
-  width: 25%;
-  height: 25%;
+  width: 6rem;
+  height: 6rem;
 }
 
 /*button {
