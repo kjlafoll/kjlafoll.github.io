@@ -66,16 +66,16 @@ button {
   flex-grow: 1;
   min-width: 2rem;
   border: none;
-  border-radius: 0.15rem;
+  border-radius: 0.3rem;
   background: #ed341d;
-  box-shadow: inset 0 -0.15rem 0 rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 -0.3rem 0 rgba(0, 0, 0, 0.2);
   cursor: pointer;
   display: flex;
   justify-content: center;
   align-items: center;
   color:#ffffff;
   font-weight: bold;
-  font-size: 6rem;
+  font-size: 3rem;
 }
 
 /*button {
