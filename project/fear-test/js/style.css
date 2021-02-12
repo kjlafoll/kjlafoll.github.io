@@ -107,7 +107,7 @@ button::-moz-focus-inner {
 
 button:active {
   box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.2);
-  line-height: 6rem;
+  line-height: 5rem;
 }
 
 button:disabled {
