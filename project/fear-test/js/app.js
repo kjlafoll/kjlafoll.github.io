@@ -41,9 +41,9 @@ function runFixation() {
 function runCS() {
 	trialtext = JSON.stringify(mysetup[listc-1])
 	if (mysetup[listc-1]["cs_type"] == "CS-") {
-		srcfile = '<image src=' + "Resources_CONDexp/CS_IMAGES/CS_NEG.png" + '>';
+		srcfile = '<image src=' + '"Resources_CONDexp/CS_IMAGES/CS_NEG.png"' + '>';
 	} else if (mysetup[listc-1]["cs_type"] == "CS+") {
-		srcfile = '<image src=' + "Resources_CONDexp/CS_IMAGES/CS_POS.png" + '>';
+		srcfile = '<image src=' + '"Resources_CONDexp/CS_IMAGES/CS_POS.png"' + '>';
 	}
 	prestext.innerHTML = "<body>" +
 		trialtext +
