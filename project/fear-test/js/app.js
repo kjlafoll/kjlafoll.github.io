@@ -30,16 +30,21 @@ function instructions(text) {
 	nextscreen = "trial";
 }
 
-function trial() {
+function runFixation() {
+	prestext.innerHTML = "<stimPres>" +
+		"+" +
+		"</stimPres>";
+	nextscreen = setTimeout(runCS, 1000*mysetup[listc-1]["iti_duration"])
+}
+
+function runCS() {
 	trialtext = JSON.stringify(mysetup[listc-1])
 	prestext.innerHTML = "<body>" +
 		trialtext +
+		"</body>" +
 		'<div id="controls">' +
 		'<button id="continueButton">Continue</button>' +
 		'</div>';
-	var continueButton = document.getElementById("continueButton");
-	continueButton.addEventListener("click", continueAction);
-	listc++;
 }
 
 function stopAction() {
@@ -59,7 +64,7 @@ function continueAction() {
 	if ((mysetup[listc-1]["us_stimulus_name"] == "NA - Habituation") && (nextscreen == "instructions")) {
 		instructions(textlist["1"]);
 	} else if (mysetup[listc-1]["us_stimulus_name"] == "NA - Habituation" && nextscreen == "trial") {
-		trial();
+		runFixation();
 	}
 }
 
