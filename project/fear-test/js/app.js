@@ -19,9 +19,9 @@ var nextscreen = "instructions";
 continueButton.addEventListener("click", continueAction);
 
 function instructions(text) {
-	prestext.innerHTML = "<body>" +
+	prestext.innerHTML = "<stimPres>" +
 		text +
-		"</body>" +
+		"</stimPres>" +
 		'<div id="controls">' +
   	 	'<button id="continueButton">Continue</button>' +
     	'</div>';
