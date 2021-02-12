@@ -63,7 +63,6 @@ button {
   -ms-transform: translate(-50%, -50%);
   transform: translate(-50%, -50%);
   flex-grow: 1;
-  height: 3.5rem;
   min-width: 2rem;
   border: none;
   border-radius: 0.15rem;
