@@ -60,6 +60,8 @@ function continueAction(nextscreen) {
 		instructions(textlist["1"]);
 	} else if (mysetup[listc-1]["us_stimulus_name"] == "NA - Habituation" && nextscreen == "trial") {
 		trial();
+	} else {
+		instructions(textlist["1"]);
 	}
 }
 
