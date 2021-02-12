@@ -9,6 +9,7 @@ var textlist = {
 
 var listc = 1
 var inst;
+var img;
 
 var continueButton = document.getElementById("continueButton");
 var prestext = document.getElementById("screen");
@@ -41,10 +42,7 @@ function runCS() {
 	trialtext = JSON.stringify(mysetup[listc-1])
 	prestext.innerHTML = "<body>" +
 		trialtext +
-		"</body>" +
-		'<div id="controls">' +
-		'<button id="continueButton">Continue</button>' +
-		'</div>';
+		"</body>";
 	var img = document.createElement("img");
 	if (mysetup[listc-1]["cs_type"] == "CS-") {
 		srcfile = 'CS_NEG.png'
