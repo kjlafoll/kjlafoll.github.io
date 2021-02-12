@@ -48,7 +48,9 @@ function runCS() {
 	prestext.innerHTML = "<body>" +
 		trialtext +
 		"</body>" +
-		srcfile;
+		'<div id="controls">' +
+		srcfile +
+		'</div>';
 }
 
 function stopAction() {
