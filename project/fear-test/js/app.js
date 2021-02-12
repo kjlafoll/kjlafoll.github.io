@@ -47,8 +47,8 @@ function runCS() {
 	}
 	prestext.innerHTML = "<body>" +
 		trialtext +
-		srcfile +
-		"</body>";
+		"</body>" +
+		srcfile;
 }
 
 function stopAction() {
