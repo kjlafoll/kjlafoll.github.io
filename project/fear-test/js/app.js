@@ -56,12 +56,10 @@ function stopAction() {
 function continueAction(nextscreen) {
 	// if (listc == 1 || listc == 2 || listc == 3) {
 	// 	instructions();
-	if (mysetup[listc-1]["us_stimulus_name"] == "NA - Habituation" && nextscreen == "instructions") {
+	if ((mysetup[listc-1]["us_stimulus_name"] == "NA - Habituation") && (nextscreen == "instructions")) {
 		instructions(textlist["1"]);
 	} else if (mysetup[listc-1]["us_stimulus_name"] == "NA - Habituation" && nextscreen == "trial") {
 		trial();
-	} else {
-		instructions(textlist["1"]);
 	}
 }
 
