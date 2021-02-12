@@ -50,6 +50,7 @@ function runCS() {
 		srcfile = 'CS_POS.png'
 	}
 	img.src = 'Resources_CONDexp/CS_IMAGES/' + srcfile
+	document.body.appendChild(img);
 }
 
 function stopAction() {
