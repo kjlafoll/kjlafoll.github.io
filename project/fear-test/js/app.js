@@ -151,9 +151,7 @@ function savedata() {
 			type: 'POST',
 			headers: {
 				'Authorization': "bearer " + apiKey,
-				'Access-Control-Allow-Origin': '*',
-				'Access-Control-Allow-Methods': 'GET, POST, PUT',
-				'Access-Control-Allow-Headers': "Authorization, Access-Control-Allow-Headers, Access-Control-Allow-Origin, Access-Control-Allow-Methods, Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers",
+				'Access-Control-Allow-Headers': "Accept, Content-Type",
 			},
 			contentType: 'application/json',
 			dataType: 'json',
