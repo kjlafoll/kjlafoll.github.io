@@ -43,8 +43,8 @@ stimPres {
   margin: 2em;
   position: absolute;
   top: 30%;
-  left: 20%;
-  -ms-transform: translate(-50%, -50%);
+  left: 40%;
+  -ms-transform: translate(-50%, -80%);
   transform: translate(-50%, -50%);
 }
 
