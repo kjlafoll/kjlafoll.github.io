@@ -14,6 +14,10 @@ var textlist = {
 var listc = 1
 var inst;
 var img;
+var action = "False";
+var startTime; var endTime; var usTime;
+var fslist = [];
+var rtlist = [];
 
 var continueButton = document.getElementById("continueButton");
 var prestext = document.getElementById("screen");
@@ -22,6 +26,18 @@ var mysetup = JSON.parse(localStorage.getItem('mysetup'));
 var nextscreen = "instructions";
 
 continueButton.addEventListener("click", continueAction);
+
+document.addEventListener('keydown', event => {
+	if (event.code === 'Space') {
+		endTime = new Date();
+		timeDiff = endTime - startTime;
+		if (action == "True") {
+			rtlist.push(endTime - usTime);
+		} else {
+			fslist.push(endTime - startTime);
+		}
+		console.log('Space pressed')
+}
 
 function instructions(text) {
 	prestext.innerHTML = "<stimPres>" +
@@ -40,16 +56,17 @@ function runFixation() {
 		"+" +
 		"</fixation>";
 	nextscreen = setTimeout(runCS, 1000*mysetup[listc-1]["iti_duration"]);
+	fsresponsetime = [];
 }
 
 function runCS() {
 	trialtext = JSON.stringify(mysetup[listc-1]);
 	if (mysetup[listc-1]["cs_type"] == "CS-") {
 		srcfile = '<image src=' + '"Resources_CONDexp/CS_IMAGES/CS_NEG.png"' +
-			' style="height:12.5vh;margin-top:-20vh"' + '>';
+			' style="height:12.5vh;margin-top:-10vh"' + '>';
 	} else if (mysetup[listc-1]["cs_type"] == "CS+") {
 		srcfile = '<image src=' + '"Resources_CONDexp/CS_IMAGES/CS_POS.png"' +
-			' style="height:12.5vh;margin-top:-20vh"' + '>';
+			' style="height:12.5vh;margin-top:-10vh"' + '>';
 	}
 	prestext.innerHTML = "<body>" +
 		trialtext +
@@ -61,10 +78,6 @@ function runCS() {
 		duration = mysetup[listc-1]["cs_duration"];
 	}
 	nextscreen = setTimeout(runUS, 1000*duration);
-	document.addEventListener('keyup', event => {
-		if (event.code === 'Space') {
-			console.log('Space pressed')
-		}
 	})
 }
 
@@ -78,6 +91,8 @@ function runTI() {
 
 function runUS() {
 	usexist = "True"
+	action = "True"
+	usTime = new Date();
 	trialtext = JSON.stringify(mysetup[listc-1]);
 	if ((mysetup[listc-1]["cs_type"] == "CS+") && (mysetup[listc-1]["reinforced"] == "True")) {
 		srcfile = '<image src=' + '"Resources_CONDexp/US_PRESENT_IMAGES/' +
@@ -101,7 +116,10 @@ function runUS() {
 }
 
 function savedata() {
+	mysetup[listc-1]['us_rt'] = rtlist;
+	mysetup[listc-1]['fs_response_time'] = fslist;
 	listc++;
+	action = "False";
 	if ((mysetup[listc-1]["us_duration"] != "NA - Habituation") && (mysetup[listc-2]["us_duration"] == "NA - Habituation")) {
 		nextscreen = "instructions";
 		instructions(textlist["2"]);
@@ -127,6 +145,7 @@ function continueAction() {
 	if ((mysetup[listc-1]["us_stimulus_name"] == "NA - Habituation") && (nextscreen == "instructions")) {
 		instructions(textlist["1"]);
 	} else if ((mysetup[listc-1]["us_stimulus_name"] != "NA - Habituation") && (nextscreen == "trial")) {
+		startTime = new Date();
 		runFixation();
 	} else if ((mysetup[listc-1]["us_stimulus_name"] == "NA - Habituation") && (nextscreen == "trial")) {
 		runFixation();
