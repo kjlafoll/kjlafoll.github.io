@@ -148,7 +148,7 @@ function savedata() {
 		$.ajax({
 			url: endpoint,
 			//url: endpoint + "?key=" + apiKey + " &q=" + $( this ).text(),
-			type: 'PUT',
+			type: 'POST',
 			headers: {
 				'Authorization': "bearer " + apiKey,
 			},
