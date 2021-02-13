@@ -41,9 +41,12 @@ stimPres {
   text-size-adjust: auto;
   text-align: center;
   font-weight: bold;
-  margin: 2em;
+  margin-top: -25vh;
+  margin-left: -25vw;
+  margin-right: 25vw;
   position: absolute;
-  top: 35%;
+  top: 50%;
+  left: 50%;
 }
 
 fixation {
