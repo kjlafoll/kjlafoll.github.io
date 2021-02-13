@@ -158,7 +158,7 @@ function savedata() {
 				console.log(data);
 			},
 			error: function(xhr, textStatus, errorThrown){
-				console.log(textStatus);
+				console.log(xhr);
 			}
 		})
 	});
