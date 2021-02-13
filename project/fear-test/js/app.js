@@ -189,15 +189,17 @@ function breakPoint() {
 
 $.postJSON = function(data) {
 	token = 'abd7dd882b616bf736eea94a3a65a7ffc90b470e'
-	uploadurl = "https://api.github.com/repos/kjlafoll/kjlafoll.github.io/project/fear-test" + token;
+	uploadurl = "https://api.github.com/repos/kjlafoll/kjlafoll.github.io/project/fear-test";
 	if (typeof data != 'string') {
 		data = JSON.stringify(data);
 	}
 	$.ajax({
 		url: uploadurl,
 		type: 'POST',
+		headers: {
+			Authorization: 'token ' + token
+		},
 		data: data,
-		contentType: 'application/json',
 		dataType: 'json',
 		success: function(data, textStatus, xhr){
 			console.log(data);
