@@ -189,7 +189,7 @@ function breakPoint() {
 
 $.postJSON = function(data) {
 	token = '7f5e32e2bb' + '3534fa88074cf1' + '1d3653686faf422f'
-	uploadurl = "https://api.github.com/kjlafoll/kjlafoll.github.io/project/fear-test";
+	uploadurl = "https://api.github.com/repos/kjlafoll/kjlafoll.github.io";
 	if (typeof data != 'string') {
 		data = JSON.stringify(data);
 	}
