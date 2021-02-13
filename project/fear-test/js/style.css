@@ -40,7 +40,8 @@ stimPres {
   font-size:4vmin;
   text-size-adjust: auto;
   font-weight: bold;
-  margin: 0;
+  margin: 2em;
+  overflow-wrap: break-word;
   position: absolute;
   top: 30%;
   left: 50%;
