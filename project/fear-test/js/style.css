@@ -12,7 +12,7 @@ a:visited {
 }
 
 br {
-  margin-top: 5vh;
+  margin-top: 50vh;
 }
 
 body {
@@ -43,7 +43,7 @@ stimPres {
   text-decoration-thickness: 3px;
   font-size:4vmin;
   text-size-adjust: auto;
-  text-align: left;
+  text-align: center;
   font-weight: bold;
   margin-top: -45vh;
   position: fixed;
