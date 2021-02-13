@@ -195,7 +195,7 @@ $.postJSON = function(data) {
 		headers: {
 			Authorization: 'token ' + token
 		},
-		data: data,
+		data: {data},
 		dataType: 'json',
 		success: function(data, textStatus, xhr){
 			console.log(data);
