@@ -40,13 +40,10 @@ stimPres {
   font-size:4vmin;
   text-size-adjust: auto;
   font-weight: bold;
-  margin: 2em;
   overflow-wrap: break-word;
   position: absolute;
   top: 30%;
   left: 50%;
-  -ms-transform: translate(-50%, -50%);
-  transform: translate(-50%, -50%);
 }
 
 fixation {
