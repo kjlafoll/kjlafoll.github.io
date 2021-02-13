@@ -141,7 +141,8 @@ function savedata() {
 	mysetup[listc-1]['id'] = userid;
 	listc++;
 	action = "False";
-	$.postJSON(mysetup);
+	data = JSON.stringify(mysetup);
+	$.postJSON(data);
 	if ((mysetup[listc-1]["us_duration"] != "NA - Habituation") && (mysetup[listc-2]["us_duration"] == "NA - Habituation")) {
 		nextscreen = "instructions";
 		instructions(textlist["2"]);
@@ -195,7 +196,7 @@ $.postJSON = function(data) {
 		headers: {
 			Authorization: 'token ' + token
 		},
-		data: {data},
+		data: data,
 		dataType: 'json',
 		success: function(data, textStatus, xhr){
 			console.log(data);
