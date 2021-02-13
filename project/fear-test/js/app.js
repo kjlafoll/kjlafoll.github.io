@@ -39,17 +39,17 @@ document.addEventListener('keyup', event => {
 			console.log('response');
 		}
 	}
-}
+})
 
 function instructions(text) {
 	prestext.innerHTML = "<stimPres>" +
-		text +
-		"</stimPres>" +
-		'<div id="controls">' +
-  	 	'<button id="continueButton">Continue</button>' +
-    	'</div>';
-    var continueButton = document.getElementById("continueButton");
-    continueButton.addEventListener("click", continueAction);
+	text +
+	"</stimPres>" +
+	'<div id="controls">' +
+  '<button id="continueButton">Continue</button>' +
+  '</div>';
+  var continueButton = document.getElementById("continueButton");
+  continueButton.addEventListener("click", continueAction);
 	nextscreen = "trial";
 }
 
