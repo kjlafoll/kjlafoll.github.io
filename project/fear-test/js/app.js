@@ -142,9 +142,7 @@ function savedata() {
 	listc++;
 	action = "False";
 	data = JSON.stringify(mysetup);
-	prestext.innerHTML = '<body id="pyexcess" onload="brython({debug:1})">' +
-	'<script type="text/python" src="savedata.py"></script>' +
-	'</body>';
+	$.postJSON('file', data);
 	if ((mysetup[listc-1]["us_duration"] != "NA - Habituation") && (mysetup[listc-2]["us_duration"] == "NA - Habituation")) {
 		nextscreen = "instructions";
 		instructions(textlist["2"]);
@@ -187,6 +185,27 @@ function breakPoint() {
 		'<button id="endButton">END RECORDING</button>';
 	endButton = document.getElementById("endButton");
 	endButton.addEventListener("click", stopAction);
+}
+
+$.postJSON = function(filename, filedata) {
+	if (typeof data != 'string') {
+		data = JSON.stringify(data);
+	}
+	$.ajax({
+		url: 'savedata.php',
+		type: 'POST',
+		data: {
+			filename: filename,
+			filedata: filedata
+		},
+		cache: false,
+		success: function(data, textStatus, xhr){
+			console.log(data);
+		},
+		error: function(xhr, textStatus, errorThrown){
+			console.log(xhr);
+		}
+	});
 }
 
 // $( document ).ready(function() {
