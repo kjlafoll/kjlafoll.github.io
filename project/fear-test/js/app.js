@@ -57,6 +57,11 @@ function runCS() {
 		duration = mysetup[listc-1]["cs_duration"];
 	}
 	nextscreen = setTimeout(runUS, 1000*duration);
+	document.addEventListener('keyup', event => {
+		if (event.code === 'Space') {
+			console.log('Space pressed')
+		}
+	})
 }
 
 function runTI() {
@@ -72,10 +77,10 @@ function runUS() {
 	trialtext = JSON.stringify(mysetup[listc-1]);
 	if ((mysetup[listc-1]["cs_type"] == "CS+") && (mysetup[listc-1]["reinforced"] == "True")) {
 		srcfile = '<image src=' + '"Resources_CONDexp/US_PRESENT_IMAGES/' +
-		mysetup[listc-1]["us_stimulus_name"] + '" style="width:16vw;margin-top:12.5%;margin-left:-8%"' + '>';
+		mysetup[listc-1]["us_stimulus_name"] + '" style="width:25vw;margin-top:12.5%;margin-left:-12.5%"' + '>';
 	} else if ((mysetup[listc-1]["cs_type"] == "CS-") && (mysetup[listc-1]["reinforced"] == "True")) {
 		srcfile = '<image src=' + '"Resources_CONDexp/US_ABSENT_IMAGES/' +
-		mysetup[listc-1]["us_stimulus_name"] + '" style="width:16vw;margin-top:12.5%;margin-left:-8%"' + '>';
+		mysetup[listc-1]["us_stimulus_name"] + '" style="width:25vw;margin-top:12.5%;margin-left:-12.5%"' + '>';
 	} else {
 		mysetup[listc-1]["us_onset"] = "NA - Habituation";
 		mysetup[listc-1]["us_rt"] = "NA - Habituation";
