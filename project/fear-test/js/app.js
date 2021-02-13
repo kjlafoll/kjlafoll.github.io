@@ -4,12 +4,10 @@ URL = window.URL || window.webkitURL;
 var textlist = {
 	1: 'You will now see four simple shapes. </br>' +
 	'Please attend to all shapes presented.',
-	2: 'For the next 20 trials, you will see shapes and pictures. </br>' +
-	'Your job is to press the SPACEBAR when you see the picture. </br>' +
+	2: 'For the next 20 trials, you will see shapes and pictures. Your job is to press the SPACEBAR when you see the picture. </br>' +
 	'A few moments after you respond, the picture will disappear. </br>' +
-	'Try not to press the SPACEBAR when the picture is not present. </br>' +
-	'If you make too many false starts, you will not be able to participate </br>' +
-	'Please attent to all images presented.',
+	'Try not to press the SPACEBAR when the picture is not present. If you make too many false starts, you will not be able to participate </br>' +
+	'Please attend to all images presented.',
 	3: 'You will now play through a training period where you will learn the sequences and color cues. This training period will be followed by a testing period, during which you can earn cash bonuses. Please now focus on the task at hand; the task will start as soon as you press the Continue button. Good luck!'
 }
 
@@ -128,7 +126,7 @@ function continueAction() {
 	// 	instructions();
 	if ((mysetup[listc-1]["us_stimulus_name"] == "NA - Habituation") && (nextscreen == "instructions")) {
 		instructions(textlist["1"]);
-	} else if ((mysetup[listc-1]["us_stimulus_name"] != "NA - Habituation") && (nextscreen == "instructions")) {
+	} else if ((mysetup[listc-1]["us_stimulus_name"] != "NA - Habituation") && (nextscreen == "trial")) {
 		runFixation();
 	} else if ((mysetup[listc-1]["us_stimulus_name"] == "NA - Habituation") && (nextscreen == "trial")) {
 		runFixation();
