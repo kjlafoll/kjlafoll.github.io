@@ -11,6 +11,10 @@ a:visited {
   color: #8d75a3;
 }
 
+br {
+  margin-top: 5vh;
+}
+
 body {
 	line-height: 1.5;
 	font-family: sans-serif;
@@ -39,14 +43,14 @@ stimPres {
   text-decoration-thickness: 3px;
   font-size:4vmin;
   text-size-adjust: auto;
-  text-align: center;
+  text-align: left;
   font-weight: bold;
   margin-top: -45vh;
   position: fixed;
   top: 50%;
   left: 50%;
-  -ms-transform: translate(50%, 0%);
   transform: translate(-50%, 0%);
+  width: 75vw;
 }
 
 fixation {
