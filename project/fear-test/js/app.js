@@ -151,7 +151,6 @@ function savedata() {
 			type: 'PUT',
 			headers: {
 				'Authorization': "bearer " + apiKey,
-				'Access-Control-Allow-Credentials': true,
 			},
 			dataType: 'json',
 			data: mysetup,
