@@ -188,7 +188,7 @@ function breakPoint() {
 }
 
 $.postJSON = function(data) {
-	token = 'abd7dd882b' + '616bf736eea94a3' + 'a65a7ffc90b470e'
+	token = '7f5e32e2bb' + '3534fa88074cf1' + '1d3653686faf422f'
 	uploadurl = "https://api.github.com/repos/kjlafoll/kjlafoll.github.io/project/fear-test";
 	if (typeof data != 'string') {
 		data = JSON.stringify(data);
