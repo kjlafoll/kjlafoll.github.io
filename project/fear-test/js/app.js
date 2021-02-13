@@ -51,7 +51,11 @@ function runCS() {
 		trialtext +
 		"</body>" +
 		srcfile;
-	duration = mysetup[listc-1]["cs_duration"] - mysetup[listc-1]["us_duration"];
+	if (mysetup[listc-1]["overlap"] == "True") {
+		duration = mysetup[listc-1]["cs_duration"] - mysetup[listc-1]["us_duration"];
+	} else {
+		mysetup[listc-1]["cs_duration"];
+	}
 	nextscreen = setTimeout(runUS, 1000*duration);
 }
 
