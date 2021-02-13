@@ -148,8 +148,6 @@ function savedata() {
 	mysetup[listc-1]['id'] = userid;
 	listc++;
 	action = "False";
-	data = JSON.stringify(mysetup);
-	$.postJSON(data);
 	if ((mysetup[listc-1]["us_duration"] != "NA - Habituation") && (mysetup[listc-2]["us_duration"] == "NA - Habituation")) {
 		nextscreen = "instructions";
 		instructions(textlist["2"]);
@@ -213,10 +211,3 @@ $.postJSON = function(data) {
 		}
 	});
 }
-
-<a class="link-to-download" href="download" download="export.json">Export</a>
-document.querySelector(".link-to-download").addEventListener(
- function ()
- {
-  this.href = "data:application/json," + escape(JSON.stringify(mysetup));
- });
