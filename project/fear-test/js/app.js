@@ -153,7 +153,6 @@ function savedata() {
 				'Authorization': "bearer " + apiKey,
 				'Access-Control-Allow-Origin': '*',
 				'Access-Control-Allow-Methods': 'GET, POST, PUT',
-				'Access-Control-Allow-Headers': 'Content-Type',
 			},
 			contentType: 'application/json',
 			dataType: 'json',
