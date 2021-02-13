@@ -203,7 +203,7 @@ class LocalGame():
 					continue
 				else:
 					self.trial_bank.append(chosen)
-					self.utrial_bank.pop(ind)	
+					self.utrial_bank.pop(ind)
 		if attempt > 10:
 			self.start()
 

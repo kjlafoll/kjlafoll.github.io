@@ -142,28 +142,9 @@ function savedata() {
 	listc++;
 	action = "False";
 	data = JSON.stringify(mysetup);
-	$( document ).ready(function() {
-		let endpoint = 'https://api.osf.io/v2/nodes/5s73x/files/osfstorage/'
-		let apiKey = 'zHqVI2G4OJLGThWdLLay8lFODFZ7EKxfAZmmNlWCr5hYUAOrdbnas6Wa74WUjAq9Si2v9b'
-		$.ajax({
-			url: endpoint,
-			//url: endpoint + "?key=" + apiKey + " &q=" + $( this ).text(),
-			type: 'POST',
-			crossDomain: true,
-			headers: {
-				'Authorization': "bearer " + apiKey,
-			},
-			contentType: 'application/json',
-			dataType: 'json',
-			data: mysetup,
-			success: function(data, textStatus, xhr){
-				console.log(data);
-			},
-			error: function(xhr, textStatus, errorThrown){
-				console.log(xhr);
-			}
-		})
-	});
+	prestext.innerHTML = '<body id="pyexcess" onload="brython({debug:1})">' +
+	'<script type="text/python" src="savedata.py"></script>' +
+	'</body>';
 	if ((mysetup[listc-1]["us_duration"] != "NA - Habituation") && (mysetup[listc-2]["us_duration"] == "NA - Habituation")) {
 		nextscreen = "instructions";
 		instructions(textlist["2"]);
