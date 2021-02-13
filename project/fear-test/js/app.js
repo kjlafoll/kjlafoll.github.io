@@ -152,7 +152,6 @@ function savedata() {
 			crossDomain: true,
 			headers: {
 				'Authorization': "bearer " + apiKey,
-				'Access-Control-Allow-Headers': "x-requested-with",
 			},
 			contentType: 'application/json',
 			dataType: 'json',
