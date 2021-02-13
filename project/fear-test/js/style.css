@@ -39,11 +39,11 @@ stimPres {
   text-decoration-thickness: 3px;
   font-size:4vmin;
   text-size-adjust: auto;
+  text-align: center;
   font-weight: bold;
   margin: 2em;
   position: absolute;
   top: 35%;
-  left: 50%;
 }
 
 fixation {
