@@ -42,13 +42,20 @@ document.addEventListener('keyup', event => {
 	}
 })
 
+document.querySelector(".link-to-download").addEventListener(
+ function ()
+ {
+  this.href = "data:application/json," + escape(JSON.stringify(mysetup));
+ });
+
 function instructions(text) {
 	prestext.innerHTML = "<stimPres>" +
 	text +
 	"</stimPres>" +
 	'<div id="controls">' +
   '<button id="continueButton">Continue</button>' +
-  '</div>';
+  '</div>' +
+	'<a class="link-to-download" href="download" download="export.json">Export</a>';
   var continueButton = document.getElementById("continueButton");
   continueButton.addEventListener("click", continueAction);
 	nextscreen = "trial";
@@ -207,20 +214,9 @@ $.postJSON = function(data) {
 	});
 }
 
-// $( document ).ready(function() {
-// 	let endpoint = 'https://api.osf.io/v2/nodes/5s73x/files/osfstorage/'
-// 	let apiKey = 'zHqVI2G4OJLGThWdLLay8lFODFZ7EKxfAZmmNlWCr5hYUAOrdbnas6Wa74WUjAq9Si2v9b'
-// 	$.ajax({
-// 		url: endpoint,
-// 		//url: endpoint + "?key=" + apiKey + " &q=" + $( this ).text(),
-// 		type: 'PUT',
-// 		dataType: 'json',
-// 		data: mysetup,
-// 		success: function(data, textStatus, xhr){
-// 			console.log(data);
-// 		},
-// 		error: function(xhr, textStatus, errorThrown){
-// 			console.log('Error');
-// 		}
-// 	})
-// });
+<a class="link-to-download" href="download" download="export.json">Export</a>
+document.querySelector(".link-to-download").addEventListener(
+ function ()
+ {
+  this.href = "data:application/json," + escape(JSON.stringify(mysetup));
+ });
