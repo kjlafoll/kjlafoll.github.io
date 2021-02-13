@@ -42,10 +42,10 @@ function runCS() {
 	trialtext = JSON.stringify(mysetup[listc-1]);
 	if (mysetup[listc-1]["cs_type"] == "CS-") {
 		srcfile = '<image src=' + '"Resources_CONDexp/CS_IMAGES/CS_NEG.png"' +
-			' style="width:12.5%;margin-top:-25%"' + '>';
+			' style="width:12.5vw;margin-top:-25%"' + '>';
 	} else if (mysetup[listc-1]["cs_type"] == "CS+") {
 		srcfile = '<image src=' + '"Resources_CONDexp/CS_IMAGES/CS_POS.png"' +
-			' style="width:12.5;margin-top:-25%"' + '>';
+			' style="width:12.5vw;margin-top:-25%"' + '>';
 	}
 	prestext.innerHTML = "<body>" +
 		trialtext +
@@ -72,10 +72,10 @@ function runUS() {
 	trialtext = JSON.stringify(mysetup[listc-1]);
 	if ((mysetup[listc-1]["cs_type"] == "CS+") && (mysetup[listc-1]["reinforced"] == "True")) {
 		srcfile = '<image src=' + '"Resources_CONDexp/US_PRESENT_IMAGES/' +
-		mysetup[listc-1]["us_stimulus_name"] + '" style="width:30%;margin-top:25%"' + '>';
+		mysetup[listc-1]["us_stimulus_name"] + '" style="width:12.5vw;margin-top:25%"' + '>';
 	} else if ((mysetup[listc-1]["cs_type"] == "CS-") && (mysetup[listc-1]["reinforced"] == "True")) {
 		srcfile = '<image src=' + '"Resources_CONDexp/US_ABSENT_IMAGES/' +
-		mysetup[listc-1]["us_stimulus_name"] + '" style="width:30%;margin-top:25%"' + '>';
+		mysetup[listc-1]["us_stimulus_name"] + '" style="width:12.5vw;margin-top:25%"' + '>';
 	} else {
 		mysetup[listc-1]["us_onset"] = "NA - Habituation";
 		mysetup[listc-1]["us_rt"] = "NA - Habituation";
