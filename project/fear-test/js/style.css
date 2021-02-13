@@ -40,11 +40,11 @@ stimPres {
   font-size:4vmin;
   text-size-adjust: auto;
   font-weight: bold;
-  overflow-wrap: break-word;
+  margin: 2em;
   position: absolute;
   top: 30%;
-  left: 50%;
-  -ms-transform: translate(-20%, -50%);
+  left: 20%;
+  -ms-transform: translate(-50%, -50%);
   transform: translate(-50%, -50%);
 }
 
