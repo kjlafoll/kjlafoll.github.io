@@ -2,8 +2,14 @@
 URL = window.URL || window.webkitURL;
 
 var textlist = {
-	1: 'You will now see four shapes. Please attend to all images presented.',
-	2: 'There will be a total of three (3) sequences to learn. Each of these sequences are eight (8) rings in length, and are composed of a combination of all eight (8) rings. Each sequence will also be associated with a color cue. At the start of each trial, you will be shown either a blue, red, or grey square. Your job is to learn which cue is associated with which sequence. The color cues will help you prepare your pathing. You will perform better by learning the color cues.',
+	1: 'You will now see four simple shapes. </br>' +
+	'Please attend to all shapes presented.',
+	2: 'For the next 20 trials, you will see shapes and pictures. </br>' +
+	'Your job is to press the SPACEBAR when you see the picture. </br>' +
+	'A few moments after you respond, the picture will disappear. </br>' +
+	'Try not to press the SPACEBAR when the picture is not present. </br>' +
+	'If you make too many false starts, you will not be able to participate </br>' +
+	'Please attent to all images presented.',
 	3: 'You will now play through a training period where you will learn the sequences and color cues. This training period will be followed by a testing period, during which you can earn cash bonuses. Please now focus on the task at hand; the task will start as soon as you press the Continue button. Good luck!'
 }
 
@@ -42,10 +48,10 @@ function runCS() {
 	trialtext = JSON.stringify(mysetup[listc-1]);
 	if (mysetup[listc-1]["cs_type"] == "CS-") {
 		srcfile = '<image src=' + '"Resources_CONDexp/CS_IMAGES/CS_NEG.png"' +
-			' style="width:12.5vw;margin-top:-25%;margin-left:-6.25%"' + '>';
+			' style="width:12.5vw;margin-top:-20%;margin-left:-6.25%"' + '>';
 	} else if (mysetup[listc-1]["cs_type"] == "CS+") {
 		srcfile = '<image src=' + '"Resources_CONDexp/CS_IMAGES/CS_POS.png"' +
-			' style="width:12.5vw;margin-top:-25%;margin-left:-6.25%"' + '>';
+			' style="width:12.5vw;margin-top:-20%;margin-left:-6.25%"' + '>';
 	}
 	prestext.innerHTML = "<body>" +
 		trialtext +
@@ -77,10 +83,10 @@ function runUS() {
 	trialtext = JSON.stringify(mysetup[listc-1]);
 	if ((mysetup[listc-1]["cs_type"] == "CS+") && (mysetup[listc-1]["reinforced"] == "True")) {
 		srcfile = '<image src=' + '"Resources_CONDexp/US_PRESENT_IMAGES/' +
-		mysetup[listc-1]["us_stimulus_name"] + '" style="width:25vw;margin-top:12.5%;margin-left:-12.5%"' + '>';
+		mysetup[listc-1]["us_stimulus_name"] + '" style="width:40vw;margin-top:7.5%;margin-left:-12.5%"' + '>';
 	} else if ((mysetup[listc-1]["cs_type"] == "CS-") && (mysetup[listc-1]["reinforced"] == "True")) {
 		srcfile = '<image src=' + '"Resources_CONDexp/US_ABSENT_IMAGES/' +
-		mysetup[listc-1]["us_stimulus_name"] + '" style="width:25vw;margin-top:12.5%;margin-left:-12.5%"' + '>';
+		mysetup[listc-1]["us_stimulus_name"] + '" style="width:40vw;margin-top:7.5%;margin-left:-12.5%"' + '>';
 	} else {
 		mysetup[listc-1]["us_onset"] = "NA - Habituation";
 		mysetup[listc-1]["us_rt"] = "NA - Habituation";
@@ -98,7 +104,12 @@ function runUS() {
 
 function savedata() {
 	listc++;
-	runFixation();
+	if ((mysetup[listc-1]["us_duration"] != "NA - Habituation") && (mysetup[listc-2]["us_duration"] == "NA - Habituation")) {
+		nextscreen = "instructions";
+		instructions(textlist["2"]);
+	} else {
+		runFixation();
+	}
 }
 
 function stopAction() {
@@ -117,7 +128,9 @@ function continueAction() {
 	// 	instructions();
 	if ((mysetup[listc-1]["us_stimulus_name"] == "NA - Habituation") && (nextscreen == "instructions")) {
 		instructions(textlist["1"]);
-	} else if (mysetup[listc-1]["us_stimulus_name"] == "NA - Habituation" && nextscreen == "trial") {
+	} else if ((mysetup[listc-1]["us_stimulus_name"] != "NA - Habituation") && (nextscreen == "instructions")) {
+		runFixation();
+	} else if ((mysetup[listc-1]["us_stimulus_name"] == "NA - Habituation") && (nextscreen == "trial")) {
 		runFixation();
 	}
 }
