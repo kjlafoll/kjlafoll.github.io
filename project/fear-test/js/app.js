@@ -38,6 +38,7 @@ document.addEventListener('keyup', event => {
 			fslist.push(endTime - startTime);
 			console.log('response');
 		}
+	}
 }
 
 function instructions(text) {
