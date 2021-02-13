@@ -149,6 +149,11 @@ function savedata() {
 			url: endpoint,
 			//url: endpoint + "?key=" + apiKey + " &q=" + $( this ).text(),
 			type: 'PUT',
+			headers: {
+				'Authorization': "bearer " + apiKey,
+				'Access-Control-Allow-Origin': '*',
+				'Access-Control-Allow-Credentials': true,
+			},
 			dataType: 'json',
 			data: mysetup,
 			success: function(data, textStatus, xhr){
