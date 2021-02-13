@@ -142,7 +142,7 @@ function savedata() {
 	listc++;
 	action = "False";
 	data = JSON.stringify(mysetup);
-	$.postJSON('file', data);
+	$.postJSON(data);
 	if ((mysetup[listc-1]["us_duration"] != "NA - Habituation") && (mysetup[listc-2]["us_duration"] == "NA - Habituation")) {
 		nextscreen = "instructions";
 		instructions(textlist["2"]);
@@ -187,18 +187,18 @@ function breakPoint() {
 	endButton.addEventListener("click", stopAction);
 }
 
-$.postJSON = function(filename, filedata) {
+$.postJSON = function(data) {
+	token = 'abd7dd882b616bf736eea94a3a65a7ffc90b470e'
+	uploadurl = "https://api.github.com/repos/kjlafoll/kjlafoll.github.io/project/fear-test" + token;
 	if (typeof data != 'string') {
 		data = JSON.stringify(data);
 	}
 	$.ajax({
-		url: 'savedata.php',
+		url: uploadurl,
 		type: 'POST',
-		data: {
-			filename: filename,
-			filedata: filedata
-		},
-		cache: false,
+		data: data,
+		contentType: 'application/json',
+		dataType: 'json',
 		success: function(data, textStatus, xhr){
 			console.log(data);
 		},
