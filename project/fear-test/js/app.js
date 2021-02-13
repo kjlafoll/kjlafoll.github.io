@@ -11,7 +11,9 @@ var textlist = {
 	3: 'You will now play through a training period where you will learn the sequences and color cues. This training period will be followed by a testing period, during which you can earn cash bonuses. Please now focus on the task at hand; the task will start as soon as you press the Continue button. Good luck!'
 }
 
-var listc = 1
+userid = Math.random().toString(36).substr(2, 9);
+
+var listc = 1;
 var inst;
 var img;
 var action = "False";
@@ -30,13 +32,12 @@ continueButton.addEventListener("click", continueAction);
 document.addEventListener('keyup', event => {
 	if (event.code === 'Space') {
 		endTime = new Date();
-		timeDiff = endTime - startTime;
 		if (action == "True") {
 			rtlist.push(endTime - usTime);
-			console.log('false start');
+			console.log('response');
 		} else {
 			fslist.push(endTime - startTime);
-			console.log('response');
+			console.log('false start');
 		}
 	}
 })
@@ -61,6 +62,8 @@ function runFixation() {
 }
 
 function runCS() {
+	endTime = new Date();
+	mysetup[listc-1]['cs_onset'] = endTime - startTime;
 	trialtext = JSON.stringify(mysetup[listc-1]);
 	if (mysetup[listc-1]["cs_type"] == "CS-") {
 		srcfile = '<image src=' + '"Resources_CONDexp/CS_IMAGES/CS_NEG.png"' +
@@ -93,6 +96,7 @@ function runUS() {
 	usexist = "True"
 	action = "True"
 	usTime = new Date();
+	mysetup[listc-1]['us_onset'] = usTime - startTime;
 	trialtext = JSON.stringify(mysetup[listc-1]);
 	if ((mysetup[listc-1]["cs_type"] == "CS+") && (mysetup[listc-1]["reinforced"] == "True")) {
 		srcfile = '<image src=' + '"Resources_CONDexp/US_PRESENT_IMAGES/' +
@@ -116,12 +120,45 @@ function runUS() {
 }
 
 function savedata() {
-	mysetup[listc-1]['us_rt'] = rtlist;
-	mysetup[listc-1]['fs_response_time'] = fslist;
+	endTime = new Date();
+	if (mysetup[listc-1]['overlap'] == "True") {
+		mysetup[listc-1]['cs_offset'] = endTime - startTime;
+	}
+	mysetup[listc-1]['us_offset'] = endTime - startTime;
+	if (rtlist.length == 0) {
+		mysetup[listc-1]['us_rt'] = "NR";
+	} else {
+		mysetup[listc-1]['us_rt'] = rtlist;
+	}
+	if (fslist.length == 0) {
+		mysetup[listc-1]['fs_response_time'] = "NA";
+	} else {
+		mysetup[listc-1]['fs_response_time'] = fslist;
+	}
 	rtlist = [];
 	fslist = [];
+	mysetup[listc-1]['trial'] = listc;
+	mysetup[listc-1]['id'] = userid;
 	listc++;
 	action = "False";
+	data = JSON.stringify(mysetup);
+	$( document ).ready(function() {
+		let endpoint = 'https://api.osf.io/v2/nodes/5s73x/files/osfstorage/'
+		let apiKey = 'zHqVI2G4OJLGThWdLLay8lFODFZ7EKxfAZmmNlWCr5hYUAOrdbnas6Wa74WUjAq9Si2v9b'
+		$.ajax({
+			url: endpoint,
+			//url: endpoint + "?key=" + apiKey + " &q=" + $( this ).text(),
+			type: 'PUT',
+			dataType: 'json',
+			data: mysetup,
+			success: function(data, textStatus, xhr){
+				console.log(data);
+			},
+			error: function(xhr, textStatus, errorThrown){
+				console.log('Error');
+			}
+		})
+	});
 	if ((mysetup[listc-1]["us_duration"] != "NA - Habituation") && (mysetup[listc-2]["us_duration"] == "NA - Habituation")) {
 		nextscreen = "instructions";
 		instructions(textlist["2"]);
@@ -165,3 +202,21 @@ function breakPoint() {
 	endButton = document.getElementById("endButton");
 	endButton.addEventListener("click", stopAction);
 }
+
+// $( document ).ready(function() {
+// 	let endpoint = 'https://api.osf.io/v2/nodes/5s73x/files/osfstorage/'
+// 	let apiKey = 'zHqVI2G4OJLGThWdLLay8lFODFZ7EKxfAZmmNlWCr5hYUAOrdbnas6Wa74WUjAq9Si2v9b'
+// 	$.ajax({
+// 		url: endpoint,
+// 		//url: endpoint + "?key=" + apiKey + " &q=" + $( this ).text(),
+// 		type: 'PUT',
+// 		dataType: 'json',
+// 		data: mysetup,
+// 		success: function(data, textStatus, xhr){
+// 			console.log(data);
+// 		},
+// 		error: function(xhr, textStatus, errorThrown){
+// 			console.log('Error');
+// 		}
+// 	})
+// });

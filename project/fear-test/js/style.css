@@ -166,7 +166,6 @@ li {
 @import url(https://fonts.googleapis.com/css?family=Roboto:400,900);
 body, html {
   position: relative;
-  height: 100%;
   width : 100%;
   margin: 0;
   background-color: #000000;
