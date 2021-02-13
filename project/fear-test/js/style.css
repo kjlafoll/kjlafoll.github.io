@@ -44,8 +44,8 @@ stimPres {
   position: absolute;
   top: 35%;
   left: 50%;
-  -ms-transform: translate(-50%, -80%);
-  transform: translate(-50%, -80%);
+  -ms-transform: translate(-50%, 80%);
+  transform: translate(-50%, 80%);
 }
 
 fixation {
