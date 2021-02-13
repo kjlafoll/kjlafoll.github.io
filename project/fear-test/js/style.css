@@ -44,7 +44,7 @@ stimPres {
   margin-top: -40vh;
   margin-left: -35vw;
   margin-right: 35vw;
-  position: absolute;
+  position: fixed;
   top: 50%;
   left: 50%;
 }
