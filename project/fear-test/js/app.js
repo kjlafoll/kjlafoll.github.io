@@ -141,8 +141,7 @@ function savedata() {
 	mysetup[listc-1]['id'] = userid;
 	listc++;
 	action = "False";
-	data = JSON.stringify(mysetup);
-	$.postJSON(data);
+	$.postJSON(mysetup);
 	if ((mysetup[listc-1]["us_duration"] != "NA - Habituation") && (mysetup[listc-2]["us_duration"] == "NA - Habituation")) {
 		nextscreen = "instructions";
 		instructions(textlist["2"]);
@@ -190,9 +189,6 @@ function breakPoint() {
 $.postJSON = function(data) {
 	token = '7f5e32e2bb' + '3534fa88074cf1' + '1d3653686faf422f'
 	uploadurl = "https://api.github.com/repos/kjlafoll/kjlafoll.github.io";
-	if (typeof data != 'string') {
-		data = JSON.stringify(data);
-	}
 	$.ajax({
 		url: uploadurl,
 		type: 'POST',
