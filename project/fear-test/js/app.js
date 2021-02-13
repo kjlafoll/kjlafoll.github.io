@@ -27,16 +27,17 @@ var nextscreen = "instructions";
 
 continueButton.addEventListener("click", continueAction);
 
-document.addEventListener('keydown', event => {
+document.addEventListener('keyup', event => {
 	if (event.code === 'Space') {
 		endTime = new Date();
 		timeDiff = endTime - startTime;
 		if (action == "True") {
 			rtlist.push(endTime - usTime);
+			console.log('false start');
 		} else {
 			fslist.push(endTime - startTime);
+			console.log('response');
 		}
-		console.log('Space pressed')
 }
 
 function instructions(text) {
@@ -56,7 +57,6 @@ function runFixation() {
 		"+" +
 		"</fixation>";
 	nextscreen = setTimeout(runCS, 1000*mysetup[listc-1]["iti_duration"]);
-	fsresponsetime = [];
 }
 
 function runCS() {
@@ -118,6 +118,8 @@ function runUS() {
 function savedata() {
 	mysetup[listc-1]['us_rt'] = rtlist;
 	mysetup[listc-1]['fs_response_time'] = fslist;
+	rtlist = [];
+	fslist = [];
 	listc++;
 	action = "False";
 	if ((mysetup[listc-1]["us_duration"] != "NA - Habituation") && (mysetup[listc-2]["us_duration"] == "NA - Habituation")) {
