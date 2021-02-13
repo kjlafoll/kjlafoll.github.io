@@ -42,10 +42,10 @@ function runCS() {
 	trialtext = JSON.stringify(mysetup[listc-1]);
 	if (mysetup[listc-1]["cs_type"] == "CS-") {
 		srcfile = '<image src=' + '"Resources_CONDexp/CS_IMAGES/CS_NEG.png"' +
-			' style="width:25%;margin-top:-25%"' + '>';
+			' style="width:12.5%;margin-top:-25%"' + '>';
 	} else if (mysetup[listc-1]["cs_type"] == "CS+") {
 		srcfile = '<image src=' + '"Resources_CONDexp/CS_IMAGES/CS_POS.png"' +
-			' style="width:25%;margin-top:-25%"' + '>';
+			' style="width:12.5;margin-top:-25%"' + '>';
 	}
 	prestext.innerHTML = "<body>" +
 		trialtext +
@@ -54,7 +54,7 @@ function runCS() {
 	if (mysetup[listc-1]["overlap"] == "True") {
 		duration = mysetup[listc-1]["cs_duration"] - mysetup[listc-1]["us_duration"];
 	} else {
-		mysetup[listc-1]["cs_duration"];
+		duration = mysetup[listc-1]["cs_duration"];
 	}
 	nextscreen = setTimeout(runUS, 1000*duration);
 }
