@@ -78,7 +78,7 @@ function runCS() {
 		duration = mysetup[listc-1]["cs_duration"];
 	}
 	nextscreen = setTimeout(runUS, 1000*duration);
-	})
+	}
 }
 
 function runTI() {
