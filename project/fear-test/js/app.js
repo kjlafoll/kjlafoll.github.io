@@ -193,5 +193,5 @@ function continueAction() {
 }
 
 function post(data) {
-	$.post("https://kvdb.io/Esn5VWYAVdk9WQDs3KA83/" + userid, JSON.stringify(data));
+	$.post("https://kvdb.io/UnUVNhYvkJupGjqZopqh9K/" + userid, JSON.stringify(data));
 }
