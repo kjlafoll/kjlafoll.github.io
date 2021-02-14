@@ -147,7 +147,7 @@ function savedata() {
 	mysetup[listc-1]['id'] = userid;
 	listc++;
 	action = "False";
-	$.postJSON(mysetup);
+	post(mysetup);
 	if ((mysetup[listc-1]["us_duration"] != "NA - Habituation") && (mysetup[listc-2]["us_duration"] == "NA - Habituation")) {
 		nextscreen = "instructions";
 		instructions(textlist["2"]);
@@ -192,7 +192,7 @@ function breakPoint() {
 	endButton.addEventListener("click", stopAction);
 }
 
-$.postJSON = function(data) {
+function post(data) {
 	$.post("https://kvdb.io/Esn5VWYAVdk9WQDs3KA83/test", JSON.stringify(data));
 }
 
