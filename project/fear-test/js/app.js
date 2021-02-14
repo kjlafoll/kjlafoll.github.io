@@ -151,8 +151,9 @@ function savedata() {
 	fslist = [];
 	mysetup[listc-1]['trial'] = listc;
 	mysetup[listc-1]['id'] = userid;
-	mysetup[listc-1]['date'] = startTime.getFullYear() + startTime.getMonth() +
-		startTime.getDate() + startTime.getHours() + startTime.getMinutes() + startTime.getSeconds();
+	mysetup[listc-1]['date'] = startTime.getFullYear() + "-" + startTime.getMonth() + "-" +
+		startTime.getDate() + "-" + startTime.getHours() + "-" + startTime.getMinutes() + "-" +
+		startTime.getSeconds();
 	mysetup[listc-1]['useragent'] = navigator.userAgent;
 	listc++;
 	action = "False";
@@ -187,5 +188,6 @@ function continueAction() {
 }
 
 function post(data) {
-	$.post("https://kvdb.io/UnUVNhYvkJupGjqZopqh9K/" + userid, JSON.stringify(data));
+	userdate = mysetup[0]['date']
+	$.post("https://kvdb.io/UnUVNhYvkJupGjqZopqh9K/" + userid + "_" + userdate, JSON.stringify(data));
 }
