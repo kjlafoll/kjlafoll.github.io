@@ -131,7 +131,7 @@ function runFeedback() {
 		text = text + "</br> FALSE START DETECTED EARLIER";
 	}
 	prestext.innerHTML = "<stimPres>" +
-		"</br> </br> </br>" +
+		"</br> </br> </br> </br> </br>" +
 		text +
 		"</stimPres>";
 	nextscreen = setTimeout(savedata, 1000);
