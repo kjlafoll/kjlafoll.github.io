@@ -43,8 +43,7 @@ document.addEventListener('keyup', event => {
 })
 
 document.querySelector(".link-to-download").addEventListener(
- function ()
- {
+ function (){
   this.href = "data:application/json," + escape(JSON.stringify(mysetup));
  });
 
@@ -148,6 +147,7 @@ function savedata() {
 	mysetup[listc-1]['id'] = userid;
 	listc++;
 	action = "False";
+	$.postJSON(mysetup);
 	if ((mysetup[listc-1]["us_duration"] != "NA - Habituation") && (mysetup[listc-2]["us_duration"] == "NA - Habituation")) {
 		nextscreen = "instructions";
 		instructions(textlist["2"]);
@@ -193,21 +193,25 @@ function breakPoint() {
 }
 
 $.postJSON = function(data) {
-	token = '7f5e32e2bb' + '3534fa88074cf1' + '1d3653686faf422f'
-	uploadurl = "https://api.github.com/repos/kjlafoll/kjlafoll.github.io";
-	$.ajax({
-		url: uploadurl,
-		type: 'POST',
-		headers: {
-			Authorization: 'token ' + token
-		},
-		data: data,
-		dataType: 'json',
-		success: function(data, textStatus, xhr){
-			console.log(data);
-		},
-		error: function(xhr, textStatus, errorThrown){
-			console.log(xhr);
-		}
-	});
+	$.post("https://kvdb.io/Esn5VWYAVdk9WQDs3KA83/test", JSON.stringify(data));
 }
+
+// $.postJSON = function(data) {
+// 	token = '7f5e32e2bb' + '3534fa88074cf1' + '1d3653686faf422f'
+// 	uploadurl = "https://api.github.com/repos/kjlafoll/kjlafoll.github.io";
+// 	$.ajax({
+// 		url: uploadurl,
+// 		type: 'POST',
+// 		headers: {
+// 			Authorization: 'token ' + token
+// 		},
+// 		data: data,
+// 		dataType: 'json',
+// 		success: function(data, textStatus, xhr){
+// 			console.log(data);
+// 		},
+// 		error: function(xhr, textStatus, errorThrown){
+// 			console.log(xhr);
+// 		}
+// 	});
+// }
