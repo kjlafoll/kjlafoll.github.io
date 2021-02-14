@@ -163,7 +163,7 @@ function savedata() {
 	if ((mysetup[listc-1]["us_duration"] != "NA - Habituation") && (mysetup[listc-2]["us_duration"] == "NA - Habituation")) {
 		nextscreen = "instructions";
 		instructions(textlist["2"]);
-	} else if (mysetup.length < listc) {
+	} else if (mysetup.length == listc) {
 		runEnd();
 	} else {
 		runFixation();
