@@ -34,6 +34,9 @@ document.addEventListener('keyup', event => {
 		endTime = new Date();
 		if (action == "True") {
 			rtlist.push(endTime - usTime);
+			clearTimeout(nextscreen);
+			duration = 0.2;
+			postus = setTimeout(savedata, 1000*duration);
 			console.log('response');
 		} else {
 			fslist.push(endTime - startTime);
@@ -41,11 +44,6 @@ document.addEventListener('keyup', event => {
 		}
 	}
 })
-
-document.querySelector(".link-to-download").addEventListener(
- function (){
-  this.href = "data:application/json," + escape(JSON.stringify(mysetup));
- });
 
 function instructions(text) {
 	prestext.innerHTML = "<stimPres>" +
@@ -125,6 +123,21 @@ function runUS() {
 	}
 }
 
+function runFeedback() {
+	if (rtlist.length == 1) {
+		text = "GOOD";
+	} else {
+		text = "NO RESPONSE";
+	}
+	if (fslist.length != 0) {
+		text = text + "</br> FALSE START DETECTED EARLIER"
+	}
+	prestext.innerHTML = "<fixation>" +
+		text +
+		"</fixation>";
+	nextscreen = setTimeout(savedata, 1000);
+}
+
 function savedata() {
 	endTime = new Date();
 	if (mysetup[listc-1]['overlap'] == "True") {
@@ -151,25 +164,21 @@ function savedata() {
 	if ((mysetup[listc-1]["us_duration"] != "NA - Habituation") && (mysetup[listc-2]["us_duration"] == "NA - Habituation")) {
 		nextscreen = "instructions";
 		instructions(textlist["2"]);
+	} else if (mysetup.length < listc) {
+		runEnd();
 	} else {
 		runFixation();
 	}
 }
 
-function stopAction() {
-	if (listc == 1) {
-		listc = 2;
-		continueAction();
-	}
-	else {
-	stopRecording();
-	prestext.innerHTML = '<ol id="recordingsList"></ol>';
-	}
+function runEnd() {
+	prestext.innerHTML = "<stimPres>" +
+		"End OF TASK </br> </br> Please use the unique completion code below to finish the MTurk task." +
+		"</br> </br>" + userid +
+		"</stimPres>";
 }
 
 function continueAction() {
-	// if (listc == 1 || listc == 2 || listc == 3) {
-	// 	instructions();
 	if ((mysetup[listc-1]["us_stimulus_name"] == "NA - Habituation") && (nextscreen == "instructions")) {
 		instructions(textlist["1"]);
 	} else if ((mysetup[listc-1]["us_stimulus_name"] != "NA - Habituation") && (nextscreen == "trial")) {
@@ -180,38 +189,6 @@ function continueAction() {
 	}
 }
 
-function breakPoint() {
-	prestext.innerHTML = "<stimPres>" +
-		"RECALL" +
-		"</stimPres>" +
-		"<body>" +
-		"Press END RECORDING when finished" +
-		"</body>" +
-		'<button id="endButton">END RECORDING</button>';
-	endButton = document.getElementById("endButton");
-	endButton.addEventListener("click", stopAction);
-}
-
 function post(data) {
-	$.post("https://kvdb.io/Esn5VWYAVdk9WQDs3KA83/test", JSON.stringify(data));
+	$.post("https://kvdb.io/Esn5VWYAVdk9WQDs3KA83/" + userid, JSON.stringify(data));
 }
-
-// $.postJSON = function(data) {
-// 	token = '7f5e32e2bb' + '3534fa88074cf1' + '1d3653686faf422f'
-// 	uploadurl = "https://api.github.com/repos/kjlafoll/kjlafoll.github.io";
-// 	$.ajax({
-// 		url: uploadurl,
-// 		type: 'POST',
-// 		headers: {
-// 			Authorization: 'token ' + token
-// 		},
-// 		data: data,
-// 		dataType: 'json',
-// 		success: function(data, textStatus, xhr){
-// 			console.log(data);
-// 		},
-// 		error: function(xhr, textStatus, errorThrown){
-// 			console.log(xhr);
-// 		}
-// 	});
-// }
