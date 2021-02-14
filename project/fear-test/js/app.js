@@ -34,11 +34,9 @@ document.addEventListener('keyup', event => {
 		endTime = new Date();
 		if (action == "True") {
 			rtlist.push(endTime - usTime);
-			console.log(rtlist.length);
 			clearTimeout(nextscreen);
 			duration = 0.2;
-			postus = setTimeout(savedata, 1000*duration);
-			console.log('response');
+			postus = setTimeout(runFeedback, 1000*duration);
 		} else {
 			fslist.push(endTime - startTime);
 			console.log('false start');
@@ -124,13 +122,10 @@ function runUS() {
 }
 
 function runFeedback() {
-	console.log(rtlist.length)
 	if (rtlist.length == 1) {
 		text = "GOOD";
-		console.log("good");
 	} else {
 		text = "NO RESPONSE";
-		console.log("nr");
 	}
 	if (fslist.length != 0) {
 		text = text + "</br> FALSE START DETECTED EARLIER";
