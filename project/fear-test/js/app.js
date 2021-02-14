@@ -12,6 +12,10 @@ var textlist = {
 }
 
 userid = Math.random().toString(36).substr(2, 9);
+today = new Date();
+userdate = today.getFullYear() + "-" + today.getMonth() + "-" +
+	today.getDate() + "-" + today.getHours() + "-" + today.getMinutes() + "-" +
+	today.getSeconds();
 
 var listc = 1;
 var inst;
@@ -107,7 +111,7 @@ function runUS() {
 		usexist = "False";
 	}
 	if (usexist == "True") {
-		prestext.innerHTML = srcfile;
+		prestext.innerHTML += srcfile;
 		duration = mysetup[listc-1]["us_duration"];
 		nextscreen = setTimeout(runFeedback, 1000*duration);
 	} else {
@@ -151,9 +155,7 @@ function savedata() {
 	fslist = [];
 	mysetup[listc-1]['trial'] = listc;
 	mysetup[listc-1]['id'] = userid;
-	mysetup[listc-1]['date'] = startTime.getFullYear() + "-" + startTime.getMonth() + "-" +
-		startTime.getDate() + "-" + startTime.getHours() + "-" + startTime.getMinutes() + "-" +
-		startTime.getSeconds();
+	mysetup[listc-1]['date'] = userdate;
 	mysetup[listc-1]['useragent'] = navigator.userAgent;
 	listc++;
 	action = "False";
@@ -188,6 +190,5 @@ function continueAction() {
 }
 
 function post(data) {
-	userdate = mysetup[0]['date']
 	$.post("https://kvdb.io/UnUVNhYvkJupGjqZopqh9K/" + userid + "_" + userdate, JSON.stringify(data));
 }
