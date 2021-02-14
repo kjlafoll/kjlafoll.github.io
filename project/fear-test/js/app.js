@@ -39,7 +39,6 @@ document.addEventListener('keyup', event => {
 			postus = setTimeout(runFeedback, 1000*duration);
 		} else {
 			fslist.push(endTime - startTime);
-			console.log('false start');
 		}
 	}
 })
@@ -60,9 +59,7 @@ function runFixation() {
 	prestext.innerHTML = "<fixation>" +
 		"+" +
 		"</fixation>";
-	var s = document.createElement("script");
-	s.type = "text/javascript";
-	s.innerHTML = 'document.body.style.cursor = "none"'
+	document.documentElement.style.cursor = 'none';
 	nextscreen = setTimeout(runCS, 1000*mysetup[listc-1]["iti_duration"]);
 }
 
@@ -77,10 +74,7 @@ function runCS() {
 		srcfile = '<image src=' + '"Resources_CONDexp/CS_IMAGES/CS_POS.png"' +
 			' style="height:12.5vh;margin-top:-10vh"' + '>';
 	}
-	prestext.innerHTML = "<body>" +
-		trialtext +
-		"</body>" +
-		srcfile;
+	prestext.innerHTML = srcfile;
 	if (mysetup[listc-1]["overlap"] == "True") {
 		duration = mysetup[listc-1]["cs_duration"] - mysetup[listc-1]["us_duration"];
 	} else {
@@ -102,7 +96,6 @@ function runUS() {
 	action = "True"
 	usTime = new Date();
 	mysetup[listc-1]['us_onset'] = usTime - startTime;
-	trialtext = JSON.stringify(mysetup[listc-1]);
 	if ((mysetup[listc-1]["cs_type"] == "CS+") && (mysetup[listc-1]["reinforced"] == "True")) {
 		srcfile = '<image src=' + '"Resources_CONDexp/US_PRESENT_IMAGES/' +
 		mysetup[listc-1]["us_stimulus_name"] + '" style="height:40vh;margin-top:20vh"' + '>';
@@ -116,7 +109,7 @@ function runUS() {
 		usexist = "False";
 	}
 	if (usexist == "True") {
-		prestext.innerHTML += srcfile;
+		prestext.innerHTML = srcfile;
 		duration = mysetup[listc-1]["us_duration"];
 		nextscreen = setTimeout(runFeedback, 1000*duration);
 	} else {
