@@ -34,6 +34,7 @@ document.addEventListener('keyup', event => {
 		endTime = new Date();
 		if (action == "True") {
 			rtlist.push(endTime - usTime);
+			console.log(rtlist.length);
 			clearTimeout(nextscreen);
 			duration = 0.2;
 			postus = setTimeout(savedata, 1000*duration);
@@ -123,6 +124,7 @@ function runUS() {
 }
 
 function runFeedback() {
+	console.log(rtlist.length)
 	if (rtlist.length == 1) {
 		text = "GOOD";
 		console.log("good");
