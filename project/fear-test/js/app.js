@@ -59,20 +59,18 @@ function runFixation() {
 	prestext.innerHTML = "<fixation>" +
 		"+" +
 		"</fixation>";
-	document.documentElement.style.cursor = 'none';
 	nextscreen = setTimeout(runCS, 1000*mysetup[listc-1]["iti_duration"]);
 }
 
 function runCS() {
 	endTime = new Date();
 	mysetup[listc-1]['cs_onset'] = endTime - startTime;
-	trialtext = JSON.stringify(mysetup[listc-1]);
 	if (mysetup[listc-1]["cs_type"] == "CS-") {
 		srcfile = '<image src=' + '"Resources_CONDexp/CS_IMAGES/CS_NEG.png"' +
-			' style="height:12.5vh;margin-top:-10vh"' + '>';
+			' style="height:12.5vh;margin-top:-15vh"' + '>';
 	} else if (mysetup[listc-1]["cs_type"] == "CS+") {
 		srcfile = '<image src=' + '"Resources_CONDexp/CS_IMAGES/CS_POS.png"' +
-			' style="height:12.5vh;margin-top:-10vh"' + '>';
+			' style="height:12.5vh;margin-top:-15vh"' + '>';
 	}
 	prestext.innerHTML = srcfile;
 	if (mysetup[listc-1]["overlap"] == "True") {
@@ -98,10 +96,10 @@ function runUS() {
 	mysetup[listc-1]['us_onset'] = usTime - startTime;
 	if ((mysetup[listc-1]["cs_type"] == "CS+") && (mysetup[listc-1]["reinforced"] == "True")) {
 		srcfile = '<image src=' + '"Resources_CONDexp/US_PRESENT_IMAGES/' +
-		mysetup[listc-1]["us_stimulus_name"] + '" style="height:40vh;margin-top:20vh"' + '>';
+		mysetup[listc-1]["us_stimulus_name"] + '" style="height:40vh;margin-top:15vh"' + '>';
 	} else if ((mysetup[listc-1]["cs_type"] == "CS-") && (mysetup[listc-1]["reinforced"] == "True")) {
 		srcfile = '<image src=' + '"Resources_CONDexp/US_ABSENT_IMAGES/' +
-		mysetup[listc-1]["us_stimulus_name"] + '" style="height:40vh;margin-top:20vh"' + '>';
+		mysetup[listc-1]["us_stimulus_name"] + '" style="height:40vh;margin-top:15vh"' + '>';
 	} else {
 		mysetup[listc-1]["us_onset"] = "NA - Habituation";
 		mysetup[listc-1]["us_rt"] = "NA - Habituation";
