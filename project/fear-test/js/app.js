@@ -60,6 +60,9 @@ function runFixation() {
 	prestext.innerHTML = "<fixation>" +
 		"+" +
 		"</fixation>";
+	var s = document.createElement("script");
+	s.type = "text/javascript";
+	s.innerHTML = 'document.body.style.cursor = "none"'
 	nextscreen = setTimeout(runCS, 1000*mysetup[listc-1]["iti_duration"]);
 }
 
