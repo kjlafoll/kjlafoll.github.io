@@ -21,6 +21,7 @@ var listc = 1;
 var inst;
 var img;
 var action = "False";
+var clickAction = "False";
 var startTime; var endTime; var usTime;
 var fslist = [];
 var rtlist = [];
@@ -47,7 +48,22 @@ document.addEventListener('keyup', event => {
 	}
 })
 
+document.addEventListener('click', event => {
+	if (clickAction == "True") {
+		endTime = new Date();
+		if (action == "True") {
+			rtlist.push(endTime - usTime);
+			clearTimeout(nextscreen);
+			duration = 0.2;
+			postus = setTimeout(runFeedback, 1000*duration);
+		} else {
+			fslist.push(endTime - startTime);
+		}
+	}
+})
+
 function instructions(text) {
+	clickAction = "False";
 	prestext.innerHTML = "<stimPres>" +
 	text +
 	"</stimPres>" +
@@ -60,6 +76,7 @@ function instructions(text) {
 }
 
 function runFixation() {
+	clickAction = "True";
 	prestext.innerHTML = "<fixation>" +
 		"+" +
 		"</fixation>";
