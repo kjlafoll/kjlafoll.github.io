@@ -125,15 +125,18 @@ function runUS() {
 function runFeedback() {
 	if (rtlist.length == 1) {
 		text = "GOOD";
+		console.log("good");
 	} else {
 		text = "NO RESPONSE";
+		console.log("nr");
 	}
 	if (fslist.length != 0) {
-		text = text + "</br> FALSE START DETECTED EARLIER"
+		text = text + "</br> FALSE START DETECTED EARLIER";
 	}
-	prestext.innerHTML = "<fixation>" +
+	prestext.innerHTML = "<stimPres>" +
+		"</br> </br> </br>" +
 		text +
-		"</fixation>";
+		"</stimPres>";
 	nextscreen = setTimeout(savedata, 1000);
 }
 
@@ -179,6 +182,7 @@ function runEnd() {
 
 function continueAction() {
 	if ((mysetup[listc-1]["us_stimulus_name"] == "NA - Habituation") && (nextscreen == "instructions")) {
+		startTime = new Date();
 		instructions(textlist["1"]);
 	} else if ((mysetup[listc-1]["us_stimulus_name"] != "NA - Habituation") && (nextscreen == "trial")) {
 		startTime = new Date();
