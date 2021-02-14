@@ -51,8 +51,7 @@ function instructions(text) {
 	"</stimPres>" +
 	'<div id="controls">' +
   '<button id="continueButton">Continue</button>' +
-  '</div>' +
-	'<a class="link-to-download" href="download" download="export.json">Export</a>';
+  '</div>';
   var continueButton = document.getElementById("continueButton");
   continueButton.addEventListener("click", continueAction);
 	nextscreen = "trial";
@@ -117,7 +116,7 @@ function runUS() {
 	if (usexist == "True") {
 		prestext.innerHTML += srcfile;
 		duration = mysetup[listc-1]["us_duration"];
-		nextscreen = setTimeout(savedata, 1000*duration);
+		nextscreen = setTimeout(runFeedback, 1000*duration);
 	} else {
 		savedata();
 	}
