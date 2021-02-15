@@ -195,6 +195,9 @@ function runEnd() {
 }
 
 function continueAction() {
+	if (mysetup == null) {
+		mysetup = JSON.parse(localStorage.getItem('mysetup'));
+	}
 	if ((mysetup[listc-1]["us_stimulus_name"] == "NA - Habituation") && (nextscreen == "instructions")) {
 		startTime = new Date();
 		instructions(textlist["1"]);
