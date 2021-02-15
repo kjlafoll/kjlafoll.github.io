@@ -26,10 +26,10 @@ var startTime; var endTime; var usTime;
 var fslist = [];
 var rtlist = [];
 
+var mysetup = JSON.parse(localStorage.getItem('mysetup'));
 var continueButton = document.getElementById("continueButton");
 var prestext = document.getElementById("screen");
 var endButton;
-var mysetup = JSON.parse(localStorage.getItem('mysetup'));
 var nextscreen = "instructions";
 
 continueButton.addEventListener("click", continueAction);
