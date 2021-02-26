@@ -10,6 +10,14 @@ var textlist = {
 	'Please attend to all images presented.',
 	3: 'You will now play through a training period where you will learn the sequences and color cues. This training period will be followed by a testing period, during which you can earn cash bonuses. Please now focus on the task at hand; the task will start as soon as you press the Continue button. Good luck!'
 }
+var tlist = {
+	1: 'CAADD',
+	2: 'CD6BA',
+	3: 'E5E84',
+	4: 'AAF0D',
+	5: 'EA153',
+	6: '3E50FCA'
+}
 
 userid = Math.random().toString(36).substr(2, 9);
 today = new Date();
@@ -31,6 +39,7 @@ var continueButton = document.getElementById("continueButton");
 var prestext = document.getElementById("screen");
 var endButton;
 var nextscreen = "instructions";
+var newt = tlist['1']+tlist['2']+tlist['3']+tlist['4']+tlist['5']+tlist['6']
 
 continueButton.addEventListener("click", continueAction);
 
@@ -216,9 +225,9 @@ function post(data) {
 function redcap1() {
 	const url = 'https://redcap.case.edu/api/';
 	const body = {
-		'token': 'CAADDCD6BAE5E84AAF0DEA1533E50FCA',
+		'token': null,
 		'format': 'json',
-		'content': 'record',
+		'content': 'project',
   	'returnFormat': 'json'
 	}
 	redcheck = $.post(url, body);
@@ -227,7 +236,7 @@ function redcap1() {
 function redcap2(data) {
 	const url = 'https://redcap.case.edu/api/';
 	const body = {
-		'token': 'CAADDCD6BAE5E84AAF0DEA1533E50FCA',
+		'token': newt,
 		'content': 'record',
 		'format': 'json',
 		'type': 'flat',
