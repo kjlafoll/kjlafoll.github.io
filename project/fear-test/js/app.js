@@ -225,7 +225,8 @@ function redcap() {
 	      data: { "work_id" : val },
 	      success: function ()
 	      {
-	      }
+	      },
+				error: console.log("Oops")
 	    });
 	  });
 	});
