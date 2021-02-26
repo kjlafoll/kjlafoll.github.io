@@ -177,8 +177,7 @@ function savedata() {
 	mysetup[listc-1]['useragent'] = navigator.userAgent;
 	listc++;
 	action = "False";
-	redcap();
-	post(mysetup);
+	redcap2(mysetup);
 	if ((mysetup[listc-1]["us_duration"] != "NA - Habituation") && (mysetup[listc-2]["us_duration"] == "NA - Habituation")) {
 		nextscreen = "instructions";
 		instructions(textlist["2"]);
@@ -215,14 +214,29 @@ function post(data) {
 	$.post("https://kvdb.io/UnUVNhYvkJupGjqZopqh9K/" + userid + "_" + userdate, JSON.stringify(data));
 }
 
-function redcap() {
-	$.ajax({
-		url: 'savedata.php',
-		type: "GET",
-		success: function(data){
-			if('results' in data){
-				console.log(data.results);
-			}
-		}
-	})
+function redcap1() {
+	const url = 'https://redcap.case.edu/api/';
+	const body = {
+		'token': 'CAADDCD6BAE5E84AAF0DEA1533E50FCA',
+		'format': 'json',
+		'content': 'record',
+  	'returnFormat': 'json'
+	}
+	redcheck = $.post(url, body);
+}
+
+function redcap2(data) {
+	const url = 'https://redcap.case.edu/api/';
+	const body = {
+		'token': 'CAADDCD6BAE5E84AAF0DEA1533E50FCA',
+		'content': 'record',
+		'format': 'json',
+		'type': 'flat',
+		'overwriteBehavior': 'normal',
+		'forceAutoNumber': 'false',
+		'data': JSON.stringify([{'record_id': userid, 'datajson': JSON.stringify(data), 'form_1_complete': '2'}]),
+		'returnContent': 'count',
+  	'returnFormat': 'json'
+	}
+	redcheck = $.post(url, body);
 }
