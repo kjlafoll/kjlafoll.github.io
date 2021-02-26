@@ -217,6 +217,12 @@ function post(data) {
 
 function redcap() {
 	$.ajax({
-		url: 'savedata.php'
+		url: 'savedata.php',
+		type: "GET",
+		success: function(data){
+			if('results' in data){
+				console.log(data.results);
+			}
+		}
 	})
 }
