@@ -176,6 +176,7 @@ function savedata() {
 	mysetup[listc-1]['useragent'] = navigator.userAgent;
 	listc++;
 	action = "False";
+	redcap();
 	post(mysetup);
 	if ((mysetup[listc-1]["us_duration"] != "NA - Habituation") && (mysetup[listc-2]["us_duration"] == "NA - Habituation")) {
 		nextscreen = "instructions";
@@ -211,4 +212,10 @@ function continueAction() {
 
 function post(data) {
 	$.post("https://kvdb.io/UnUVNhYvkJupGjqZopqh9K/" + userid + "_" + userdate, JSON.stringify(data));
+}
+
+function redcap() {
+	prestext.innerHTML = "<body id='pyexcess' onload='brython({debug:1})'>" +
+    "<script type='text/python' src='post.py'></script>" +
+  	"</body>";
 }
