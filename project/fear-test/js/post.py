@@ -8,6 +8,8 @@ data = {
 	'format': 'json',
 	'returnFormat': 'json'
 }
-r= requests.post('https://redcap.case.edu/api/', data=data)
-print('HTTP Status: ' + str(r.status_code))
-print(r.json())
+
+if __name__ == '__main__':
+	r= requests.post('https://redcap.case.edu/api/', data=data)
+	storage['getRED'] = json.dumps(r)
+	print(storage['getRED'])
