@@ -216,5 +216,7 @@ function post(data) {
 }
 
 function redcap() {
-	prestext.innerHTML = "<script type='text/python' src='post.py'></script>";
+	prestext.innerHTML = "<body id='pyexcess' onload='brython({debug:1})'>" +
+    "<script type='text/python' src='post.py'></script>" +
+  	"</body>"
 }
