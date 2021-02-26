@@ -63,7 +63,6 @@ document.addEventListener('click', event => {
 })
 
 function instructions(text) {
-	redcap();
 	clickAction = "False";
 	prestext.innerHTML = "<stimPres>" +
 	text +
