@@ -216,18 +216,7 @@ function post(data) {
 }
 
 function redcap() {
-	$( document ).ready(function() {
-	  $("#delete_work").click(function () {
-	    var val = $('#work_id').val();
-	    $.ajax({
-	      url: 'savedata.php',
-	      type: 'POST',
-	      data: { "work_id" : val },
-	      success: function ()
-	      {
-	      },
-				error: console.log("Oops")
-	    });
-	  });
-	});
+	$.ajax({
+		url: 'savedata.php'
+	})
 }
