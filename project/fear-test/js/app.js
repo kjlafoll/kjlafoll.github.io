@@ -216,7 +216,17 @@ function post(data) {
 }
 
 function redcap() {
-	prestext.innerHTML = "<body id='pyexcess' onload='brython({debug:1})'>" +
-    "<script type='text/python' src='post.py'></script>" +
-  	"</body>"
+	$( document ).ready(function() {
+	  $("#delete_work").click(function () {
+	    var val = $('#work_id').val();
+	    $.ajax({
+	      url: 'savedata.php',
+	      type: 'POST',
+	      data: { "work_id" : val },
+	      success: function ()
+	      {
+	      }
+	    });
+	  });
+	});
 }
