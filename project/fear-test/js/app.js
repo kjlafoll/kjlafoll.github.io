@@ -1,6 +1,7 @@
 //webkitURL is deprecated but nevertheless
 URL = window.URL || window.webkitURL;
 var dotenv = require('dotenv');
+console.log(dotenv.process.env.AUTH_TOKEN);
 
 var textlist = {
 	1: 'You will now see four simple shapes. </br>' +
