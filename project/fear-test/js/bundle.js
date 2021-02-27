@@ -720,10 +720,12 @@ process.chdir = function (dir) {
 process.umask = function() { return 0; };
 
 },{}],4:[function(require,module,exports){
+(function (process){(function (){
 //webkitURL is deprecated but nevertheless
 URL = window.URL || window.webkitURL;
-var dotenv = require('dotenv');
-console.log(dotenv.process.env.AUTH_TOKEN);
+var dotenv = require('dotenv').config();
+const tok = process.env.AUTH_TOKEN;
+console.log(process.env.AUTH_TOKEN);
 
 var textlist = {
 	1: 'You will now see four simple shapes. </br>' +
@@ -973,7 +975,8 @@ function redcap2(data) {
 	redcheck = $.post(url, body);
 }
 
-},{"dotenv":5}],5:[function(require,module,exports){
+}).call(this)}).call(this,require('_process'))
+},{"_process":3,"dotenv":5}],5:[function(require,module,exports){
 (function (process){(function (){
 /* @flow */
 /*::
