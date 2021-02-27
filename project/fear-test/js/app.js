@@ -1,5 +1,7 @@
 //webkitURL is deprecated but nevertheless
 URL = window.URL || window.webkitURL;
+
+var process = require('process');
 var dotenv = require('dotenv').config();
 const tok = process.env.AUTH_TOKEN;
 console.log(process.env.AUTH_TOKEN);
