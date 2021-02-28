@@ -19,7 +19,12 @@ var tlist = {
 	6: '3E50FCA'
 }
 
-userid = Math.random().toString(36).substr(2, 9);
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('PID') !== null) {
+	userid = urlParams.get('PID');
+} else {
+	userid = Math.random().toString(36).substr(2, 9);
+}
 today = new Date();
 userdate = today.getFullYear() + "-" + today.getMonth() + "-" +
 	today.getDate() + "-" + today.getHours() + "-" + today.getMinutes() + "-" +
@@ -242,7 +247,7 @@ function redcap2(data) {
 		'type': 'flat',
 		'overwriteBehavior': 'normal',
 		'forceAutoNumber': 'false',
-		'data': JSON.stringify([{'record_id': userid, 'datajson': JSON.stringify(data), 'form_1_complete': '2'}]),
+		'data': JSON.stringify([{'record_id': userid, 'json_data': JSON.stringify(data), 'fear_conditioning_complete': '2'}]),
 		'returnContent': 'count',
   	'returnFormat': 'json'
 	}
