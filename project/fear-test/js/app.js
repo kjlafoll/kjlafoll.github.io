@@ -25,6 +25,7 @@ if (urlParams.get('PID') !== null) {
 } else {
 	userid = Math.random().toString(36).substr(2, 9);
 }
+compcode = Math.random().toString(36).substr(2, 9);
 today = new Date();
 userdate = today.getFullYear() + "-" + today.getMonth() + "-" +
 	today.getDate() + "-" + today.getHours() + "-" + today.getMinutes() + "-" +
@@ -203,8 +204,8 @@ function savedata() {
 
 function runEnd() {
 	prestext.innerHTML = "<stimPres>" +
-		"End OF TASK </br> </br> Please use the unique completion code below to finish the MTurk task." +
-		"</br> </br>" + userid +
+		"END OF TASK </br> </br> Please use the unique completion code below to finish the MTurk task." +
+		"</br> </br>" + compcode +
 		"</stimPres>";
 }
 
@@ -247,7 +248,7 @@ function redcap2(data) {
 		'type': 'flat',
 		'overwriteBehavior': 'normal',
 		'forceAutoNumber': 'false',
-		'data': JSON.stringify([{'record_id': userid, 'json_data': JSON.stringify(data), 'fear_conditioning_complete': '2'}]),
+		'data': JSON.stringify([{'record_id': userid, 'json_data': JSON.stringify(data), 'hidden_code': compcode, 'fear_conditioning_complete': '2'}]),
 		'returnContent': 'count',
   	'returnFormat': 'json'
 	}
