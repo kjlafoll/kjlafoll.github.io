@@ -248,7 +248,7 @@ function redcap2(data) {
 		'type': 'flat',
 		'overwriteBehavior': 'normal',
 		'forceAutoNumber': 'false',
-		'data': JSON.stringify([{'record_id': userid, 'json_data': JSON.stringify(data), 'hidden_code': compcode, 'fear_conditioning_complete': '2'}]),
+		'data': JSON.stringify([{'record_id': userid, 'json_data': JSON.stringify(data), 'hidden_code': compcode, 'fear_conditioning_data_complete': '2'}]),
 		'returnContent': 'count',
   	'returnFormat': 'json'
 	}
