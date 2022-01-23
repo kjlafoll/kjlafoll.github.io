@@ -43,8 +43,8 @@ function stopAction() {
 		continueAction();
 	}
 	else {
-	stopRecording();
-	prestext.innerHTML = '<ol id="recordingsList"></ol>';
+		stopRecording();
+		prestext.innerHTML = '<ol id="recordingsList"></ol>';
 	}
 }
 
