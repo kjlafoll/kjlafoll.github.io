@@ -56,7 +56,7 @@ document.addEventListener('keyup', event => {
 			rtlist.push(endTime - usTime);
 			clearTimeout(nextscreen);
 			duration = 0.2;
-			postus = setTimeout(runFeedback, 1000*duration);
+			postus = setTimeout(runFeedback, 1000 * duration);
 		} else {
 			fslist.push(endTime - startTime);
 		}
@@ -70,7 +70,7 @@ document.addEventListener('click', event => {
 			rtlist.push(endTime - usTime);
 			clearTimeout(nextscreen);
 			duration = 0.2;
-			postus = setTimeout(runFeedback, 1000*duration);
+			postus = setTimeout(runFeedback, 1000 * duration);
 		} else {
 			fslist.push(endTime - startTime);
 		}
@@ -80,72 +80,70 @@ document.addEventListener('click', event => {
 function instructions(text) {
 	clickAction = "False";
 	prestext.innerHTML = "<stimPres>" +
-	text +
-	"</stimPres>" +
-	'<div id="controls">' +
-  '<button id="continueButton">Continue</button>' +
-  '</div>';
-  var continueButton = document.getElementById("continueButton");
-  continueButton.addEventListener("click", continueAction);
+						 text +
+						 "</stimPres>" +
+						 '<div id="controls">' +
+						 '<button id="continueButton">Continue</button>' +
+						 '</div>';
+    var continueButton = document.getElementById("continueButton");
+    continueButton.addEventListener("click", continueAction);
 	nextscreen = "trial";
 }
 
 function runFixation() {
 	clickAction = "True";
-	prestext.innerHTML = "<fixation>" +
-		"+" +
-		"</fixation>";
-	nextscreen = setTimeout(runCS, 1000*mysetup[listc-1]["iti_duration"]);
+	prestext.innerHTML = "<fixation>" + "+" + "</fixation>";
+	nextscreen = setTimeout(runCS, 1000 * mysetup[listc - 1]["iti_duration"]);
 }
 
 function runCS() {
 	endTime = new Date();
-	mysetup[listc-1]['cs_onset'] = endTime - startTime;
-	if (mysetup[listc-1]["cs_type"] == "CS-") {
+	mysetup[listc - 1]['cs_onset'] = endTime - startTime;
+	if (mysetup[listc - 1]["cs_type"] == "CS-") {
 		srcfile = '<image src=' + '"Resources_CONDexp/CS_IMAGES/CS_NEG.png"' +
 			' style="height:12.5vh;margin-top:-15vh"' + '>';
-	} else if (mysetup[listc-1]["cs_type"] == "CS+") {
+	} else if (mysetup[listc - 1]["cs_type"] == "CS+") {
 		srcfile = '<image src=' + '"Resources_CONDexp/CS_IMAGES/CS_POS.png"' +
 			' style="height:12.5vh;margin-top:-15vh"' + '>';
 	}
 	prestext.innerHTML = srcfile;
-	if (mysetup[listc-1]["overlap"] == "True") {
-		duration = mysetup[listc-1]["cs_duration"] - mysetup[listc-1]["us_duration"];
+	if (mysetup[listc - 1]["overlap"] == "True") {
+		duration = mysetup[listc - 1]["cs_duration"] - mysetup[listc - 1]["us_duration"];
 	} else {
-		duration = mysetup[listc-1]["cs_duration"];
+		duration = mysetup[listc - 1]["cs_duration"];
 	}
-	nextscreen = setTimeout(runUS, 1000*duration);
+	nextscreen = setTimeout(runUS, 1000 * duration);
 }
 
 function runTI() {
-	trialtext = JSON.stringify(mysetup[listc-1]);
+	trialtext = JSON.stringify(mysetup[listc - 1]);
 	prestext.innerHTML = "<body>" +
 		trialtext +
 		"</body>";
-	nextscreen = setTimeout(runUS, 1000*mysetup[listc-1]["traceinterval_duration"]);
+	nextscreen = setTimeout(runUS, 1000 * mysetup[listc - 1]["traceinterval_duration"]);
 }
 
 function runUS() {
 	usexist = "True"
 	action = "True"
 	usTime = new Date();
-	mysetup[listc-1]['us_onset'] = usTime - startTime;
-	if ((mysetup[listc-1]["cs_type"] == "CS+") && (mysetup[listc-1]["reinforced"] == "True")) {
+	mysetup[listc - 1]['us_onset'] = usTime - startTime;
+	if ((mysetup[listc - 1]["cs_type"] == "CS+") && (mysetup[listc - 1]["reinforced"] == "True")) {
 		srcfile = '<image src=' + '"Resources_CONDexp/US_PRESENT_IMAGES/' +
-		mysetup[listc-1]["us_stimulus_name"] + '" style="height:40vh;margin-top:15vh"' + '>';
-	} else if ((mysetup[listc-1]["cs_type"] == "CS-") && (mysetup[listc-1]["reinforced"] == "True")) {
+		mysetup[listc - 1]["us_stimulus_name"] + '" style="height:40vh;margin-top:15vh"' + '>';
+	} else if ((mysetup[listc - 1]["cs_type"] == "CS-") && (mysetup[listc - 1]["reinforced"] == "True")) {
 		srcfile = '<image src=' + '"Resources_CONDexp/US_ABSENT_IMAGES/' +
-		mysetup[listc-1]["us_stimulus_name"] + '" style="height:40vh;margin-top:15vh"' + '>';
+		mysetup[listc - 1]["us_stimulus_name"] + '" style="height:40vh;margin-top:15vh"' + '>';
 	} else {
-		mysetup[listc-1]["us_onset"] = "NA - Habituation";
-		mysetup[listc-1]["us_rt"] = "NA - Habituation";
-		mysetup[listc-1]["us_offset"] = "NA - Habituation";
+		mysetup[listc - 1]["us_onset"] = "NA - Habituation";
+		mysetup[listc - 1]["us_rt"] = "NA - Habituation";
+		mysetup[listc - 1]["us_offset"] = "NA - Habituation";
 		usexist = "False";
 	}
 	if (usexist == "True") {
 		prestext.innerHTML += srcfile;
-		duration = mysetup[listc-1]["us_duration"];
-		nextscreen = setTimeout(runFeedback, 1000*duration);
+		duration = mysetup[listc - 1]["us_duration"];
+		nextscreen = setTimeout(runFeedback, 1000 * duration);
 	} else {
 		savedata();
 	}
@@ -169,30 +167,30 @@ function runFeedback() {
 
 function savedata() {
 	endTime = new Date();
-	if (mysetup[listc-1]['overlap'] == "True") {
-		mysetup[listc-1]['cs_offset'] = endTime - startTime;
+	if (mysetup[listc - 1]['overlap'] == "True") {
+		mysetup[listc - 1]['cs_offset'] = endTime - startTime;
 	}
-	mysetup[listc-1]['us_offset'] = endTime - startTime;
+	mysetup[listc - 1]['us_offset'] = endTime - startTime;
 	if (rtlist.length == 0) {
-		mysetup[listc-1]['us_rt'] = "NR";
+		mysetup[listc - 1]['us_rt'] = "NR";
 	} else {
-		mysetup[listc-1]['us_rt'] = rtlist;
+		mysetup[listc - 1]['us_rt'] = rtlist;
 	}
 	if (fslist.length == 0) {
-		mysetup[listc-1]['fs_response_time'] = "NA";
+		mysetup[listc - 1]['fs_response_time'] = "NA";
 	} else {
-		mysetup[listc-1]['fs_response_time'] = fslist;
+		mysetup[listc - 1]['fs_response_time'] = fslist;
 	}
 	rtlist = [];
 	fslist = [];
-	mysetup[listc-1]['trial'] = listc;
-	mysetup[listc-1]['id'] = userid;
-	mysetup[listc-1]['date'] = userdate;
-	mysetup[listc-1]['useragent'] = navigator.userAgent;
+	mysetup[listc - 1]['trial'] = listc;
+	mysetup[listc - 1]['id'] = userid;
+	mysetup[listc - 1]['date'] = userdate;
+	mysetup[listc - 1]['useragent'] = navigator.userAgent;
 	listc++;
 	action = "False";
 	redcap2(mysetup);
-	if ((mysetup[listc-1]["us_duration"] != "NA - Habituation") && (mysetup[listc-2]["us_duration"] == "NA - Habituation")) {
+	if ((mysetup[listc - 1]["us_duration"] != "NA - Habituation") && (mysetup[listc - 2]["us_duration"] == "NA - Habituation")) {
 		nextscreen = "instructions";
 		instructions(textlist["2"]);
 	} else if (mysetup.length == listc) {
@@ -213,13 +211,13 @@ function continueAction() {
 	if (mysetup == null) {
 		mysetup = JSON.parse(localStorage.getItem('mysetup'));
 	}
-	if ((mysetup[listc-1]["us_stimulus_name"] == "NA - Habituation") && (nextscreen == "instructions")) {
+	if ((mysetup[listc - 1]["us_stimulus_name"] == "NA - Habituation") && (nextscreen == "instructions")) {
 		startTime = new Date();
 		instructions(textlist["1"]);
-	} else if ((mysetup[listc-1]["us_stimulus_name"] != "NA - Habituation") && (nextscreen == "trial")) {
+	} else if ((mysetup[listc - 1]["us_stimulus_name"] != "NA - Habituation") && (nextscreen == "trial")) {
 		startTime = new Date();
 		runFixation();
-	} else if ((mysetup[listc-1]["us_stimulus_name"] == "NA - Habituation") && (nextscreen == "trial")) {
+	} else if ((mysetup[listc - 1]["us_stimulus_name"] == "NA - Habituation") && (nextscreen == "trial")) {
 		runFixation();
 	}
 }
