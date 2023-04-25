@@ -10,24 +10,7 @@ data = {'subject_input': 'test',
 		'habit_input': 4
 		}
 
-COLOR_BLACK = [0,0,0]
-COLOR_WHITE = [1,1,1]
-
-FIXATION_SIZE = 40
-FIXATION_COLOR = COLOR_WHITE
-INSTRUCT_SIZE = 20
-INSTRUCT_COLOR = COLOR_WHITE
-LINE_SEP = .025
-CS_SIZE = 0.25
-US_SIZE = 0.25
-CS_POS = {'center_x': 0.25, 'center_y': 0.5}
-US_POS = {'center_x': 0.75, 'center_y': 0.5}
-
 PARTIAL_PERCENT = 0.5
-
-END_TIME = 3
-POSTUS_TIME = 0.2
-STAGEF_TIME = 1
 
 DELAY_TIMES = {
 	"CS_MIN": 8,
@@ -64,16 +47,6 @@ ABSENT_LIST = ['2280.jpg',
 					'8010.jpg',
 					'9120.jpg',
 					'9210.jpg']
-
-DATA_SUBFOLDER = 'ANL_%s/'
-RESOURCE_FOLDER = "Resources_CONDexp/"
-US_PRESENT_FOLDER = "US_PRESENT_IMAGES/"
-US_ABSENT_FOLDER = "US_ABSENT_IMAGES/"
-CS_FOLDER = "CS_IMAGES/"
-CUSTOM_RUN_FOLDER = "CUSTOM_RUNLISTS/"
-CS_POS_NAME = 'CS_POS.png'
-CS_NEG_NAME = 'CS_NEG.png'
-SAVE_NAME = 'ANL_%s-CONDData%s'
 
 def mean(list):
 	return int(sum(list)/len(list))

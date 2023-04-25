@@ -224,21 +224,6 @@ function continueAction() {
 	}
 }
 
-function post(data) {
-	$.post("https://kvdb.io/UnUVNhYvkJupGjqZopqh9K/" + userid + "_" + userdate, JSON.stringify(data));
-}
-
-function redcap1() {
-	const url = 'https://redcap.case.edu/api/';
-	const body = {
-		'token': null,
-		'format': 'json',
-		'content': 'project',
-  	'returnFormat': 'json'
-	}
-	redcheck = $.post(url, body);
-}
-
 function redcap2(data) {
 	const url = 'https://redcap.case.edu/api/';
 	const body = {
