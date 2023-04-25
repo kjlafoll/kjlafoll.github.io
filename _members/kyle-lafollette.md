@@ -3,7 +3,10 @@ name: Kyle LaFollette
 image: images/kyle-lafollette-photo.jpg
 role: phd
 links:
-  home-page: https://janesmith.com
+  email: kjlafoll@case.edu
+  twitter: kjlafoll
+  github: kjlafoll
+  home-page: https://kjlafoll.github.io/
   orcid: 0000-0001-8713-9213
 ---
 
