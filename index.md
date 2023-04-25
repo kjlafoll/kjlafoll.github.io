@@ -1,9 +1,9 @@
 ---
 ---
 
-# kjlafoll's Website
+# The Emotion, Cognition & Computation Mini-Lab
 
-An engaging 1-3 sentence description of your lab.
+In this mini-lab, we explore the interaction between affective and cognitive processes through computational modeling. We use reinforcement learning, sequential sampling, signal detection and Bayesian inference models to elucidate mechanisms for learning, and decision-making. We incorporate insights from behavioral experimentation and psychophysiology.
 
 {% include section.html %}
 
