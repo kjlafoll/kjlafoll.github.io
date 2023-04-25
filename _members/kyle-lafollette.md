@@ -6,7 +6,7 @@ links:
   email: kjlafoll@case.edu
   twitter: kjlafoll
   github: kjlafoll
-  home-page: https://kjlafoll.github.io/
+  google-scholar: E2C564gAAAAJ
   orcid: 0000-0001-8713-9213
 ---
 

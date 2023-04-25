@@ -1,20 +1,20 @@
-- title: Cool Dataset
+- title: Implicit Association Test Mechanisms
   subtitle: a subtitle
   group: featured
-  image: images/photo.jpg
-  link: https://github.com/
-  description: Lorem ipsum _dolor sit amet_, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-  repo: greenelab/lab-website-template
+  image: images/iat-graphic.png
+  # link: https://github.com/
+  description: Using Racing Diffusion Models to identify independent effects of decision-ease and response caution on Implicit Association Tests and explicit preferences.
+  # repo: greenelab/lab-website-template
   tags:
     - resource
 
-- title: Cool Package
+- title: Equation Detection Algorithms for Reinforcement Learning
   subtitle: a subtitle
   group: featured
   image: images/photo.jpg
-  link: https://github.com/
-  description: Lorem ipsum _dolor sit amet_, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-  repo: greenelab/lab-website-template
+  # link: https://github.com/
+  description: Using SINDy (Sparse Identification of Non-linear Dynamics) to recover and discover governing equations for human reinforcement-learning.
+  # repo: greenelab/lab-website-template
   tags:
     - resource
 

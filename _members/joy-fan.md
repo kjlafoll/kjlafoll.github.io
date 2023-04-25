@@ -1,7 +1,7 @@
 ---
 name: Joy Fan
 image: images/photo.jpg
-role: ra
+role: undergrad
 group: alum
 ---
 
