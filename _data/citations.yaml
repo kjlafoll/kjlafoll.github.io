@@ -1,5 +1,117 @@
 # DO NOT EDIT, GENERATED AUTOMATICALLY
 
+- id: E2C564gAAAAJ:inmFHauC9wsC
+  title: 0412 The Association Between PTSD Severity and Insomnia is Mediated by Nightmares
+  authors:
+  - AI Burns
+  - M Ozcan
+  - KC Shepard
+  - K LaFollette
+  - A Alkozei
+  - MA Grandner
+  - '...'
+  publisher: Sleep 42, A167, 2019
+  date: '2019-01-01'
+  link: https://scholar.google.com/citations?view_op=view_citation&hl=en&user=E2C564gAAAAJ&pagesize=100&citation_for_view=E2C564gAAAAJ:inmFHauC9wsC
+  gsid: E2C564gAAAAJ
+  plugin: google-scholar.py
+  file: google-scholar.yaml
+- id: E2C564gAAAAJ:G36d5HCDkJYC
+  title: Judgment of Crowds as Emotional Increases with the Proportion of Black Faces
+  authors:
+  - A Goldenberg
+  - K LaFollette
+  - Z Huang
+  - E Weisz
+  - M Cikara
+  publisher: PsyArXiv, 2022
+  date: '2022-01-01'
+  link: https://scholar.google.com/citations?view_op=view_citation&hl=en&user=E2C564gAAAAJ&pagesize=100&citation_for_view=E2C564gAAAAJ:G36d5HCDkJYC
+  gsid: E2C564gAAAAJ
+  plugin: google-scholar.py
+  file: google-scholar.yaml
+- id: E2C564gAAAAJ:qPeb-qHga9sC
+  title: Incidental discrete emotions influence processes of evidence accumulation
+    in reinforcement-learning
+  authors:
+  - K LaFollette
+  - AE Kotynski
+  - A Merner
+  - R Lim
+  - H Jiang
+  - HA Demaree
+  publisher: Proceedings of the Annual Meeting of the Cognitive Science Society 43
+    (43), 2021
+  date: '2021-01-01'
+  link: https://scholar.google.com/citations?view_op=view_citation&hl=en&user=E2C564gAAAAJ&pagesize=100&citation_for_view=E2C564gAAAAJ:qPeb-qHga9sC
+  gsid: E2C564gAAAAJ
+  plugin: google-scholar.py
+  file: google-scholar.yaml
+- id: E2C564gAAAAJ:17ZO-CJnx_8C
+  title: '0316 Emotion Regulation During Sleep Deprivation and Repeated Physiological
+    Stress: Implications for Motor Skill Learning and Production'
+  authors:
+  - K LaFollette
+  - BC Satterfield
+  - S Esbit
+  - M Lazar
+  - MA Grandner
+  - WD Killgore
+  publisher: Sleep 43, A119, 2020
+  date: '2020-01-01'
+  link: https://scholar.google.com/citations?view_op=view_citation&hl=en&user=E2C564gAAAAJ&pagesize=100&citation_for_view=E2C564gAAAAJ:17ZO-CJnx_8C
+  gsid: E2C564gAAAAJ
+  plugin: google-scholar.py
+  file: google-scholar.yaml
+- id: E2C564gAAAAJ:Tfl4UtY-dJUC
+  title: 0870 Gratitude and Frequency of Naps Predict Resilience for Individuals with
+    PTSD
+  authors:
+  - AI Burns
+  - KC Shepard
+  - M Ozcan
+  - K LaFollette
+  - A Alkozei
+  - JR Vanuk
+  - '...'
+  publisher: Sleep 42 (Supplement_1), A349-A350, 2019
+  date: '2019-01-01'
+  link: https://scholar.google.com/citations?view_op=view_citation&hl=en&user=E2C564gAAAAJ&pagesize=100&citation_for_view=E2C564gAAAAJ:Tfl4UtY-dJUC
+  gsid: E2C564gAAAAJ
+  plugin: google-scholar.py
+  file: google-scholar.yaml
+- id: E2C564gAAAAJ:Nw_I7GeUguwC
+  title: Negative Mood and Poor Sleep are Associated with Altered Moral Reasoning
+    Under Stress
+  authors:
+  - K LaFollette
+  - BC Satterfield
+  - S Esbit
+  - M Lazar
+  - MA Grandner
+  - WD Killgore
+  publisher: Sleep 42, 2019
+  date: '2019-01-01'
+  link: https://scholar.google.com/citations?view_op=view_citation&hl=en&user=E2C564gAAAAJ&pagesize=100&citation_for_view=E2C564gAAAAJ:Nw_I7GeUguwC
+  gsid: E2C564gAAAAJ
+  plugin: google-scholar.py
+  file: google-scholar.yaml
+- id: E2C564gAAAAJ:nWoA1JPTheMC
+  title: 0099 The Effects Of Prior At-home Sleep Duration On Reversal-learning During
+    A" Shoot/No-Shoot" Task
+  authors:
+  - K LaFollette
+  - BC Satterfield
+  - S Esbit
+  - M Lazar
+  - MA Grandner
+  - WDS Killgore
+  publisher: Sleep 42, A40, 2019
+  date: '2019-01-01'
+  link: https://scholar.google.com/citations?view_op=view_citation&hl=en&user=E2C564gAAAAJ&pagesize=100&citation_for_view=E2C564gAAAAJ:nWoA1JPTheMC
+  gsid: E2C564gAAAAJ
+  plugin: google-scholar.py
+  file: google-scholar.yaml
 - id: doi:10.31234/osf.io/ys65p
   title: Judgment of Crowds as Emotional Increases with the Proportion of Black Faces
   authors:
@@ -14,61 +126,3 @@
   orcid: 0000-0003-1388-7387
   plugin: orcid.py
   file: orcid.yaml
-- id: doi:10.1371/journal.pcbi.1007128
-  title: Open collaborative writing with Manubot
-  authors:
-  - Daniel S. Himmelstein
-  - Vincent Rubinetti
-  - David R. Slochower
-  - Dongbo Hu
-  - Venkat S. Malladi
-  - Casey S. Greene
-  - Anthony Gitter
-  publisher: PLOS Computational Biology
-  date: '2020-12-04'
-  link: https://doi.org/c7np
-  type: paper
-  description: Lorem ipsum _dolor_ **sit amet**, consectetur adipiscing elit, sed
-    do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-  image: https://journals.plos.org/ploscompbiol/article/figure/image?size=inline&id=info:doi/10.1371/journal.pcbi.1007128.g001&rev=2
-  buttons:
-  - type: manubot
-    link: https://greenelab.github.io/meta-review/
-  - type: source
-    text: Manuscript Source
-    link: https://github.com/greenelab/meta-review
-  - type: website
-    link: http://manubot.org/
-  tags:
-  - open science
-  - collaboration
-  repo: greenelab/meta-review
-  plugin: sources.py
-  file: sources.yaml
-- id: doi:10.1016/j.csbj.2020.05.017
-  title: Constructing knowledge graphs and their biomedical applications
-  authors:
-  - David N. Nicholson
-  - Casey S. Greene
-  publisher: Computational and Structural Biotechnology Journal
-  date: '2020-01-01'
-  link: https://doi.org/gg7m48
-  image: https://ars.els-cdn.com/content/image/1-s2.0-S2001037020302804-gr1.jpg
-  plugin: sources.py
-  file: sources.yaml
-- id: doi:10.7554/eLife.32822
-  title: Sci-Hub provides access to nearly all scholarly literature
-  authors:
-  - Daniel S Himmelstein
-  - Ariel Rodriguez Romero
-  - Jacob G Levernier
-  - Thomas Anthony Munro
-  - Stephen Reid McLaughlin
-  - Bastian Greshake Tzovaras
-  - Casey S Greene
-  publisher: eLife
-  date: '2018-03-01'
-  link: https://doi.org/ckcj
-  image: https://iiif.elifesciences.org/lax:32822%2Felife-32822-fig8-v3.tif/full/863,/0/default.webp
-  plugin: sources.py
-  file: sources.yaml
