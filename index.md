@@ -22,7 +22,7 @@ Our research focuses on cognitive mechanisms underlying social and emotional dec
 
 {%
   include feature.html
-  image="images/photo.jpg"
+  image="images/projects-photo.jpg"
   link="projects"
   title="Our Projects"
   flip=true
