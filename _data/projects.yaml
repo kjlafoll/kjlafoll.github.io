@@ -1,7 +1,7 @@
 - title: Implicit Association Test Mechanisms
-  subtitle: a subtitle
+  # subtitle: a subtitle
   group: featured
-  image: images/iat-graphic.png
+  image: images/projects/iat-graphic2.png
   # link: https://github.com/
   description: Using Racing Diffusion Models to identify independent effects of decision-ease and response caution on Implicit Association Tests and explicit preferences.
   # repo: greenelab/lab-website-template
@@ -9,21 +9,22 @@
     - resource
 
 - title: Equation Detection Algorithms for Reinforcement Learning
-  subtitle: a subtitle
+  # subtitle: a subtitle
   group: featured
-  image: images/photo.jpg
+  image: images/projects/sindy-graphic.png
   # link: https://github.com/
-  description: Using SINDy (Sparse Identification of Non-linear Dynamics) to recover and discover governing equations for human reinforcement-learning.
+  description: Using SINDy (Sparse Identification of Non-linear Dynamics) to recover and discover governing equations of human reinforcement-learning.
   # repo: greenelab/lab-website-template
   tags:
     - resource
 
-- title: Cool Tutorial
-  subtitle: a subtitle
-  image: images/photo.jpg
-  link: https://github.com/
-  description: Lorem ipsum _dolor sit amet_, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-  repo: greenelab/lab-website-template
+- title: Emotion Recognition Processes Across the Schizophrenia Spectrum
+  # subtitle: a subtitle
+  group: featured
+  image: images/projects/schizotypy-graphic.png
+  # link: https://github.com/
+  description: Using neural representation similarity and diffusion models to explore transdiagnostic cognitive markers of schizotypy.
+  # repo: greenelab/lab-website-template
   tags:
     - resource
     - publication
