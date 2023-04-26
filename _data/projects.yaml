@@ -49,12 +49,12 @@
   group: featured
   image: images/projects/crowd-graphic.png
   # link: https://github.com/
-  description: Using diffusion modeling to determine effects of racial 
+  description: Using diffusion modeling to determine effects of racial composition on controllable vs. automatic processing in the crowd-emotion-amplification effect.
   # repo: greenelab/lab-website-template
   tags:
-    - reinforcement learning
     - sequential sampling
-    - developmental
+    - emotion perception
+    - social cognition
 
 - title: Stress Signals Uncertainty in Random and Directed Exploration
   subtitle: with Heath Demaree
