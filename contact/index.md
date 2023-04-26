@@ -2,14 +2,12 @@
 title: Contact
 nav:
   order: 4
-  tooltip: Questions? Opportunities?
+  tooltip: Join us
 ---
 
 # {% include icon.html icon="fa-regular fa-envelope" %}Contact
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
-nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+If you are an undergraduate interested in computer science, cognitive science, and/or psychology and would like to contribute to our research, please reach out to Kyle via email. Check out the Projects page for ongoing studies.
 
 {%
   include button.html
@@ -18,7 +16,7 @@ nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
   link="kjlafoll@case.edu"
 %}
 
-{% include section.html %}
+<!-- {% include section.html %}
 
 {% capture col1 %}
 
@@ -62,4 +60,4 @@ consectetur adipiscing elit
 sed do eiusmod tempor
 {% endcapture %}
 
-{% include cols.html col1=col1 col2=col2 col3=col3 %}
+{% include cols.html col1=col1 col2=col2 col3=col3 %} -->
