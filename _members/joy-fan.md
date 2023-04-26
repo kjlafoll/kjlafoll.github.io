@@ -2,6 +2,7 @@
 name: Joy Fan
 image: images/photo.jpg
 role: undergrad
+tags: CS
 group: alum
 ---
 
