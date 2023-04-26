@@ -5,41 +5,14 @@
 
 In this mini-lab, we explore the interaction between affective and cognitive processes through computational modeling. We use reinforcement learning, sequential sampling, signal detection and Bayesian inference models to elucidate mechanisms for learning, and decision-making. We incorporate insights from behavioral experimentation and psychophysiology.
 
-{% include section.html %}
-
-## Highlights
-
 {% capture text %}
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-
-{%
-  include button.html
-  link="research"
-  text="See our publications"
-  icon="fa-solid fa-arrow-right"
-  flip=true
-  style="bare"
-%}
-
-{% endcapture %}
-
-{%
-  include feature.html
-  image="images/photo.jpg"
-  link="research"
-  title="Our Research"
-  text=text
-%}
-
-{% capture text %}
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+Our research focuses on cognitive mechanisms underlying social and emotional decision-making, particularly where negative emotions such as anxiety, anger, and sadness are percieved or experienced.
 
 {%
   include button.html
   link="projects"
-  text="Browse our projects"
+  text="Browse studies ongoing with ECCO-ML, Kyle LaFollette, and collaborators"
   icon="fa-solid fa-arrow-right"
   flip=true
   style="bare"
@@ -59,7 +32,7 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor i
 
 {% capture text %}
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+Meet our team. Contact us if you are interested in contributing or collaborating.
 
 {%
   include button.html
