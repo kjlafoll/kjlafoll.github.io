@@ -35,6 +35,11 @@
             {% include icon.html icon=type.icon %}
             <span>{{ member.description | default: type.description }}</span>
           </span>
+          <span class="portrait-major">
+            {% assign type = site.data.types[member.major] %}
+            {% include icon.html icon=type.icon %}
+            <span>{{ member.description | default: type.description }}</span>
+          </span>
         {% endif %}
       </span>
     {% endif %}
