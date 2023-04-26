@@ -1,5 +1,5 @@
 - title: Implicit Association Test Mechanisms
-  # subtitle: a subtitle
+  subtitle: with Doroteja Rubez, Heath Demaree, & Amit Goldenberg
   group: featured
   image: images/projects/iat-graphic2.png
   # link: https://github.com/
@@ -10,7 +10,7 @@
     - social cognition
 
 - title: Equation Detection Algorithms for Reinforcement Learning
-  # subtitle: a subtitle
+  subtitle: with Janni Yuval, Roey Schurr, David Melnikoff, & Amit Goldenberg
   group: featured
   image: images/projects/sindy-graphic.png
   # link: https://github.com/
@@ -21,7 +21,7 @@
     - reinforcement learning
 
 - title: Emotion Recognition Processes Across the Schizophrenia Spectrum
-  # subtitle: a subtitle
+  subtitle: with Elyssa Barrick, Nico Guerra, & Sarah Hope Lincoln
   group: featured
   image: images/projects/schizotypy-graphic.png
   # link: https://github.com/
@@ -33,7 +33,7 @@
     - psychopathology
 
 - title: Computational Accounts for the Emergence of Executive Functioning
-  # subtitle: a subtitle
+  subtitle: with Doroteja Rubez
   group: featured
   # image: images/photo.jpg
   # link: https://github.com/
@@ -45,7 +45,7 @@
     - developmental
 
 - title: Stress Signals Uncertainty in Random and Directed Exploration
-  # subtitle: a subtitle
+  subtitle: with Heath Demaree
   group: featured
   # image: images/photo.jpg
   # link: https://github.com/
@@ -56,7 +56,7 @@
     - psychophysiology
 
 - title: Decision-Making Mechanisms following Exposure to Incidental Emotions
-  # subtitle: a subtitle
+  subtitle: with Heath Demaree
   group: featured
   # image: images/photo.jpg
   # link: https://github.com/
