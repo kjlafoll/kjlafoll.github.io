@@ -1,7 +1,7 @@
 ---
 title: Research
 nav:
-  order: 1
+  order: -1
   tooltip: Published works
 ---
 
