@@ -8,11 +8,11 @@ footer: images/background.jpg
 # site social media and other links
 links:
   email: kjlafoll@case.edu
-  orcid: 0000-0001-8713-9213
-  google-scholar: ETJoidYAAAAJ
+  # orcid: 0000-0001-8713-9213
+  google-scholar: E2C564gAAAAJ
   github: kjlafoll
-  twitter: kjlafoll
-  youtube: kjlafoll
+  twitter: LaFolletteKyle
+  # youtube: kjlafoll
 
 ### jekyll settings
 

@@ -4,7 +4,7 @@ image: images/kyle-lafollette-photo.jpg
 role: phd
 links:
   email: kjlafoll@case.edu
-  twitter: kjlafoll
+  twitter: LaFolletteKyle
   github: kjlafoll
   google-scholar: E2C564gAAAAJ
   orcid: 0000-0001-8713-9213
