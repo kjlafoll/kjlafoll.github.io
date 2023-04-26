@@ -74,9 +74,7 @@ jobs:
           echo "
           # ${{ env.USER }}'s Website
 
-          Visit **[website url](#)** 🚀
-
-          _Built with [Lab Website Template](https://greene-lab.gitbook.io/lab-website-template-docs)_
+          Visit **[website url](#)**
           " > README.md
 
       - name: Personalize Jekyll config for user
