@@ -73,4 +73,9 @@
   top: -2px;
 }
 
+.portrait[data-style=small] .portrait-major .icon {
+  left: -10px;
+  top: -10px;
+}
+
 /*# sourceMappingURL=portrait.css.map */
