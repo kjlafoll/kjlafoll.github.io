@@ -44,6 +44,18 @@
     - sequential sampling
     - developmental
 
+- title: The Influence of Crowd-Race Identity on the Crowd-Emotion-Amplification Effect.
+  subtitle: with Amit Goldenberg, Zi Huang, Erika Weisz, & Mina Cikara
+  group: featured
+  image: images/projects/crowd-graphic.png
+  # link: https://github.com/
+  description: Using diffusion modeling to determine effects of racial 
+  # repo: greenelab/lab-website-template
+  tags:
+    - reinforcement learning
+    - sequential sampling
+    - developmental
+
 - title: Stress Signals Uncertainty in Random and Directed Exploration
   subtitle: with Heath Demaree
   group: featured
