@@ -29,23 +29,26 @@
   # repo: greenelab/lab-website-template
   tags:
     - sequential sampling
-    - emotion recognition
+    - emotion perception
     - psychopathology
 
-- title: Cool Web App
-  subtitle: a subtitle
-  image: images/photo.jpg
-  link: https://github.com/
-  description: Lorem ipsum _dolor sit amet_, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-  repo: greenelab/lab-website-template
+- title: Stress Signals Uncertainty in Random and Directed Exploration
+  # subtitle: a subtitle
+  # image: images/photo.jpg
+  # link: https://github.com/
+  description: Using Thompson sampling and upper confidence bound algorithm to explore assocations between electrodermal activity and explore-exploit strategies.
+  # repo: greenelab/lab-website-template
   tags:
-    - software
+    - reinforcement learning
+    - psychophysiology
 
-- title: Cool Web Server
-  subtitle: a subtitle
-  image: images/photo.jpg
-  link: https://github.com/
-  description: Lorem ipsum _dolor sit amet_, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-  repo: greenelab/lab-website-template
+- title: Decision-Making Mechanisms following Exposure to Incidental Emotions
+  # subtitle: a subtitle
+  # image: images/photo.jpg
+  # link: https://github.com/
+  description: Using reinforcement learning and diffusion modeling to understand effects of incidental fear and sadness on learning and probabilistic inference.
+  # repo: greenelab/lab-website-template
   tags:
-    - software
+    - reinforcement learning
+    - sequential sampling
+    - emotion experience
