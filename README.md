@@ -1,7 +1,7 @@
 
 # kjlafoll's Website
 
-Visit **[eccoml.org](http://eccoml.org)** 🚀
+Visit **[kjlafoll.github.io](https://kjlafoll.github.io)** 🚀
 
 _Built with [Lab Website Template](https://greene-lab.gitbook.io/lab-website-template-docs)_
 
