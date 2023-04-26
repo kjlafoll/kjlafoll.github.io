@@ -16,7 +16,7 @@ If you are an undergraduate interested in computer science, cognitive science, a
   link="kjlafoll@case.edu"
 %}
 
-<!-- {% include section.html %}
+<!--- {% include section.html %}
 
 {% capture col1 %}
 
@@ -60,4 +60,4 @@ consectetur adipiscing elit
 sed do eiusmod tempor
 {% endcapture %}
 
-{% include cols.html col1=col1 col2=col2 col3=col3 %} -->
+{% include cols.html col1=col1 col2=col2 col3=col3 %} --->
