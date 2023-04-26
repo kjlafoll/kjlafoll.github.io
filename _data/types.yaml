@@ -26,6 +26,20 @@ mascot:
   icon: fa-solid fa-dog
   description: Mascot
 
+# majors for undergraduates
+
+cs:
+  icon: fa-solid fa-code-branch
+  description: Computer Science
+
+psych:
+  icon: fa-solid fa-brain
+  description: Psychology
+
+cs-psych:
+  icon: fa-solid fa-brain-circuit
+  description: Computer Science and Psychology
+
 # general
 
 link:

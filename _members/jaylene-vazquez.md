@@ -1,7 +1,7 @@
 ---
-name: Joy Fan
+name: Jaylene Vázquez
 image: images/photo.jpg
 role: undergrad
-major: cs
+major: psych
 ---
 
