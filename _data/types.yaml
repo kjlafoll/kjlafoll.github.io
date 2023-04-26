@@ -29,7 +29,7 @@ mascot:
 # majors for undergraduates
 
 cs:
-  icon: fa-solid fa-code-branch
+  icon: fa-solid fa-code
   description: Computer Science
 
 psych:
@@ -37,7 +37,7 @@ psych:
   description: Psychology
 
 cs-psych:
-  icon: fa-solid fa-brain-circuit
+  icon: fa-solid fa-code-branch
   description: Computer Science and Psychology
 
 # general
