@@ -1,6 +1,6 @@
 ---
 name: Ali Puccio
-image: images/ali-puccio-photo.jpg
+image: images/ali-puccio-photo.JPG
 role: undergrad
 major: cs
 ---
