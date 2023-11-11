@@ -26,7 +26,7 @@ function instructions() {
 	$("head").append(s);
 	prestext.innerHTML = '<span id="circle" class="circle">' +
 		'</span>';
-	prestext.innerHTML += '<image src=' + '"Flanker Task Instructions.pdf"' +
+	prestext.innerHTML += '<image src=' + '"flanker task schematics.png"' +
 	' style="height:12.5vh;margin-top:-15vh"' + '>';
 	// if (counter == list.length) {
 	// 	clearInterval(inst);
