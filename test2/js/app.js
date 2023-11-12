@@ -26,8 +26,10 @@ function instructions() {
 	$("head").append(s);
 	prestext.innerHTML = '<span id="circle" class="circle">' +
 		'</span>';
-	prestext.innerHTML += '<p>"This is a placeholder. Both Flanker tasks will be played here in "' +
-	'"sequence. Afterwards, participants will be debriefed and study will end."</p>';
+	prestext.innerHTML += "<p>This is a placeholder. Both Flanker tasks will be played on this page in " +
+	"sequence. Data is NOT stored on Github - data is recorded to the participant's local browser " +
+	"storage and posted immediately to REDCap. Data is then deleted from browser storage. After " +
+	"both Flanker tasks are completed, participants will be debriefed and study will end.</p>";
 	prestext.innerHTML += '<image src=' + '"flanker task schematics.png"' +
 	' style="height:300vh;margin-top:30vh"' + '>';
 	// if (counter == list.length) {
