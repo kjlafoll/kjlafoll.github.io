@@ -26,8 +26,10 @@ function instructions() {
 	$("head").append(s);
 	prestext.innerHTML = '<span id="circle" class="circle">' +
 		'</span>';
+	prestext.innerHTML += '<p>"This is a placeholder. Both Flanker tasks will be played here in "' +
+	'"sequence. Afterwards, participants will be debriefed and study will end."</p>';
 	prestext.innerHTML += '<image src=' + '"flanker task schematics.png"' +
-	' style="height:12.5vh;margin-top:-15vh"' + '>';
+	' style="height:300vh;margin-top:30vh"' + '>';
 	// if (counter == list.length) {
 	// 	clearInterval(inst);
 	// 	breakPoint();
