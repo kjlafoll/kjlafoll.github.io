@@ -711,7 +711,7 @@ var final_screen = {
 /* initialization */
 var timeline = [];
 
-timeline.push(id_entry);
+// timeline.push(id_entry);
 timeline.push(instructions_intro);
 timeline.push(practice_procedure);
 timeline.push(instructions_feedback);
