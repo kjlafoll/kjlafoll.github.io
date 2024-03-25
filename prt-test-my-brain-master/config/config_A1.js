@@ -71,7 +71,7 @@ var CONFIG = {
   BREAK_LENGTH: 10000, // ms length of break between blocks
   REWARD_AMOUNT: 20, // cents; set to null if no monetary reward
   TOTAL_REWARD: 24.20, // dollars
-  PLAY_REWARD_AUDIO: true,
+  PLAY_REWARD_AUDIO: false,
   REWARD_IMAGE: IMG_FOLDER+'reward.gif', // the image to show on a reward trial
   REWARD_SOUND: 'mp3/reward-coin-drop.mp3', // path to file (use mp3 if possible for browser compatibility), set to null if no sound
   SHOW_ACCURACY_AT_END: false, // show "you responded correctly on X of N trials" at the end screen?
