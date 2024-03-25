@@ -18,6 +18,13 @@ jsPsych.data.addProperties({
 var unrewarded_left_trials = 0;
 var unrewarded_right_trials = 0;
 
+const isMobile = navigator.userAgentData.mobile;
+if (isMobile == true) {
+  var cont_text = "Tap to continue.";
+} else {
+  var cont_text = "Press the spacebar to continue."
+}
+
 /* instructions */
 
 var id_entry = {
@@ -36,7 +43,6 @@ var id_entry = {
   }
 }
 
-
 var instructions_intro_1 = {
   type: 'html-keyboard-response',
   stimulus: `<p>Before you begin, please do the following:</p> 
@@ -47,6 +53,19 @@ var instructions_intro_1 = {
     </ol>
 	  <p>Press the spacebar to continue.</p>`,
   choices: [32]
+}
+
+if (isMobile == true) {
+  instructions_intro_1['on_load'] = function() {
+    touch_x = null;
+    const canvas = jsPsych.getCurrentTrial().canvas;
+    canvas.addEventListener("touchstart", (event) => {
+      console.log(event)
+      const touch = event.touches[0];
+      touch_x = touch.clientX;
+      jspsych.getCurrentTrial().end_trial()
+    })
+  }
 }
 
 var instructions_intro_1a = {
@@ -312,98 +331,100 @@ var target_display = {
   }
 }
 
-var target_display_mobile = {
-  type: 'jsPsychPsychophysics',
-  stimulus: function () {
-    return `<img src="${jsPsych.timelineVariable('stimulus', true)}" style="width:${CONFIG.IMAGE_SIZE}px;"></img>`
-  },
-  prompt: `
-        <div style="position: absolute; top: 2vh; left: 2vw;">
-          <img src="${CONFIG.LEFT_SINGLE_EXAMPLE}" style="width:100px;"></img>
-          <p>${CONFIG.LEFT_KEY.toUpperCase()} = ${CONFIG.LEFT_SHAPE}</p>
-        </div>
-        <div style="position: absolute; top: 2vh; right: 2vw;">
-          <img src="${CONFIG.RIGHT_SINGLE_EXAMPLE}" style="width:100px;"></img>
-          <p>${CONFIG.RIGHT_KEY.toUpperCase()} = ${CONFIG.RIGHT_SHAPE}</p>
-        </div>`,
-  stimulus_duration: CONFIG.STIMULUS_DURATION,
-  trial_duration_min: CONFIG.STIMULUS_DURATION,
-  trial_duration: CONFIG.TRIAL_DURATION,
-  choices: [CONFIG.LEFT_KEY, CONFIG.RIGHT_KEY],
-  data: {
-    block: jsPsych.timelineVariable('block'),
-    trial: jsPsych.timelineVariable('trial'),
-    rewarded: jsPsych.timelineVariable('rewarded'),
-    image: jsPsych.timelineVariable('stimulus'),
-    unrewarded_left_trials: function () { return unrewarded_left_trials; },
-    unrewarded_right_trials: function () { return unrewarded_right_trials; },
-    task: 'respond'
-  },
-  on_load: function() {
-    touch_x = null;
-    const canvas = jsPsych.getCurrentTrial().canvas;
-    canvas.addEventListener("touchstart", (event) => {
-      console.log(event)
-      const touch = event.touches[0];
-      touch_x = touch.clientX;
-      jspsych.getCurrentTrial().end_trial()
-    })
-  },
-  on_finish: function (data) {
-    if (data.image.includes(CONFIG.LEFT_PREFIX)) {
-      data.correct_shape = CONFIG.LEFT_SHAPE
-    }
-    if (data.image.includes(CONFIG.RIGHT_PREFIX)) {
-      data.correct_shape = CONFIG.RIGHT_SHAPE
-    }
-    if (touch_x == null) {
-      data.response = null;
-      data.correct = false;
-    }
-    else if (touch_x < window.innerWidth / 2) {
-      data.response = CONFIG.LEFT_SHAPE;
-      data.correct = data.correct_shape == CONFIG.LEFT_SHAPE;
-    }
-    else if (touch_x > window.innerWidth / 2) {
-      data.response = CONFIG.RIGHT_SHAPE;
-      data.correct = data.correct_shape == CONFIG.RIGHT_SHAPE;
-    }
-    // below is to calculate whether a reward should be displayed on this trial
-    // if a reward is scheduled...
-    if (jsPsych.timelineVariable('rewarded', true) == 1) {
-      // ... and they got it right
-      if (data.correct) {
-        data.did_reward = true;
-      } else {
-        // otherwise, add unrewarded
-        if (data.correct_shape == CONFIG.LEFT_SHAPE) {
-          unrewarded_left_trials++;
-        }
-        if (data.correct_shape == CONFIG.RIGHT_SHAPE) {
-          unrewarded_right_trials++;
-        }
-        data.did_reward = false;
+if (isMobile == false) {
+  var target_display = {
+    type: 'html-keyboard-response',
+    stimulus: function () {
+      return `<img src="${jsPsych.timelineVariable('stimulus', true)}" style="width:${CONFIG.IMAGE_SIZE}px;"></img>`
+    },
+    prompt: `
+          <div style="position: absolute; top: 2vh; left: 2vw;">
+            <img src="${CONFIG.LEFT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+            <p>${CONFIG.LEFT_KEY.toUpperCase()} = ${CONFIG.LEFT_SHAPE}</p>
+          </div>
+          <div style="position: absolute; top: 2vh; right: 2vw;">
+            <img src="${CONFIG.RIGHT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+            <p>${CONFIG.RIGHT_KEY.toUpperCase()} = ${CONFIG.RIGHT_SHAPE}</p>
+          </div>`,
+    stimulus_duration: CONFIG.STIMULUS_DURATION,
+    trial_duration_min: CONFIG.STIMULUS_DURATION,
+    trial_duration: CONFIG.TRIAL_DURATION,
+    choices: [CONFIG.LEFT_KEY, CONFIG.RIGHT_KEY],
+    data: {
+      block: jsPsych.timelineVariable('block'),
+      trial: jsPsych.timelineVariable('trial'),
+      rewarded: jsPsych.timelineVariable('rewarded'),
+      image: jsPsych.timelineVariable('stimulus'),
+      unrewarded_left_trials: function () { return unrewarded_left_trials; },
+      unrewarded_right_trials: function () { return unrewarded_right_trials; },
+      task: 'respond'
+    },
+    on_load: function() {
+      touch_x = null;
+      const canvas = jsPsych.getCurrentTrial().canvas;
+      canvas.addEventListener("touchstart", (event) => {
+        console.log(event)
+        const touch = event.touches[0];
+        touch_x = touch.clientX;
+        jspsych.getCurrentTrial().end_trial()
+      })
+    },
+    on_finish: function (data) {
+      if (data.image.includes(CONFIG.LEFT_PREFIX)) {
+        data.correct_shape = CONFIG.LEFT_SHAPE
       }
-    // if a reward is not scheduled...
-    } else {
-      // ... and they got it right
-      if (data.correct) {
-        // assume no reward first ...
-        data.did_reward = false
-        // but if there is an unrewarded trial...
-        if (data.correct_shape == CONFIG.LEFT_SHAPE && unrewarded_left_trials > 0) {
-          unrewarded_left_trials--;
-          // do the reward...
+      if (data.image.includes(CONFIG.RIGHT_PREFIX)) {
+        data.correct_shape = CONFIG.RIGHT_SHAPE
+      }
+      if (touch_x == null) {
+        data.response = null;
+        data.correct = false;
+      }
+      else if (touch_x < window.innerWidth / 2) {
+        data.response = CONFIG.LEFT_SHAPE;
+        data.correct = data.correct_shape == CONFIG.LEFT_SHAPE;
+      }
+      else if (touch_x > window.innerWidth / 2) {
+        data.response = CONFIG.RIGHT_SHAPE;
+        data.correct = data.correct_shape == CONFIG.RIGHT_SHAPE;
+      }
+      // below is to calculate whether a reward should be displayed on this trial
+      // if a reward is scheduled...
+      if (jsPsych.timelineVariable('rewarded', true) == 1) {
+        // ... and they got it right
+        if (data.correct) {
           data.did_reward = true;
+        } else {
+          // otherwise, add unrewarded
+          if (data.correct_shape == CONFIG.LEFT_SHAPE) {
+            unrewarded_left_trials++;
+          }
+          if (data.correct_shape == CONFIG.RIGHT_SHAPE) {
+            unrewarded_right_trials++;
+          }
+          data.did_reward = false;
         }
-        if (data.correct_shape == CONFIG.RIGHT_SHAPE && unrewarded_right_trials > 0) {
-          unrewarded_right_trials--;
-          // do the reward...
-          data.did_reward = true;
-        }
-      // ... and they got it wrong, no makeup reward
+      // if a reward is not scheduled...
       } else {
-        data.did_reward = false;
+        // ... and they got it right
+        if (data.correct) {
+          // assume no reward first ...
+          data.did_reward = false
+          // but if there is an unrewarded trial...
+          if (data.correct_shape == CONFIG.LEFT_SHAPE && unrewarded_left_trials > 0) {
+            unrewarded_left_trials--;
+            // do the reward...
+            data.did_reward = true;
+          }
+          if (data.correct_shape == CONFIG.RIGHT_SHAPE && unrewarded_right_trials > 0) {
+            unrewarded_right_trials--;
+            // do the reward...
+            data.did_reward = true;
+          }
+        // ... and they got it wrong, no makeup reward
+        } else {
+          data.did_reward = false;
+        }
       }
     }
   }
