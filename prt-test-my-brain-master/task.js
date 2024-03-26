@@ -542,7 +542,7 @@ if (CONFIG.PLAY_REWARD_AUDIO) {
     type: 'html-keyboard-response',
     stimulus: function () {
       var last_trial = jsPsych.data.get().filter({ task: 'respond' }).last(1).values()[0]
-      if (last_trial.key_press == null) {
+      if ((last_trial.key_press == null) && (click_X == null)) {
         return `<p class="feedback">Please respond faster.</p>`;
       }
       if (last_trial.correct) {
@@ -728,6 +728,6 @@ jsPsych.init({
   timeline: timeline,
   preload_images: CONFIG.IMAGE_LIST,
   preload_audio: audio,
-  use_webaudio: false,
+  use_webaudio: true,
   experiment_width: 800
 })
