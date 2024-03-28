@@ -192,8 +192,8 @@ var instructions_intro_2b = {
       return `<p style="font-size: 18px;">More ${specCONFIG.RIGHT_SHAPE}</p>
       <img src="${specCONFIG.RIGHT_SINGLE_EXAMPLE}" style="width:100px;"></img>
       <p>The [${CONFIG.RIGHT_KEY.toUpperCase()}] key will be used to identify pictures with <span style="text-decoration: underline;">more ${specCONFIG.RIGHT_SHAPE}.</span></p>
-      <img style="width:${CONFIG.IMAGE_SIZE / 2}px;" src="${specCONFIG.LEFT_EXAMPLE}"></img>
-      <p>Press the [${CONFIG.LEFT_KEY.toUpperCase()}] key to continue.</p>`
+      <img style="width:${CONFIG.IMAGE_SIZE / 2}px;" src="${specCONFIG.RIGHT_EXAMPLE}"></img>
+      <p>Press the [${CONFIG.RIGHT_KEY.toUpperCase()}] key to continue.</p>`
     } else {
       return `<p style="font-size: 18px;">More ${specCONFIG.RIGHT_SHAPE}</p>
       <img src="${specCONFIG.RIGHT_SINGLE_EXAMPLE}" style="width:100px;"></img>
