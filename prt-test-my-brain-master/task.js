@@ -270,7 +270,13 @@ var instructions_intro = {
 
 var instructions_practice_loop = {
   type: 'html-keyboard-response',
-  stimulus: `<p>Would you like to practice more? y = yes, n = no</p>`,
+  stimulus: function () {
+    if (isMobile == False) {
+      return `<p>Would you like to practice more? y = yes, n = no</p>`
+    } else {
+      return `<p>Would you like to practice more? LEFT = yes, RIGHT = no</p>`
+    }
+  },
   choices: ['y', 'n']
 }
 
@@ -659,7 +665,8 @@ if (CONFIG.PLAY_REWARD_AUDIO) {
           fb = `<p class="feedback">Incorrect</p>`
         }
       }
-      fb += `
+      if (isMobile == false) {
+        fb += `
           <div style="position: absolute; top: 2vh; left: 2vw;">
             <img src="${specCONFIG.LEFT_SINGLE_EXAMPLE}" style="width:100px;"></img>
             <p>${CONFIG.LEFT_KEY.toUpperCase()} = ${specCONFIG.LEFT_SHAPE}</p>
@@ -668,7 +675,19 @@ if (CONFIG.PLAY_REWARD_AUDIO) {
             <img src="${specCONFIG.RIGHT_SINGLE_EXAMPLE}" style="width:100px;"></img>
             <p>${CONFIG.RIGHT_KEY.toUpperCase()} = ${specCONFIG.RIGHT_SHAPE}</p>
           </div>`
-      return fb;
+        return fb;
+      } else {
+        fb += `
+          <div style="position: absolute; top: 2vh; left: 2vw;">
+            <img src="${specCONFIG.LEFT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+            <p>LEFT = ${specCONFIG.LEFT_SHAPE}</p>
+          </div>
+          <div style="position: absolute; top: 2vh; right: 2vw;">
+            <img src="${specCONFIG.RIGHT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+            <p>RIGHT = ${specCONFIG.RIGHT_SHAPE}</p>
+          </div>`
+        return fb;
+      }
     },
     trial_duration: CONFIG.FEEDBACK_DURATION,
     choices: jsPsych.NO_KEYS,
@@ -690,15 +709,28 @@ if (CONFIG.PLAY_REWARD_AUDIO) {
         return `<p class="feedback">Incorrect</p>`
       }
     },
-    prompt: `
-          <div style="position: absolute; top: 2vh; left: 2vw;">
-            <img src="${specCONFIG.LEFT_SINGLE_EXAMPLE}" style="width:100px;"></img>
-            <p>${CONFIG.LEFT_KEY.toUpperCase()} = ${specCONFIG.LEFT_SHAPE}</p>
-          </div>
-          <div style="position: absolute; top: 2vh; right: 2vw;">
-            <img src="${specCONFIG.RIGHT_SINGLE_EXAMPLE}" style="width:100px;"></img>
-            <p>${CONFIG.RIGHT_KEY.toUpperCase()} = ${specCONFIG.RIGHT_SHAPE}</p>
-          </div>`,
+    prompt: function() {
+      if (isMobile == false) {
+        return `<div style="position: absolute; top: 2vh; left: 2vw;">
+        <img src="${specCONFIG.LEFT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+        <p>${CONFIG.LEFT_KEY.toUpperCase()} = ${specCONFIG.LEFT_SHAPE}</p>
+      </div>
+      <div style="position: absolute; top: 2vh; right: 2vw;">
+        <img src="${specCONFIG.RIGHT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+        <p>${CONFIG.RIGHT_KEY.toUpperCase()} = ${specCONFIG.RIGHT_SHAPE}</p>
+        <p> Hello! </p>
+      </div>`
+      } else {
+        return `<div style="position: absolute; top: 2vh; left: 2vw;">
+        <img src="${specCONFIG.LEFT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+        <p>LEFT = ${specCONFIG.LEFT_SHAPE}</p>
+      </div>
+      <div style="position: absolute; top: 2vh; right: 2vw;">
+        <img src="${specCONFIG.RIGHT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+        <p>RIGHT = ${specCONFIG.RIGHT_SHAPE}</p>
+      </div>`
+      }
+    },
     trial_duration: CONFIG.FEEDBACK_DURATION,
     choices: jsPsych.NO_KEYS,
     data: {
@@ -709,15 +741,28 @@ if (CONFIG.PLAY_REWARD_AUDIO) {
 
 var blank_screen = {
   type: 'html-keyboard-response',
-  stimulus: `
-      <div style="position: absolute; top: 2vh; left: 2vw;">
-        <img src="${specCONFIG.LEFT_SINGLE_EXAMPLE}" style="width:100px;"></img>
-        <p>${CONFIG.LEFT_KEY.toUpperCase()} = ${specCONFIG.LEFT_SHAPE}</p>
-      </div>
-      <div style="position: absolute; top: 2vh; right: 2vw;">
-        <img src="${specCONFIG.RIGHT_SINGLE_EXAMPLE}" style="width:100px;"></img>
-        <p>${CONFIG.RIGHT_KEY.toUpperCase()} = ${specCONFIG.RIGHT_SHAPE}</p>
-      </div>`,
+  stimulus: function() {
+    if (isMobile == false) {
+      return `<div style="position: absolute; top: 2vh; left: 2vw;">
+      <img src="${specCONFIG.LEFT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+      <p>${CONFIG.LEFT_KEY.toUpperCase()} = ${specCONFIG.LEFT_SHAPE}</p>
+    </div>
+    <div style="position: absolute; top: 2vh; right: 2vw;">
+      <img src="${specCONFIG.RIGHT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+      <p>${CONFIG.RIGHT_KEY.toUpperCase()} = ${specCONFIG.RIGHT_SHAPE}</p>
+      <p> Hello! </p>
+    </div>`
+    } else {
+      return `<div style="position: absolute; top: 2vh; left: 2vw;">
+      <img src="${specCONFIG.LEFT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+      <p>LEFT = ${specCONFIG.LEFT_SHAPE}</p>
+    </div>
+    <div style="position: absolute; top: 2vh; right: 2vw;">
+      <img src="${specCONFIG.RIGHT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+      <p>RIGHT = ${specCONFIG.RIGHT_SHAPE}</p>
+    </div>`
+    }
+  },
   trial_duration: CONFIG.FEEDBACK_DURATION,
   choices: jsPsych.NO_KEYS
 }
