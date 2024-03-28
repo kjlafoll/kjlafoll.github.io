@@ -271,7 +271,7 @@ var instructions_intro = {
 var instructions_practice_loop = {
   type: 'html-keyboard-response',
   stimulus: function () {
-    if (isMobile == False) {
+    if (isMobile == false) {
       return `<p>Would you like to practice more? y = yes, n = no</p>`
     } else {
       return `<p>Would you like to practice more? LEFT = yes, RIGHT = no</p>`
