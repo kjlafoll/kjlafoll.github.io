@@ -7,12 +7,29 @@ if (CONFIG.SAVE_DATA_TYPE == 'tmb') {
   head.appendChild(js);
 }
 
-/* add condition info to data */
-jsPsych.data.addProperties({
-  left_shape: CONFIG.LEFT_SHAPE,
-  right_shape: CONFIG.RIGHT_SHAPE,
-  bias_shape: CONFIG.BIAS_SHAPE
-});
+var specCONFIG = CONFIG_A1;
+
+var converter = {
+  A1: CONFIG_A1,
+  A2: CONFIG_A2,
+  A3: CONFIG_A3,
+  A4: CONFIG_A4,
+  B1: CONFIG_A1,
+  B2: CONFIG_A2,
+  B3: CONFIG_A3,
+  B4: CONFIG_A4,
+  C1: CONFIG_A1,
+  C2: CONFIG_A2,
+  C3: CONFIG_A3,
+  C4: CONFIG_A4,
+}
+
+// /* add condition info to data */
+// jsPsych.data.addProperties({
+//   left_shape: CONFIG.LEFT_SHAPE,
+//   right_shape: CONFIG.RIGHT_SHAPE,
+//   bias_shape: CONFIG.BIAS_SHAPE
+// });
 
 /* reward setup */
 var unrewarded_left_trials = 0;
@@ -27,9 +44,15 @@ const isMobile = window.mobileAndTabletCheck();
 if (isMobile == true) {
   var MOBILE_WIDTH_DIVISER = CONFIG.IMAGE_SIZE/window.innerWidth;
   var CONT_TEXT = "Tap to continue.";
+  var INTRO1_TEXT = `<li>Hold your device steady.</li> 
+  <li>Position your device so that your face is approximately 1.5 feet (50 cm) from the screen.</li>
+  <li>Ensure that your device's sound is switched on.</li>`;
 } else {
   var MOBILE_WIDTH_DIVISER = 1;
   var CONT_TEXT = "Press the spacebar to continue.";
+  var INTRO1_TEXT = `<li>Place your computer on a flat surface.</li> 
+  <li>Seat yourself so that your face is approximately 1.5 feet (50 cm) from the screen.</li>
+  <li>Ensure that your computer sound is switched on.</li>`;
 }
 
 /* instructions */
@@ -38,14 +61,25 @@ var id_entry = {
   type: 'survey-text',
   preamble: '<p style="font-size:24px;">Welcome to the task!</p>',
   questions: [
-    { prompt: CONFIG.ID_MESSAGE }
+    { prompt: 'Please enter your ID in the text box below:'},
+    { prompt: 'Please enter your Group Letter in the text box below:'},
+    { prompt: 'Please enter your Time Point in the text box below:'}
   ],
   data: {
-    task: 'id'
+    task: 'start',
   },
   on_finish: function (data) {
+    var id = JSON.parse(data.responses).Q0;
+    var group = JSON.parse(data.responses).Q1;
+    var time = JSON.parse(data.responses).Q2;
+    specCONFIG = converter[group+time];
     jsPsych.data.addProperties({
-      subject_id: JSON.parse(data.responses).Q0
+      subject_id: id,
+      group: group,
+      time: time,
+      left_shape: specCONFIG.LEFT_SHAPE,
+      right_shape: specCONFIG.RIGHT_SHAPE,
+      bias_shape: specCONFIG.BIAS_SHAPE
     });
   }
 }
@@ -54,9 +88,7 @@ var instructions_intro_1 = {
   type: 'html-keyboard-response',
   stimulus: `<p>Before you begin, please do the following:</p> 
     <ol style="text-align: left;"> 
-      <li>Place your computer on a flat surface.</li> 
-	    <li>Seat yourself so that your face is approximately 1.5 feet (50 cm) from the screen.</li>
-	    <li>Ensure that your computer sound is switched on.</li> 
+      ${INTRO1_TEXT}
     </ol>
 	  <p>${CONT_TEXT}</p>`,
   choices: [32]
@@ -83,57 +115,113 @@ function click_right(event) {
 
 var instructions_intro_1a = {
   type: 'html-keyboard-response',
-  stimulus: `<p>Please position your index fingers on the "${CONFIG.LEFT_KEY.toUpperCase()}" and "${CONFIG.RIGHT_KEY.toUpperCase()}" keys for this experiment.
+  stimulus: function() {
+    if (isMobile == false) {
+      return `<p>Please position your index fingers on the "${CONFIG.LEFT_KEY.toUpperCase()}" and "${CONFIG.RIGHT_KEY.toUpperCase()}" keys for this experiment.
         The game will last approximately ${CONFIG.ESTIMATED_TOTAL_DURATION} minutes and is composed of ${CONFIG.TOTAL_BLOCKS} blocks 
-        separated by a break.</p><p>${CONT_TEXT}</p>`,
+        separated by a break.</p><p>${CONT_TEXT}</p>`
+    } else {
+      return `<p>Please position your thumbs over the left and right sides of the screen for this experiment.
+      The game will last approximately ${CONFIG.ESTIMATED_TOTAL_DURATION} minutes and is composed of ${CONFIG.TOTAL_BLOCKS} blocks 
+      separated by a break.</p><p>${CONT_TEXT}</p>`
+    }
+  },
   choices: [32]
 }
 
 var instructions_intro_2 = {
   type: 'html-keyboard-response',
-  stimulus: `<p>You will be presented with either an image with more ${CONFIG.LEFT_SHAPE} than ${CONFIG.RIGHT_SHAPE}, or an image with 
-        more ${CONFIG.RIGHT_SHAPE} than ${CONFIG.LEFT_SHAPE}. You will see them one at a time.</p>
-        <p>Your task will be to decide whether more ${CONFIG.LEFT_SHAPE} or more ${CONFIG.RIGHT_SHAPE} were presented by pushing the correct button as quickly
-        and accurately as possible.</p>
-        <p>The "${CONFIG.LEFT_KEY.toUpperCase()}" key will be used to identify more ${CONFIG.LEFT_SHAPE} and the "${CONFIG.RIGHT_KEY.toUpperCase()}" key will be used 
-        to identify more ${CONFIG.RIGHT_SHAPE}. Examples of what the images look like are below:</p>
-        <p style="height: ${CONFIG.IMAGE_SIZE / 2 + 50}px;">
-        <img style="width:${CONFIG.IMAGE_SIZE / (2*MOBILE_WIDTH_DIVISER)}px; float: left;" src="${CONFIG.LEFT_EXAMPLE}"></img>
-        <img style="width:${CONFIG.IMAGE_SIZE / (2*MOBILE_WIDTH_DIVISER)}px; float: right;" src="${CONFIG.RIGHT_EXAMPLE}"></img>
-        <span style="text-align:center; width:${CONFIG.IMAGE_SIZE / (2*MOBILE_WIDTH_DIVISER)}px; clear:both; float: left;">More ${CONFIG.LEFT_SHAPE} = ${CONFIG.LEFT_KEY.toUpperCase()}</span>
-        <span style="text-align:center; width:${CONFIG.IMAGE_SIZE / (2*MOBILE_WIDTH_DIVISER)}px; float: right;">More ${CONFIG.RIGHT_SHAPE} = ${CONFIG.RIGHT_KEY.toUpperCase()}</span>
-        </p>
-        <p>${CONT_TEXT}</p>`,
+  stimulus: function() {
+    if (isMobile == false) {
+      return `<p>You will be presented with either an image with more ${specCONFIG.LEFT_SHAPE} than ${specCONFIG.RIGHT_SHAPE}, or an image with 
+      more ${specCONFIG.RIGHT_SHAPE} than ${specCONFIG.LEFT_SHAPE}. You will see them one at a time.</p>
+      <p>Your task will be to decide whether more ${specCONFIG.LEFT_SHAPE} or more ${specCONFIG.RIGHT_SHAPE} were presented by pushing the correct button as quickly
+      and accurately as possible.</p>
+      <p>The "${CONFIG.LEFT_KEY.toUpperCase()}" key will be used to identify more ${specCONFIG.LEFT_SHAPE} and the "${CONFIG.RIGHT_KEY.toUpperCase()}" key will be used 
+      to identify more ${specCONFIG.RIGHT_SHAPE}. Examples of what the images look like are below:</p>
+      <p style="height: ${CONFIG.IMAGE_SIZE / 2 + 50}px;">
+      <img style="width:${window.innerWidth/3}px; float: left;" src="${specCONFIG.LEFT_EXAMPLE}"></img>
+      <img style="width:${window.innerWidth/3}px; float: right;" src="${specCONFIG.RIGHT_EXAMPLE}"></img>
+      <span style="text-align:center; width:${window.innerWidth/3}px; clear:both; float: left;">More ${specCONFIG.LEFT_SHAPE} = ${CONFIG.LEFT_KEY.toUpperCase()}</span>
+      <span style="text-align:center; width:${window.innerWidth/3}px; float: right;">More ${specCONFIG.RIGHT_SHAPE} = ${CONFIG.RIGHT_KEY.toUpperCase()}</span>
+      </p>
+      <p>${CONT_TEXT}</p>`
+    } else {
+      return `<p>You will be presented with either an image with more ${specCONFIG.LEFT_SHAPE} than ${specCONFIG.RIGHT_SHAPE}, or an image with 
+      more ${specCONFIG.RIGHT_SHAPE} than ${specCONFIG.LEFT_SHAPE}. You will see them one at a time.</p>
+      <p>Your task will be to decide whether more ${specCONFIG.LEFT_SHAPE} or more ${specCONFIG.RIGHT_SHAPE} were presented by tapping the correct side of the screen as quickly
+      and accurately as possible.</p>
+      <p>The LEFT side of the screen will be used to identify more ${specCONFIG.LEFT_SHAPE} and the RIGHT side of the screen will be used 
+      to identify more ${specCONFIG.RIGHT_SHAPE}. Examples of what the images look like are below:</p>
+      <p style="height: ${CONFIG.IMAGE_SIZE / 2 + 50}px;">
+      <img style="width:${window.innerWidth/3}px; float: left;" src="${specCONFIG.LEFT_EXAMPLE}"></img>
+      <img style="width:${window.innerWidth/3}px; float: right;" src="${specCONFIG.RIGHT_EXAMPLE}"></img>
+      <span style="text-align:center; width:${window.innerWidth/3}px; clear:both; float: left;">More ${specCONFIG.LEFT_SHAPE} = LEFT</span>
+      <span style="text-align:center; width:${window.innerWidth/3}px; float: right;">More ${specCONFIG.RIGHT_SHAPE} = RIGHT</span>
+      </p>
+      <p>${CONT_TEXT}</p>`
+    }
+  },
   choices: [32]
 }
 
 var instructions_intro_2a = {
   type: 'html-keyboard-response',
-  stimulus: `<p style="font-size: 18px;">More ${CONFIG.LEFT_SHAPE}</p>
-        <img src="${CONFIG.LEFT_SINGLE_EXAMPLE}" style="width:100px;"></img>
-        <p>The [${CONFIG.LEFT_KEY.toUpperCase()}] key will be used to identify pictures with <span style="text-decoration: underline;">more ${CONFIG.LEFT_SHAPE}.</span></p>
-        <img style="width:${CONFIG.IMAGE_SIZE / 2}px;" src="${CONFIG.LEFT_EXAMPLE}"></img>
-        <p>Press the [${CONFIG.LEFT_KEY.toUpperCase()}] key to continue.</p>`,
+  stimulus: function() {
+    if (isMobile == false) {
+      return `<p style="font-size: 18px;">More ${specCONFIG.LEFT_SHAPE}</p>
+      <img src="${specCONFIG.LEFT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+      <p>The [${CONFIG.LEFT_KEY.toUpperCase()}] key will be used to identify pictures with <span style="text-decoration: underline;">more ${specCONFIG.LEFT_SHAPE}.</span></p>
+      <img style="width:${CONFIG.IMAGE_SIZE / 2}px;" src="${specCONFIG.LEFT_EXAMPLE}"></img>
+      <p>Press the [${CONFIG.LEFT_KEY.toUpperCase()}] key to continue.</p>`
+    } else {
+      return `<p style="font-size: 18px;">More ${specCONFIG.LEFT_SHAPE}</p>
+      <img src="${specCONFIG.LEFT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+      <p>The LEFT side of the screen will be used to identify pictures with <span style="text-decoration: underline;">more ${specCONFIG.LEFT_SHAPE}.</span></p>
+      <img style="width:${CONFIG.IMAGE_SIZE / 2}px;" src="${specCONFIG.LEFT_EXAMPLE}"></img>
+      <p>Tap the LEFT side of the screen to continue.</p>`
+    }
+  },
   choices: [CONFIG.LEFT_KEY]
 }
 
 var instructions_intro_2b = {
   type: 'html-keyboard-response',
-  stimulus: `<p style="font-size: 18px;">More ${CONFIG.RIGHT_SHAPE}</p>
-        <img src="${CONFIG.RIGHT_SINGLE_EXAMPLE}" style="width:100px;"></img>
-        <p>The [${CONFIG.RIGHT_KEY.toUpperCase()}] key will be used to identify pictures with <span style="text-decoration: underline;">more ${CONFIG.RIGHT_SHAPE}.</span></p>
-        <img style="width:${CONFIG.IMAGE_SIZE / 2}px;" src="${CONFIG.RIGHT_EXAMPLE}"></img>
-        <p>Press the [${CONFIG.RIGHT_KEY.toUpperCase()}] key to continue.</p>`,
+  stimulus: function() {
+    if (isMobile == false) {
+      return `<p style="font-size: 18px;">More ${specCONFIG.RIGHT_SHAPE}</p>
+      <img src="${specCONFIG.RIGHT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+      <p>The [${CONFIG.RIGHT_KEY.toUpperCase()}] key will be used to identify pictures with <span style="text-decoration: underline;">more ${specCONFIG.RIGHT_SHAPE}.</span></p>
+      <img style="width:${CONFIG.IMAGE_SIZE / 2}px;" src="${specCONFIG.LEFT_EXAMPLE}"></img>
+      <p>Press the [${CONFIG.LEFT_KEY.toUpperCase()}] key to continue.</p>`
+    } else {
+      return `<p style="font-size: 18px;">More ${specCONFIG.RIGHT_SHAPE}</p>
+      <img src="${specCONFIG.RIGHT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+      <p>The RIGHT side of the screen will be used to identify pictures with <span style="text-decoration: underline;">more ${specCONFIG.RIGHT_SHAPE}.</span></p>
+      <img style="width:${CONFIG.IMAGE_SIZE / 2}px;" src="${specCONFIG.RIGHT_EXAMPLE}"></img>
+      <p>Tap the RIGHT side of the screen to continue.</p>`
+    }
+  },
   choices: [CONFIG.RIGHT_KEY]
 }
 
 var instructions_intro_3 = {
   type: 'html-keyboard-response',
-  stimulus: `<p>Now, let's take a practice run. You will see a fixation cross, '+', on the screen. You should always focus your
-        attention on the fixation cross as this will help you identify the image as quickly and accurately as possible. The fixation
-        cross will be followed by an image with more ${CONFIG.LEFT_SHAPE} or more ${CONFIG.RIGHT_SHAPE}. Remember, if you think there are more ${CONFIG.LEFT_SHAPE}
-        press the "${CONFIG.LEFT_KEY.toUpperCase()}" key. If you think there are more ${CONFIG.RIGHT_SHAPE} press the "${CONFIG.RIGHT_KEY.toUpperCase()}" key.</p>
-        <p>If you understand these directions and are ready to proceed to the practice round, please press the spacebar.</p>`,
+  stimulus: function() {
+    if (isMobile == false) {
+      return `<p>Now, let's take a practice run. You will see a fixation cross, '+', on the screen. You should always focus your
+      attention on the fixation cross as this will help you identify the image as quickly and accurately as possible. The fixation
+      cross will be followed by an image with more ${specCONFIG.LEFT_SHAPE} or more ${specCONFIG.RIGHT_SHAPE}. Remember, if you think there are more ${specCONFIG.LEFT_SHAPE}
+      press the "${CONFIG.LEFT_KEY.toUpperCase()}" key. If you think there are more ${specCONFIG.RIGHT_SHAPE} press the "${CONFIG.RIGHT_KEY.toUpperCase()}" key.</p>
+      <p>If you understand these directions and are ready to proceed to the practice round, please press the spacebar.</p>`
+    } else {
+      return `<p>Now, let's take a practice run. You will see a fixation cross, '+', on the screen. You should always focus your
+      attention on the fixation cross as this will help you identify the image as quickly and accurately as possible. The fixation
+      cross will be followed by an image with more ${specCONFIG.LEFT_SHAPE} or more ${specCONFIG.RIGHT_SHAPE}. Remember, if you think there are more ${specCONFIG.LEFT_SHAPE}
+      tap the LEFT side of the screen. If you think there are more ${specCONFIG.RIGHT_SHAPE} tap the right side of the screen.</p>
+      <p>If you understand these directions and are ready to proceed to the practice round, please tap the screen.</p>`
+    }
+  },
   choices: [32]
 }
 
@@ -189,12 +277,22 @@ var instructions_practice_loop = {
 var instructions_feedback_1 = {
   type: 'html-keyboard-response',
   stimulus: function () {
-    if (CONFIG.REWARD_AMOUNT == 0 || CONFIG.REWARD_AMOUNT == null) {
-      return `<p>For some trials, a correct identification will be rewarded with positive feedback.</p>
+    if (specCONFIG.REWARD_AMOUNT == 0 || specCONFIG.REWARD_AMOUNT == null) {
+      if (isMobile == false) {
+        return `<p>For some trials, a correct identification will be rewarded with positive feedback.</p>
           <p>Press the spacebar to see what this will look like.</p>`
+      } else {
+        return `<p>For some trials, a correct identification will be rewarded with positive feedback.</p>
+          <p>Tap the screen to see what this will look like.</p>`
+      }
     } else {
-      return `<p>For some trials, a correct identification will result in a monetary reward of ${CONFIG.REWARD_AMOUNT} cents.</p>
+      if (isMobile == false) {
+        return `<p>For some trials, a correct identification will result in a monetary reward of ${specCONFIG.REWARD_AMOUNT} cents.</p>
           <p>Press the spacebar to see what this will look like.</p>`
+      } else {
+        return `<p>For some trials, a correct identification will result in a monetary reward of ${specCONFIG.REWARD_AMOUNT} cents.</p>
+          <p>Tap the screen to see what this will look like.</p>`
+      }
     }
   },
   choices: [32]
@@ -206,19 +304,19 @@ if (CONFIG.PLAY_REWARD_AUDIO) {
     stimulus: CONFIG.REWARD_SOUND,
     prompt: function () {
       var fb = ""
-      if (CONFIG.REWARD_AMOUNT == 0 || CONFIG.REWARD_AMOUNT == null) {
-        fb = `<img src="${CONFIG.REWARD_IMAGE}"></img><p class="feedback">Correct!</p>`
+      if (specCONFIG.REWARD_AMOUNT == 0 || specCONFIG.REWARD_AMOUNT == null) {
+        fb = `<img src="${specCONFIG.REWARD_IMAGE}"></img><p class="feedback">Correct!</p>`
       } else {
-        fb = `<img src="${CONFIG.REWARD_IMAGE}"></img><p class="feedback">Correct! You win ${CONFIG.REWARD_AMOUNT} cents!</p>`
+        fb = `<img src="${specCONFIG.REWARD_IMAGE}"></img><p class="feedback">Correct! You win ${specCONFIG.REWARD_AMOUNT} cents!</p>`
       }
       fb += `
           <div style="position: absolute; top: 2vh; left: 2vw;">
-            <img src="${CONFIG.LEFT_SINGLE_EXAMPLE}" style="width:100px;"></img>
-            <p>${CONFIG.LEFT_KEY.toUpperCase()} = ${CONFIG.LEFT_SHAPE}</p>
+            <img src="${specCONFIG.LEFT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+            <p>${CONFIG.LEFT_KEY.toUpperCase()} = ${specCONFIG.LEFT_SHAPE}</p>
           </div>
           <div style="position: absolute; top: 2vh; right: 2vw;">
-            <img src="${CONFIG.RIGHT_SINGLE_EXAMPLE}" style="width:100px;"></img>
-            <p>${CONFIG.RIGHT_KEY.toUpperCase()} = ${CONFIG.RIGHT_SHAPE}</p>
+            <img src="${specCONFIG.RIGHT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+            <p>${CONFIG.RIGHT_KEY.toUpperCase()} = ${specCONFIG.RIGHT_SHAPE}</p>
           </div>`
       return fb;
     },
@@ -229,20 +327,20 @@ if (CONFIG.PLAY_REWARD_AUDIO) {
   var reward = {
     type: 'html-keyboard-response',
     stimulus: function () {
-      if (CONFIG.REWARD_AMOUNT == 0 || CONFIG.REWARD_AMOUNT == null) {
-        return `<img src="${CONFIG.REWARD_IMAGE}"></img><p class="feedback">Correct!</p>`
+      if (specCONFIG.REWARD_AMOUNT == 0 || specCONFIG.REWARD_AMOUNT == null) {
+        return `<img src="${specCONFIG.REWARD_IMAGE}"></img><p class="feedback">Correct!</p>`
       } else {
-        return `<img src="${CONFIG.REWARD_IMAGE}"></img><p class="feedback">Correct! You win ${CONFIG.REWARD_AMOUNT} cents!</p>`
+        return `<img src="${specCONFIG.REWARD_IMAGE}"></img><p class="feedback">Correct! You win ${specCONFIG.REWARD_AMOUNT} cents!</p>`
       }
     },
     prompt: `
         <div style="position: absolute; top: 2vh; left: 2vw;">
-          <img src="${CONFIG.LEFT_SINGLE_EXAMPLE}" style="width:100px;"></img>
-          <p>${CONFIG.LEFT_KEY.toUpperCase()} = ${CONFIG.LEFT_SHAPE}</p>
+          <img src="${specCONFIG.LEFT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+          <p>${CONFIG.LEFT_KEY.toUpperCase()} = ${specCONFIG.LEFT_SHAPE}</p>
         </div>
         <div style="position: absolute; top: 2vh; right: 2vw;">
-          <img src="${CONFIG.RIGHT_SINGLE_EXAMPLE}" style="width:100px;"></img>
-          <p>${CONFIG.RIGHT_KEY.toUpperCase()} = ${CONFIG.RIGHT_SHAPE}</p>
+          <img src="${specCONFIG.RIGHT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+          <p>${CONFIG.RIGHT_KEY.toUpperCase()} = ${specCONFIG.RIGHT_SHAPE}</p>
         </div>`,
     trial_duration: CONFIG.FEEDBACK_DURATION,
     choices: jsPsych.NO_KEYS
@@ -254,11 +352,11 @@ var instructions_feedback_2 = {
   type: 'html-keyboard-response',
   stimulus: function () {
     var html = `<p><span style="color:red; font-weight:bold;">Not all</span> correct responses will receive a reward.</p>`
-    if (CONFIG.REWARD_AMOUNT != 0 && CONFIG.REWARD_AMOUNT != null) {
+    if (specCONFIG.REWARD_AMOUNT != 0 && specCONFIG.REWARD_AMOUNT != null) {
       html += `<p>At the end of the experiment you will be given the amount of money you have accumulated. The more correct identifications
           you make, the more money you will take home.</p>`
     }
-    html += `<p>Press the spacebar to continue.</p>`;
+    html += `<p>${CONT_TEXT}</p>`;
     return html;
   },
   choices: [32]
@@ -266,11 +364,21 @@ var instructions_feedback_2 = {
 
 var instructions_feedback_3 = {
   type: 'html-keyboard-response',
-  stimulus: `<p>We are now ready to begin the experiment.</p>
-        <p>Remember, focus your attention on the fixation cross before each trial. If you think there are more ${CONFIG.LEFT_SHAPE}
-        press the "${CONFIG.LEFT_KEY.toUpperCase()}" key. If you think there are more ${CONFIG.RIGHT_SHAPE} press the "${CONFIG.RIGHT_KEY.toUpperCase()}" key.</p>
-        <p>Good luck!</p>
-        <p>Press the spacebar to begin.</p>`,
+  stimulus: function() {
+    if (isMobile == false) {
+      return `<p>We are now ready to begin the experiment.</p>
+      <p>Remember, focus your attention on the fixation cross before each trial. If you think there are more ${specCONFIG.LEFT_SHAPE}
+      press the "${CONFIG.LEFT_KEY.toUpperCase()}" key. If you think there are more ${specCONFIG.RIGHT_SHAPE} press the "${CONFIG.RIGHT_KEY.toUpperCase()}" key.</p>
+      <p>Good luck!</p>
+      <p>Press the spacebar to begin.</p>`
+    } else {
+      return `<p>We are now ready to begin the experiment.</p>
+      <p>Remember, focus your attention on the fixation cross before each trial. If you think there are more ${specCONFIG.LEFT_SHAPE}
+      tap the LEFT side of the screen. If you think there are more ${specCONFIG.RIGHT_SHAPE} tap the RIGHT side of the screen.</p>
+      <p>Good luck!</p>
+      <p>Tap to begin.</p>`
+    }
+  },
   choices: [32]
 }
 
@@ -307,30 +415,59 @@ var fixation = {
   stimulus: `<p class="fixation">+</p>`,
   choices: jsPsych.NO_KEYS,
   trial_duration: CONFIG.FIXATION_DURATION,
-  prompt: `<div style="position: absolute; top: 2vh; left: 2vw;">
-          <img src="${CONFIG.LEFT_SINGLE_EXAMPLE}" style="width:100px;"></img>
-          <p>${CONFIG.LEFT_KEY.toUpperCase()} = ${CONFIG.LEFT_SHAPE}</p>
-        </div>
-        <div style="position: absolute; top: 2vh; right: 2vw;">
-          <img src="${CONFIG.RIGHT_SINGLE_EXAMPLE}" style="width:100px;"></img>
-          <p>${CONFIG.RIGHT_KEY.toUpperCase()} = ${CONFIG.RIGHT_SHAPE}</p>
-        </div>`
+  prompt: function() {
+    if (isMobile == false) {
+      return `<div style="position: absolute; top: 2vh; left: 2vw;">
+      <img src="${specCONFIG.LEFT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+      <p>${CONFIG.LEFT_KEY.toUpperCase()} = ${specCONFIG.LEFT_SHAPE}</p>
+    </div>
+    <div style="position: absolute; top: 2vh; right: 2vw;">
+      <img src="${specCONFIG.RIGHT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+      <p>${CONFIG.RIGHT_KEY.toUpperCase()} = ${specCONFIG.RIGHT_SHAPE}</p>
+    </div>`
+    } else {
+      return `<div style="position: absolute; top: 2vh; left: 2vw;">
+      <img src="${specCONFIG.LEFT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+      <p>LEFT = ${specCONFIG.LEFT_SHAPE}</p>
+    </div>
+    <div style="position: absolute; top: 2vh; right: 2vw;">
+      <img src="${specCONFIG.RIGHT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+      <p>RIGHT = ${specCONFIG.RIGHT_SHAPE}</p>
+    </div>`
+    }
+  }
 }
 
 var target_display = {
   type: 'html-keyboard-response',
   stimulus: function () {
-    return `<img src="${jsPsych.timelineVariable('stimulus', true)}" style="width:${CONFIG.IMAGE_SIZE}px;"></img>`
+    if (CONFIG.IMAGE_SIZE <= window.innerWidth) {
+      return `<img src="${jsPsych.timelineVariable('stimulus', true)}" style="width:${CONFIG.IMAGE_SIZE}px;"></img>`
+    } else {
+      return `<img src="${jsPsych.timelineVariable('stimulus', true)}" style="width:${window.innerWidth*0.8}px;"></img>`
+    }
   },
-  prompt: `
-        <div style="position: absolute; top: 2vh; left: 2vw;">
-          <img src="${CONFIG.LEFT_SINGLE_EXAMPLE}" style="width:100px;"></img>
-          <p>${CONFIG.LEFT_KEY.toUpperCase()} = ${CONFIG.LEFT_SHAPE}</p>
-        </div>
-        <div style="position: absolute; top: 2vh; right: 2vw;">
-          <img src="${CONFIG.RIGHT_SINGLE_EXAMPLE}" style="width:100px;"></img>
-          <p>${CONFIG.RIGHT_KEY.toUpperCase()} = ${CONFIG.RIGHT_SHAPE}</p>
-        </div>`,
+  prompt: function() {
+    if (isMobile == false) {
+      return `<div style="position: absolute; top: 2vh; left: 2vw;">
+      <img src="${specCONFIG.LEFT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+      <p>${CONFIG.LEFT_KEY.toUpperCase()} = ${specCONFIG.LEFT_SHAPE}</p>
+    </div>
+    <div style="position: absolute; top: 2vh; right: 2vw;">
+      <img src="${specCONFIG.RIGHT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+      <p>${CONFIG.RIGHT_KEY.toUpperCase()} = ${specCONFIG.RIGHT_SHAPE}</p>
+    </div>`
+    } else {
+      return `<div style="position: absolute; top: 2vh; left: 2vw;">
+      <img src="${specCONFIG.LEFT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+      <p>LEFT = ${specCONFIG.LEFT_SHAPE}</p>
+    </div>
+    <div style="position: absolute; top: 2vh; right: 2vw;">
+      <img src="${specCONFIG.RIGHT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+      <p>RIGHT = ${specCONFIG.RIGHT_SHAPE}</p>
+    </div>`
+    }
+  },
   stimulus_duration: CONFIG.STIMULUS_DURATION,
   trial_duration_min: CONFIG.STIMULUS_DURATION,
   trial_duration: CONFIG.TRIAL_DURATION,
@@ -345,23 +482,24 @@ var target_display = {
     task: 'respond'
   },
   on_finish: function (data) {
-    if (data.image.includes(CONFIG.LEFT_PREFIX)) {
-      data.correct_shape = CONFIG.LEFT_SHAPE
+    click_X = null;
+    if (data.image.includes(specCONFIG.LEFT_PREFIX)) {
+      data.correct_shape = specCONFIG.LEFT_SHAPE
     }
-    if (data.image.includes(CONFIG.RIGHT_PREFIX)) {
-      data.correct_shape = CONFIG.RIGHT_SHAPE
+    if (data.image.includes(specCONFIG.RIGHT_PREFIX)) {
+      data.correct_shape = specCONFIG.RIGHT_SHAPE
     }
     if (data.key_press == null) {
       data.response = null;
       data.correct = false;
     }
     if (data.key_press == jsPsych.pluginAPI.convertKeyCharacterToKeyCode(CONFIG.LEFT_KEY)) {
-      data.response = CONFIG.LEFT_SHAPE;
-      data.correct = data.correct_shape == CONFIG.LEFT_SHAPE;
+      data.response = specCONFIG.LEFT_SHAPE;
+      data.correct = data.correct_shape == specCONFIG.LEFT_SHAPE;
     }
     if (data.key_press == jsPsych.pluginAPI.convertKeyCharacterToKeyCode(CONFIG.RIGHT_KEY)) {
-      data.response = CONFIG.RIGHT_SHAPE;
-      data.correct = data.correct_shape == CONFIG.RIGHT_SHAPE;
+      data.response = specCONFIG.RIGHT_SHAPE;
+      data.correct = data.correct_shape == specCONFIG.RIGHT_SHAPE;
     }
     // below is to calculate whether a reward should be displayed on this trial
     // if a reward is scheduled...
@@ -371,10 +509,10 @@ var target_display = {
         data.did_reward = true;
       } else {
         // otherwise, add unrewarded
-        if (data.correct_shape == CONFIG.LEFT_SHAPE) {
+        if (data.correct_shape == specCONFIG.LEFT_SHAPE) {
           unrewarded_left_trials++;
         }
-        if (data.correct_shape == CONFIG.RIGHT_SHAPE) {
+        if (data.correct_shape == specCONFIG.RIGHT_SHAPE) {
           unrewarded_right_trials++;
         }
         data.did_reward = false;
@@ -386,12 +524,12 @@ var target_display = {
         // assume no reward first ...
         data.did_reward = false
         // but if there is an unrewarded trial...
-        if (data.correct_shape == CONFIG.LEFT_SHAPE && unrewarded_left_trials > 0) {
+        if (data.correct_shape == specCONFIG.LEFT_SHAPE && unrewarded_left_trials > 0) {
           unrewarded_left_trials--;
           // do the reward...
           data.did_reward = true;
         }
-        if (data.correct_shape == CONFIG.RIGHT_SHAPE && unrewarded_right_trials > 0) {
+        if (data.correct_shape == specCONFIG.RIGHT_SHAPE && unrewarded_right_trials > 0) {
           unrewarded_right_trials--;
           // do the reward...
           data.did_reward = true;
@@ -410,11 +548,12 @@ if (isMobile == true) {
     window.addEventListener("click", advance)
   }
   target_display.on_finish = function (data) {
-    if (data.image.includes(CONFIG.LEFT_PREFIX)) {
-      data.correct_shape = CONFIG.LEFT_SHAPE
+    window.removeEventListener("click", advance)
+    if (data.image.includes(specCONFIG.LEFT_PREFIX)) {
+      data.correct_shape = specCONFIG.LEFT_SHAPE
     }
-    if (data.image.includes(CONFIG.RIGHT_PREFIX)) {
-      data.correct_shape = CONFIG.RIGHT_SHAPE
+    if (data.image.includes(specCONFIG.RIGHT_PREFIX)) {
+      data.correct_shape = specCONFIG.RIGHT_SHAPE
     }
     if (click_X == null) {
       console.log(click_X);
@@ -423,13 +562,13 @@ if (isMobile == true) {
     }
     if (click_X < window.innerWidth / 2) {
       console.log(click_X);
-      data.response = CONFIG.LEFT_SHAPE;
-      data.correct = data.correct_shape == CONFIG.LEFT_SHAPE;
+      data.response = specCONFIG.LEFT_SHAPE;
+      data.correct = data.correct_shape == specCONFIG.LEFT_SHAPE;
     }
     if (click_X > window.innerWidth / 2) {
       console.log(click_X);
-      data.response = CONFIG.RIGHT_SHAPE;
-      data.correct = data.correct_shape == CONFIG.RIGHT_SHAPE;
+      data.response = specCONFIG.RIGHT_SHAPE;
+      data.correct = data.correct_shape == specCONFIG.RIGHT_SHAPE;
     }
     // below is to calculate whether a reward should be displayed on this trial
     // if a reward is scheduled...
@@ -439,10 +578,10 @@ if (isMobile == true) {
         data.did_reward = true;
       } else {
         // otherwise, add unrewarded
-        if (data.correct_shape == CONFIG.LEFT_SHAPE) {
+        if (data.correct_shape == specCONFIG.LEFT_SHAPE) {
           unrewarded_left_trials++;
         }
-        if (data.correct_shape == CONFIG.RIGHT_SHAPE) {
+        if (data.correct_shape == specCONFIG.RIGHT_SHAPE) {
           unrewarded_right_trials++;
         }
         data.did_reward = false;
@@ -454,12 +593,12 @@ if (isMobile == true) {
         // assume no reward first ...
         data.did_reward = false
         // but if there is an unrewarded trial...
-        if (data.correct_shape == CONFIG.LEFT_SHAPE && unrewarded_left_trials > 0) {
+        if (data.correct_shape == specCONFIG.LEFT_SHAPE && unrewarded_left_trials > 0) {
           unrewarded_left_trials--;
           // do the reward...
           data.did_reward = true;
         }
-        if (data.correct_shape == CONFIG.RIGHT_SHAPE && unrewarded_right_trials > 0) {
+        if (data.correct_shape == specCONFIG.RIGHT_SHAPE && unrewarded_right_trials > 0) {
           unrewarded_right_trials--;
           // do the reward...
           data.did_reward = true;
@@ -481,12 +620,12 @@ var timeout_display = {
     choices: [CONFIG.LEFT_KEY, CONFIG.RIGHT_KEY],
     prompt: `
         <div style="position: absolute; top: 2vh; left: 2vw;">
-          <img src="${CONFIG.LEFT_SINGLE_EXAMPLE}" style="width:100px;"></img>
-          <p>${CONFIG.LEFT_KEY.toUpperCase()} = ${CONFIG.LEFT_SHAPE}</p>
+          <img src="${specCONFIG.LEFT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+          <p>${CONFIG.LEFT_KEY.toUpperCase()} = ${specCONFIG.LEFT_SHAPE}</p>
         </div>
         <div style="position: absolute; top: 2vh; right: 2vw;">
-          <img src="${CONFIG.RIGHT_SINGLE_EXAMPLE}" style="width:100px;"></img>
-          <p>${CONFIG.RIGHT_KEY.toUpperCase()} = ${CONFIG.RIGHT_SHAPE}</p>
+          <img src="${specCONFIG.RIGHT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+          <p>${CONFIG.RIGHT_KEY.toUpperCase()} = ${specCONFIG.RIGHT_SHAPE}</p>
         </div>`
   }],
   conditional_function: function () {
@@ -522,12 +661,12 @@ if (CONFIG.PLAY_REWARD_AUDIO) {
       }
       fb += `
           <div style="position: absolute; top: 2vh; left: 2vw;">
-            <img src="${CONFIG.LEFT_SINGLE_EXAMPLE}" style="width:100px;"></img>
-            <p>${CONFIG.LEFT_KEY.toUpperCase()} = ${CONFIG.LEFT_SHAPE}</p>
+            <img src="${specCONFIG.LEFT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+            <p>${CONFIG.LEFT_KEY.toUpperCase()} = ${specCONFIG.LEFT_SHAPE}</p>
           </div>
           <div style="position: absolute; top: 2vh; right: 2vw;">
-            <img src="${CONFIG.RIGHT_SINGLE_EXAMPLE}" style="width:100px;"></img>
-            <p>${CONFIG.RIGHT_KEY.toUpperCase()} = ${CONFIG.RIGHT_SHAPE}</p>
+            <img src="${specCONFIG.RIGHT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+            <p>${CONFIG.RIGHT_KEY.toUpperCase()} = ${specCONFIG.RIGHT_SHAPE}</p>
           </div>`
       return fb;
     },
@@ -553,12 +692,12 @@ if (CONFIG.PLAY_REWARD_AUDIO) {
     },
     prompt: `
           <div style="position: absolute; top: 2vh; left: 2vw;">
-            <img src="${CONFIG.LEFT_SINGLE_EXAMPLE}" style="width:100px;"></img>
-            <p>${CONFIG.LEFT_KEY.toUpperCase()} = ${CONFIG.LEFT_SHAPE}</p>
+            <img src="${specCONFIG.LEFT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+            <p>${CONFIG.LEFT_KEY.toUpperCase()} = ${specCONFIG.LEFT_SHAPE}</p>
           </div>
           <div style="position: absolute; top: 2vh; right: 2vw;">
-            <img src="${CONFIG.RIGHT_SINGLE_EXAMPLE}" style="width:100px;"></img>
-            <p>${CONFIG.RIGHT_KEY.toUpperCase()} = ${CONFIG.RIGHT_SHAPE}</p>
+            <img src="${specCONFIG.RIGHT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+            <p>${CONFIG.RIGHT_KEY.toUpperCase()} = ${specCONFIG.RIGHT_SHAPE}</p>
           </div>`,
     trial_duration: CONFIG.FEEDBACK_DURATION,
     choices: jsPsych.NO_KEYS,
@@ -572,12 +711,12 @@ var blank_screen = {
   type: 'html-keyboard-response',
   stimulus: `
       <div style="position: absolute; top: 2vh; left: 2vw;">
-        <img src="${CONFIG.LEFT_SINGLE_EXAMPLE}" style="width:100px;"></img>
-        <p>${CONFIG.LEFT_KEY.toUpperCase()} = ${CONFIG.LEFT_SHAPE}</p>
+        <img src="${specCONFIG.LEFT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+        <p>${CONFIG.LEFT_KEY.toUpperCase()} = ${specCONFIG.LEFT_SHAPE}</p>
       </div>
       <div style="position: absolute; top: 2vh; right: 2vw;">
-        <img src="${CONFIG.RIGHT_SINGLE_EXAMPLE}" style="width:100px;"></img>
-        <p>${CONFIG.RIGHT_KEY.toUpperCase()} = ${CONFIG.RIGHT_SHAPE}</p>
+        <img src="${specCONFIG.RIGHT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+        <p>${CONFIG.RIGHT_KEY.toUpperCase()} = ${specCONFIG.RIGHT_SHAPE}</p>
       </div>`,
   trial_duration: CONFIG.FEEDBACK_DURATION,
   choices: jsPsych.NO_KEYS
@@ -606,7 +745,7 @@ var blank_in_place_of_feedback = {
 
 var practice_trials = {
   timeline: [fixation, target_display, practice_feedback, blank_in_place_of_feedback],
-  timeline_variables: CONFIG.PRACTICE_TRIALS,
+  timeline_variables: specCONFIG.PRACTICE_TRIALS,
   data: {
     phase: 'practice'
   },
@@ -631,7 +770,7 @@ var test_procedure = {
 for (var b = 1; b <= CONFIG.TOTAL_BLOCKS; b++) {
   var test_block = {
     timeline: [fixation, target_display, timeout_display, feedback, blank_in_place_of_feedback],
-    timeline_variables: CONFIG.TRIAL_INFO.filter(function (x) { return x.block == b }),
+    timeline_variables: specCONFIG.TRIAL_INFO.filter(function (x) { return x.block == b }),
     data: {
       block: b
     }
@@ -684,7 +823,7 @@ var final_screen = {
     var correct_trial_count = jsPsych.data.get().filter({ task: 'respond', phase: 'test', correct: true }).count();
     var total_trial_count = jsPsych.data.get().filter({ task: 'respond', phase: 'test' }).count();
 
-    var total_earned = CONFIG.TOTAL_REWARD; //jsPsych.data.get().filter({task: 'reward-feedback'}).count() * CONFIG.REWARD_AMOUNT / 100;
+    var total_earned = specCONFIG.TOTAL_REWARD; //jsPsych.data.get().filter({task: 'reward-feedback'}).count() * CONFIG.REWARD_AMOUNT / 100;
 
     var output_html = `<p>You have completed the task!</p>`
 
@@ -692,7 +831,7 @@ var final_screen = {
 
       output_html += `<p>You responded correctly on ${correct_trial_count} of ${total_trial_count} trials.</p>`
     }
-    if (CONFIG.REWARD_AMOUNT != null && CONFIG.REWARD_AMOUNT != 0) {
+    if (specCONFIG.REWARD_AMOUNT != null && specCONFIG.REWARD_AMOUNT != 0) {
       output_html += `<p>You earned $${total_earned.toFixed(2)}!</p>`
     }
     output_html += `<p>Please return to the REDCap tab to finish the surveys.
@@ -709,9 +848,12 @@ var final_screen = {
 
 
 /* initialization */
+var timeline_input = [];
 var timeline = [];
 
 // timeline.push(id_entry);
+
+timeline.push(id_entry);
 timeline.push(instructions_intro);
 timeline.push(practice_procedure);
 timeline.push(instructions_feedback);
@@ -724,9 +866,18 @@ if (CONFIG.PLAY_REWARD_AUDIO) {
   audio.push(CONFIG.REWARD_SOUND)
 }
 
+/* add TMB script if using TMB to save data */
+if (CONFIG.SAVE_DATA_TYPE == 'tmb') {
+  var head = document.getElementsByTagName('head')[0];
+  var js = document.createElement("script");
+  js.type = "text/javascript";
+  js.src = "TestMyBrain.12.18.min.js";
+  head.appendChild(js);
+}
+
 jsPsych.init({
   timeline: timeline,
-  preload_images: CONFIG.IMAGE_LIST,
+  preload_images: specCONFIG.IMAGE_LIST,
   preload_audio: audio,
   use_webaudio: true,
   experiment_width: 800
