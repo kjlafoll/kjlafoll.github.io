@@ -389,6 +389,12 @@ var instructions_feedback_3 = {
 }
 
 if (isMobile == true) {
+  instructions_practice_loop.on_load = function() {
+    window.addEventListener("click", advance)
+  }
+  instructions_practice_loop.on_finish = function() {
+    window.removeEventListener("click", advance)
+  }
   instructions_feedback_1.on_load = function() {
     window.addEventListener("click", advance)
   }
