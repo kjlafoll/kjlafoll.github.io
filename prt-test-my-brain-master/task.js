@@ -14,10 +14,10 @@ var converter = {
   A2: CONFIG_A2,
   A3: CONFIG_A3,
   A4: CONFIG_A4,
-  B1: CONFIG_A1,
-  B2: CONFIG_A2,
-  B3: CONFIG_A3,
-  B4: CONFIG_A4,
+  B1: CONFIG_B1,
+  B2: CONFIG_B2,
+  B3: CONFIG_B3,
+  B4: CONFIG_B4,
   C1: CONFIG_A1,
   C2: CONFIG_A2,
   C3: CONFIG_A3,
@@ -81,6 +81,66 @@ var id_entry = {
       right_shape: specCONFIG.RIGHT_SHAPE,
       bias_shape: specCONFIG.BIAS_SHAPE
     });
+    var test_procedure = {
+      timeline: [],
+      data: {
+        phase: 'test'
+      }
+    }
+    for (var b = 1; b <= CONFIG.TOTAL_BLOCKS; b++) {
+      var test_block = {
+        timeline: [fixation, target_display, timeout_display, feedback, blank_in_place_of_feedback],
+        timeline_variables: specCONFIG.TRIAL_INFO.filter(function (x) { return x.block == b }),
+        data: {
+          block: b
+        }
+      }
+      test_procedure.timeline.push(test_block);
+      if (b < CONFIG.TOTAL_BLOCKS) {
+        var rest = {
+          type: 'html-keyboard-response',
+          stimulus: `<p>You have completed ${b} of ${CONFIG.TOTAL_BLOCKS} blocks of trials.</p>
+                <p>The next block will begin in ${CONFIG.BREAK_LENGTH / 1000} seconds.</p>`,
+          trial_duration: CONFIG.BREAK_LENGTH,
+          choices: jsPsych.NO_KEYS,
+          on_finish: function(){
+            // reset the unrewarded trials count, as these are on a per-block basis
+            unrewarded_left_trials = 0;
+            unrewarded_right_trials = 0;
+          }
+        }
+        test_procedure.timeline.push(rest);
+      }
+    }
+    var practice_trials = {
+      timeline: [fixation, target_display, practice_feedback, blank_in_place_of_feedback],
+      timeline_variables: specCONFIG.PRACTICE_TRIALS,
+      data: {
+        phase: 'practice'
+      },
+      randomize_order: true
+    }
+    
+    var practice_procedure = {
+      timeline: [practice_trials, instructions_practice_loop],
+      loop_function: function (data) {
+        return data.last(1).values()[0].key_press == jsPsych.pluginAPI.convertKeyCharacterToKeyCode('y');
+      }
+    }
+    timeline = [];
+    timeline.push(instructions_intro);
+    timeline.push(practice_procedure);
+    timeline.push(instructions_feedback);
+    timeline.push(test_procedure);
+    timeline.push(save_data);
+    timeline.push(final_screen);
+    jsPsych.init({
+      timeline: timeline,
+      preload_images: specCONFIG.IMAGE_LIST,
+      preload_audio: audio,
+      use_webaudio: true,
+      experiment_width: 800
+    })
   }
 }
 
@@ -724,7 +784,6 @@ if (CONFIG.PLAY_REWARD_AUDIO) {
       <div style="position: absolute; top: 2vh; right: 2vw;">
         <img src="${specCONFIG.RIGHT_SINGLE_EXAMPLE}" style="width:100px;"></img>
         <p>${CONFIG.RIGHT_KEY.toUpperCase()} = ${specCONFIG.RIGHT_SHAPE}</p>
-        <p> Hello! </p>
       </div>`
       } else {
         return `<div style="position: absolute; top: 2vh; left: 2vw;">
@@ -756,7 +815,6 @@ var blank_screen = {
     <div style="position: absolute; top: 2vh; right: 2vw;">
       <img src="${specCONFIG.RIGHT_SINGLE_EXAMPLE}" style="width:100px;"></img>
       <p>${CONFIG.RIGHT_KEY.toUpperCase()} = ${specCONFIG.RIGHT_SHAPE}</p>
-      <p> Hello! </p>
     </div>`
     } else {
       return `<div style="position: absolute; top: 2vh; left: 2vw;">
@@ -789,58 +847,6 @@ var blank_in_place_of_feedback = {
     // this checks if the last trial was a feedback trial, in which case
     // we don't need to show this blank screen
     return jsPsych.data.get().last(1).values()[0].task != 'reward-feedback';
-  }
-}
-
-/* practice version */
-
-var practice_trials = {
-  timeline: [fixation, target_display, practice_feedback, blank_in_place_of_feedback],
-  timeline_variables: specCONFIG.PRACTICE_TRIALS,
-  data: {
-    phase: 'practice'
-  },
-  randomize_order: true
-}
-
-var practice_procedure = {
-  timeline: [practice_trials, instructions_practice_loop],
-  loop_function: function (data) {
-    return data.last(1).values()[0].key_press == jsPsych.pluginAPI.convertKeyCharacterToKeyCode('y');
-  }
-}
-
-/* real version */
-
-var test_procedure = {
-  timeline: [],
-  data: {
-    phase: 'test'
-  }
-}
-for (var b = 1; b <= CONFIG.TOTAL_BLOCKS; b++) {
-  var test_block = {
-    timeline: [fixation, target_display, timeout_display, feedback, blank_in_place_of_feedback],
-    timeline_variables: specCONFIG.TRIAL_INFO.filter(function (x) { return x.block == b }),
-    data: {
-      block: b
-    }
-  }
-  test_procedure.timeline.push(test_block);
-  if (b < CONFIG.TOTAL_BLOCKS) {
-    var rest = {
-      type: 'html-keyboard-response',
-      stimulus: `<p>You have completed ${b} of ${CONFIG.TOTAL_BLOCKS} blocks of trials.</p>
-            <p>The next block will begin in ${CONFIG.BREAK_LENGTH / 1000} seconds.</p>`,
-      trial_duration: CONFIG.BREAK_LENGTH,
-      choices: jsPsych.NO_KEYS,
-      on_finish: function(){
-        // reset the unrewarded trials count, as these are on a per-block basis
-        unrewarded_left_trials = 0;
-        unrewarded_right_trials = 0;
-      }
-    }
-    test_procedure.timeline.push(rest);
   }
 }
 
@@ -899,18 +905,9 @@ var final_screen = {
 
 
 /* initialization */
-var timeline_input = [];
-var timeline = [];
+var timeline_entry = [];
 
-// timeline.push(id_entry);
-
-timeline.push(id_entry);
-timeline.push(instructions_intro);
-timeline.push(practice_procedure);
-timeline.push(instructions_feedback);
-timeline.push(test_procedure);
-timeline.push(save_data);
-timeline.push(final_screen);
+timeline_entry.push(id_entry);
 
 var audio = [];
 if (CONFIG.PLAY_REWARD_AUDIO) {
@@ -927,7 +924,7 @@ if (CONFIG.SAVE_DATA_TYPE == 'tmb') {
 }
 
 jsPsych.init({
-  timeline: timeline,
+  timeline: timeline_entry,
   preload_images: specCONFIG.IMAGE_LIST,
   preload_audio: audio,
   use_webaudio: true,

@@ -22,18 +22,11 @@ displayed. The rewarded variable controls whether the stimulus will be rewarded 
 
 */
 
-var LEFT_IMG = 'cats';
-var RIGHT_IMG = 'dogs';
+var LEFT_IMG = 'dogs';
+var RIGHT_IMG = 'cats';
 var BIAS = 'cats';
 
 var IMG_FOLDER = 'img/cat1_dog1/';
-// if ((MORE == 'cats' && MORE == LEFT_IMG) || (MORE == 'dogs' && MORE == RIGHT_IMG)) {
-//   var LEFT_MORE = 'M_L';
-//   var RIGHT_MORE = 'L_M';
-// } else if ((MORE == 'cats' && MORE == RIGHT_IMG) || (MORE == 'dogs' && MORE == LEFT_IMG)) {
-//   var RIGHT_MORE = 'M_L';
-//   var LEFT_MORE = 'L_M';
-// }
 if ((LEFT_IMG == 'cats') && (RIGHT_IMG == 'dogs')) {
   var LEFT_MORE = 'M_L';
   var RIGHT_MORE = 'L_M';
