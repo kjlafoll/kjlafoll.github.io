@@ -22,26 +22,26 @@ displayed. The rewarded variable controls whether the stimulus will be rewarded 
 
 */
 
-var LEFT_IMG = 'cats';
+var LEFT_IMG = 'bunnies';
 var RIGHT_IMG = 'dogs';
 var BIAS = 'dogs';
 
-var IMG_FOLDER = 'img/cat1_dog1/';
-if ((LEFT_IMG == 'cats') && (RIGHT_IMG == 'dogs')) {
+var IMG_FOLDER = 'img/bunny1_dog2/';
+if ((LEFT_IMG == 'bunnies') && (RIGHT_IMG == 'dogs')) {
   var LEFT_MORE = 'M_L';
   var RIGHT_MORE = 'L_M';
-} else if ((RIGHT_IMG == 'cats') && (LEFT_IMG == 'dogs')) {
+} else if ((RIGHT_IMG == 'bunnies') && (LEFT_IMG == 'dogs')) {
   var RIGHT_MORE = 'M_L';
   var LEFT_MORE = 'L_M';
 }
-if (BIAS == 'cats') {
+if (BIAS == 'bunnies') {
   var REWARD = 1;
 } else if (BIAS == 'dogs') {
   var REWARD = 0;
 }
 
 // SECTION 1 //
-var CONFIG_A4 = {
+var CONFIG_B2 = {
   LEFT_SHAPE: LEFT_IMG, // use plural form
   RIGHT_SHAPE: RIGHT_IMG, // use plural form
   BIAS_SHAPE: BIAS, // this is only for the purpose of recording in the data. actual bias is determined by the trial variables in SECTION 4.
@@ -52,12 +52,12 @@ var CONFIG_A4 = {
   LEFT_PREFIX: LEFT_MORE, // the part of the image filename that identifies that there are more LEFT_SHAPE than RIGHT_SHAPE
   RIGHT_PREFIX: RIGHT_MORE, // the part of the image filename that identifies that there are more RIGHT_SHAPE than LEFT_SHAPE
   REWARD_AMOUNT: 20, // cents; set to null if no monetary reward
-  TOTAL_REWARD: 16.40, // dollars
+  TOTAL_REWARD: 16.20, // dollars
   REWARD_IMAGE: IMG_FOLDER+'reward.gif', // the image to show on a reward trial
 }
 
 // SECTION 2 //
-CONFIG_A4.IMAGE_LIST = [
+CONFIG_B2.IMAGE_LIST = [
   IMG_FOLDER+'L_M_3.jpg',
   IMG_FOLDER+'L_M_4.jpg',
   IMG_FOLDER+'L_M_5.jpg',
@@ -81,7 +81,7 @@ CONFIG_A4.IMAGE_LIST = [
 
 // SECTION 3 //
 // note that practice trials will be shown in a random order
-CONFIG_A4.PRACTICE_TRIALS = [
+CONFIG_B2.PRACTICE_TRIALS = [
   {block: null, trial: null, stimulus: IMG_FOLDER+'L_M_3.jpg', rewarded: null},
   {block: null, trial: null, stimulus: IMG_FOLDER+'L_M_4.jpg', rewarded: null},
   {block: null, trial: null, stimulus: IMG_FOLDER+'L_M_5.jpg', rewarded: null},
@@ -93,7 +93,7 @@ CONFIG_A4.PRACTICE_TRIALS = [
 ]
 
 // SECTION 4 //
-CONFIG_A4.TRIAL_INFO = [
+CONFIG_B2.TRIAL_INFO = [
   { block: 1, trial: 1, stimulus: IMG_FOLDER+"M_L_6.jpg", rewarded: Math.abs(0 - REWARD) },
   { block: 1, trial: 2, stimulus: IMG_FOLDER+"L_M_5.jpg", rewarded: Math.abs(1 - REWARD) },
   { block: 1, trial: 3, stimulus: IMG_FOLDER+"M_L_6.jpg", rewarded: Math.abs(0 - REWARD) },
