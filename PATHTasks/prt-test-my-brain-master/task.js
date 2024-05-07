@@ -18,6 +18,7 @@ var converter = {
   B2: CONFIG_B2,
   B3: CONFIG_B3,
   B4: CONFIG_B4,
+  B5: CONFIG_B5,
   C1: CONFIG_A1,
   C2: CONFIG_A2,
   C3: CONFIG_A3,
