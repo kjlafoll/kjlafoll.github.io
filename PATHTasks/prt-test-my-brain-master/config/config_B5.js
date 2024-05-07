@@ -41,7 +41,7 @@ if (BIAS == 'bunnies') {
 }
 
 // SECTION 1 //
-var CONFIG_B4 = {
+var CONFIG_B5 = {
   LEFT_SHAPE: LEFT_IMG, // use plural form
   RIGHT_SHAPE: RIGHT_IMG, // use plural form
   BIAS_SHAPE: BIAS, // this is only for the purpose of recording in the data. actual bias is determined by the trial variables in SECTION 4.
@@ -57,7 +57,7 @@ var CONFIG_B4 = {
 }
 
 // SECTION 2 //
-CONFIG_B4.IMAGE_LIST = [
+CONFIG_B5.IMAGE_LIST = [
   IMG_FOLDER+'L_M_3.jpg',
   IMG_FOLDER+'L_M_4.jpg',
   IMG_FOLDER+'L_M_5.jpg',
@@ -81,7 +81,7 @@ CONFIG_B4.IMAGE_LIST = [
 
 // SECTION 3 //
 // note that practice trials will be shown in a random order
-CONFIG_B4.PRACTICE_TRIALS = [
+CONFIG_B5.PRACTICE_TRIALS = [
   {block: null, trial: null, stimulus: IMG_FOLDER+'L_M_3.jpg', rewarded: null},
   {block: null, trial: null, stimulus: IMG_FOLDER+'L_M_4.jpg', rewarded: null},
   {block: null, trial: null, stimulus: IMG_FOLDER+'L_M_5.jpg', rewarded: null},
@@ -93,7 +93,7 @@ CONFIG_B4.PRACTICE_TRIALS = [
 ]
 
 // SECTION 4 //
-CONFIG_B4.TRIAL_INFO = [
+CONFIG_B5.TRIAL_INFO = [
   { block: 1, trial: 1, stimulus: IMG_FOLDER+"M_L_6.jpg", rewarded: Math.abs(0 - REWARD) },
   { block: 1, trial: 2, stimulus: IMG_FOLDER+"L_M_5.jpg", rewarded: Math.abs(1 - REWARD) },
   { block: 1, trial: 3, stimulus: IMG_FOLDER+"M_L_6.jpg", rewarded: Math.abs(0 - REWARD) },
