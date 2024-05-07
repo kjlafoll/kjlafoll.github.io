@@ -878,7 +878,7 @@ var save_data = {
       datadict['prt_data_json'.concat("_", jsPsych.data.get().values()[0]['time'])] = JSON.stringify(jsPsych.data.get().ignore("internal_node_id").ignore("key_press").values());
       const body = {
           method: 'POST',
-          token: '6543B93BA07C88CFA3FD68E9692B1A87',
+          token: 'BBB56B8445954A08A65E9517DB426E2F',
           content: 'record',
           format: 'json',
           type: 'flat',
