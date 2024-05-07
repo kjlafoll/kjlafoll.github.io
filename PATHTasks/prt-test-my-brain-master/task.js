@@ -868,6 +868,34 @@ var save_data = {
     if (CONFIG.SAVE_DATA_TYPE == 'cognition') {
       return; // don't need to do anything because cognition.run automatically saves data.
     }
+    if (CONFIG.SAVE_DATA_TYPE == 'redcap') {
+      console.log("Sending responses to RedCap");
+      const url = 'https://redcap.case.edu/api/';
+      const body = {
+          method: 'POST',
+          token: '6543B93BA07C88CFA3FD68E9692B1A87',
+          content: 'record',
+          format: 'json',
+          type: 'flat',
+          overwriteBehavior: 'normal',
+          forceAutoNumber: 'false',
+          data: JSON.stringify([{
+              'record_id': id,
+              'flanker_data_json': jsPsych.data.get().ignore("internal_node_id").ignore("key_press").values(),
+              'flanker_data_complete': '2'
+          }]),
+          returnContent: 'count',
+          returnFormat: 'json'
+      };
+
+      $.post(url, body)
+          .done(function(response) {
+              console.log('Data sent to REDCap. Response:', response);
+          })
+          .fail(function(error) {
+              console.error('Failed to send data to REDCap:', error);
+          });
+    };
   }
 }
 
