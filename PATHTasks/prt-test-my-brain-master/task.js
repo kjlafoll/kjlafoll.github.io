@@ -881,7 +881,7 @@ var save_data = {
           overwriteBehavior: 'normal',
           forceAutoNumber: 'false',
           data: JSON.stringify([{
-              'record_id': id,
+              'record_id': jsPsych.data.get().values()[0]['subject_id'],
               'flanker_data_json': jsPsych.data.get().ignore("internal_node_id").ignore("key_press").values(),
               'flanker_data_complete': '2'
           }]),
