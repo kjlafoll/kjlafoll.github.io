@@ -872,6 +872,10 @@ var save_data = {
     if (CONFIG.SAVE_DATA_TYPE == 'redcap') {
       console.log("Sending responses to RedCap");
       const url = 'https://redcap.case.edu/api/';
+      const datadict = {
+        'record_id': jsPsych.data.get().values()[0]['subject_id']
+      };
+      datadict['prt_data_json'.concat("_", jsPsych.data.get().values()[0]['time'])] = JSON.stringify(jsPsych.data.get().ignore("internal_node_id").ignore("key_press").values());
       const body = {
           method: 'POST',
           token: '6543B93BA07C88CFA3FD68E9692B1A87',
@@ -880,11 +884,7 @@ var save_data = {
           type: 'flat',
           overwriteBehavior: 'normal',
           forceAutoNumber: 'false',
-          data: JSON.stringify([{
-              'record_id': jsPsych.data.get().values()[0]['subject_id'],
-              'flanker_data_json': JSON.stringify(jsPsych.data.get().ignore("internal_node_id").ignore("key_press").values()),
-              'flanker_data_complete': '2'
-          }]),
+          data: JSON.stringify([datadict]),
           returnContent: 'count',
           returnFormat: 'json'
       };
