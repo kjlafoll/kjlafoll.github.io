@@ -96,7 +96,7 @@ CONFIG_B5.PRACTICE_TRIALS = [
 CONFIG_B5.TRIAL_INFO = [
   { block: 1, trial: 1, stimulus: IMG_FOLDER+"M_L_6.jpg", rewarded: Math.abs(0 - REWARD) },
   { block: 1, trial: 2, stimulus: IMG_FOLDER+"L_M_5.jpg", rewarded: Math.abs(1 - REWARD) },
-  { block: 1, trial: 3, stimulus: IMG_FOLDER+"M_L_6.jpg", rewarded: Math.abs(0 - REWARD) },
-  { block: 1, trial: 4, stimulus: IMG_FOLDER+"L_M_3.jpg", rewarded: Math.abs(1 - REWARD) },
-  { block: 1, trial: 5, stimulus: IMG_FOLDER+"M_L_7.jpg", rewarded: Math.abs(0 - REWARD) }
+  { block: 2, trial: 1, stimulus: IMG_FOLDER+"M_L_6.jpg", rewarded: Math.abs(0 - REWARD) },
+  { block: 2, trial: 2, stimulus: IMG_FOLDER+"L_M_3.jpg", rewarded: Math.abs(1 - REWARD) },
+  { block: 3, trial: 1, stimulus: IMG_FOLDER+"M_L_7.jpg", rewarded: Math.abs(0 - REWARD) }
  ]
