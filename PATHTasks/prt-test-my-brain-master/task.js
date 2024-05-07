@@ -927,6 +927,6 @@ jsPsych.init({
   timeline: timeline_entry,
   preload_images: specCONFIG.IMAGE_LIST,
   preload_audio: audio,
-  use_webaudio: false,
+  use_webaudio: true,
   experiment_width: 800
 })
