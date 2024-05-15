@@ -64,6 +64,7 @@ var id_entry = {
   questions: [
     { prompt: 'Please enter your ID in the text box below:'},
     { prompt: 'Please enter your Group Letter in the text box below:'},
+    { prompt: 'Please enter your Group Number in the text box below'},
     { prompt: 'Please enter your Time Point in the text box below:'}
   ],
   data: {
@@ -71,9 +72,9 @@ var id_entry = {
   },
   on_finish: function (data) {
     var id = JSON.parse(data.responses).Q0;
-    var group = JSON.parse(data.responses).Q1;
-    var time = JSON.parse(data.responses).Q2;
-    specCONFIG = converter[group+time];
+    var group = JSON.parse(data.responses).Q1 + JSON.parse(data.responses).Q2;
+    var time = JSON.parse(data.responses).Q3;
+    specCONFIG = converter[group];
     jsPsych.data.addProperties({
       subject_id: id,
       group: group,
