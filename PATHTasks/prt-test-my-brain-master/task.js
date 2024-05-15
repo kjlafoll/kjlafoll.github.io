@@ -873,7 +873,8 @@ var save_data = {
       console.log("Sending responses to RedCap");
       const url = 'https://redcap.case.edu/api/';
       const datadict = {
-        'record_id': jsPsych.data.get().values()[0]['subject_id']
+        'record_id': jsPsych.data.get().values()[0]['subject_id'],
+        'redcap_event_name': 'intake_arm_1'
       };
       datadict['prt_data_json'.concat("_", jsPsych.data.get().values()[0]['time'])] = JSON.stringify(jsPsych.data.get().ignore("internal_node_id").ignore("key_press").values());
       const body = {
@@ -920,8 +921,7 @@ var final_screen = {
     if (specCONFIG.REWARD_AMOUNT != null && specCONFIG.REWARD_AMOUNT != 0) {
       output_html += `<p>You earned $${total_earned.toFixed(2)}!</p>`
     }
-    output_html += `<p>Please return to the REDCap tab to finish the surveys.
-           If you have any issues returning to REDCap, email Kaylee at <a style="color: DodgerBlue" href="mailto:knull@mclean.harvard.edu">knull@mclean.harvard.edu</a> and provide your worker ID.</p>`
+    output_html += `<p>Please let the study team know that you are finished with this task.</p>`
     return output_html;
   },
   on_load: function () {
