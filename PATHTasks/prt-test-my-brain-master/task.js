@@ -1,4 +1,7 @@
 /* add TMB script if using TMB to save data */
+
+var releaseversion = true;
+
 if (CONFIG.SAVE_DATA_TYPE == 'tmb') {
   var head = document.getElementsByTagName('head')[0];
   var js = document.createElement("script");
@@ -76,26 +79,19 @@ var id_entry = {
   }
 }
 
-var version_select_pre = {
-  type: 'survey-multi-choice',
-  preamble: '<p style="font-size:24px;">Welcome to the task!</p>',
-  questions: [{prompt: 'Please choose your Group Letter (A or B):', options: ["A", "B"], required: true},
-    {prompt: 'Please choose your Group Number (1 - 4):', options: ["1", "2", "3", "4"], required: true},
-    {prompt: 'Please choose your Time Point (1 - 5):', options: ["1", "2", "3", "4", "5"], required: true}
-  ],
-}
-
 var version_select = {
   type: 'survey-multi-choice',
   preamble: '<p style="font-size:24px;">Welcome to the task!</p>',
-  questions: [{prompt: 'Please choose your Group Letter (A or B):', options: ["A", "B"], required: true},
-    {prompt: 'Please choose your Group Number (1 - 4):', options: ["1", "2", "3", "4"], required: true},
-    {prompt: 'Please choose your Time Point (1 - 5):', options: ["1", "2", "3", "4", "5"], required: true}
+  questions: [{prompt: 'Please choose your Group Letter (A or B):', options: ["A", "B"], required: true, horizontal: true},
+    {prompt: 'Please choose your Group Number (1 - 4):', options: ["1", "2", "3", "4"], required: true, horizontal: true},
+    {prompt: 'Please choose your Time Point (1 - 5):', options: ["1", "2", "3", "4", "5"], required: true, horizontal: true}
   ],
-  // horizontal: false,
+  data: {
+    task: 'start',
+  },
   on_finish: function (data) {
-    var group = JSON.parse(data.responses).Q0 + JSON.parse(data.responses).Q1;
-    var time = JSON.parse(data.responses).Q2;
+    var group = data.response.Q0 + data.response.Q1
+    var time = data.response.Q2;
     specCONFIG = converter[group];
     jsPsych.data.addProperties({
       group: group,
@@ -185,7 +181,7 @@ var version_select = {
       timeline: timeline,
       preload_images: specCONFIG.IMAGE_LIST,
       preload_audio: audio,
-      use_webaudio: true,
+      use_webaudio: releaseversion,
       experiment_width: 800
     })
   }
@@ -981,9 +977,7 @@ var final_screen = {
 /* initialization */
 var timeline_entry = [];
 
-timeline_entry.push(version_select_pre);
 timeline_entry.push(id_entry);
-timeline_entry.push(version_select_pre);
 timeline_entry.push(version_select);
 
 var audio = [];
@@ -1002,5 +996,8 @@ if (CONFIG.SAVE_DATA_TYPE == 'tmb') {
 
 jsPsych.init({
   timeline: timeline_entry,
+  preload_images: specCONFIG.IMAGE_LIST,
+  preload_audio: audio,
+  use_webaudio: releaseversion,
   experiment_width: 800
 })
