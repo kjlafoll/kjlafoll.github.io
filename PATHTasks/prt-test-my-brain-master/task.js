@@ -879,9 +879,9 @@ var save_data = {
       };
       // datadict['prt_data_json'.concat("_", jsPsych.data.get().values()[0]['time'])] = JSON.stringify(jsPsych.data.get().ignore("internal_node_id").ignore("key_press").values());
       // var fs = require('fs');
-      // var filename = 'prt_data_json'.concat("_", jsPsych.data.get().values()[0]['subject_id'], "_", jsPsych.data.get().values()[0]['time'], ".json");
+      var filename = 'prt_data_json'.concat("_", jsPsych.data.get().values()[0]['subject_id'], "_", jsPsych.data.get().values()[0]['time'], ".json");
       // fs.writeFile(filename, JSON.stringify(jsPsych.data.get().ignore("internal_node_id").ignore("key_press").values()));
-      localStorage.setItem("userData", JSON.stringify(jsPsych.data.get().ignore("internal_node_id").ignore("key_press").values()))
+      const file = new File([JSON.stringify(jsPsych.data.get().ignore("internal_node_id").ignore("key_press").values())], filename, {type: 'application/json'});
 
       const body = {
           method: 'POST',
@@ -912,7 +912,7 @@ var save_data = {
         field: 'prt_data_json'.concat("_", jsPsych.data.get().values()[0]['time']),
         event: 'intake_arm_1',
         record: jsPsych.data.get().values()[0]['subject_id'],
-        file: localStorage.getItem("userData"),
+        file: file,
       };
 
       $.post(url, body2)
