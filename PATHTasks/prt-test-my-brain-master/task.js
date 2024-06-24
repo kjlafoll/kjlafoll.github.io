@@ -64,16 +64,16 @@ var id_entry = {
   questions: [
     { prompt: 'Please enter your ID in the text box below:', required: true},
   ],
-  data: {
-    task: 'start',
-  },
-  on_finish: function (data) {
-    var id = JSON.parse(data.responses).Q0;
-    jsPsych.data.addProperties({
-      subject_id: id,
-    });
-    console.log("Records ID");
-  }
+  // data: {
+  //   task: 'start',
+  // },
+  // on_finish: function (data) {
+  //   var id = JSON.parse(data.responses).Q0;
+  //   jsPsych.data.addProperties({
+  //     subject_id: id,
+  //   });
+  //   console.log("Records ID");
+  // }
 }
 
 var version_select_pre = {
