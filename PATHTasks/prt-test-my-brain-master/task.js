@@ -881,7 +881,7 @@ var save_data = {
       // var fs = require('fs');
       var filename = 'prt_data_json'.concat("_", jsPsych.data.get().values()[0]['subject_id'], "_", jsPsych.data.get().values()[0]['time'], ".json");
       // fs.writeFile(filename, JSON.stringify(jsPsych.data.get().ignore("internal_node_id").ignore("key_press").values()));
-      const file = new File([JSON.stringify(jsPsych.data.get().ignore("internal_node_id").ignore("key_press").values())], filename, {type: 'application/json'});
+      const file = new File([JSON.stringify(jsPsych.data.get().ignore("internal_node_id").ignore("key_press").values())], filename);
 
       const body = {
           method: 'POST',
