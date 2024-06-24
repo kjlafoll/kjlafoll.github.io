@@ -877,7 +877,12 @@ var save_data = {
         'record_id': jsPsych.data.get().values()[0]['subject_id'],
         'redcap_event_name': 'intake_arm_1'
       };
-      datadict['prt_data_json'.concat("_", jsPsych.data.get().values()[0]['time'])] = JSON.stringify(jsPsych.data.get().ignore("internal_node_id").ignore("key_press").values());
+      // datadict['prt_data_json'.concat("_", jsPsych.data.get().values()[0]['time'])] = JSON.stringify(jsPsych.data.get().ignore("internal_node_id").ignore("key_press").values());
+      // var fs = require('fs');
+      // var filename = 'prt_data_json'.concat("_", jsPsych.data.get().values()[0]['subject_id'], "_", jsPsych.data.get().values()[0]['time'], ".json");
+      // fs.writeFile(filename, JSON.stringify(jsPsych.data.get().ignore("internal_node_id").ignore("key_press").values()));
+      localStorage.setItem("userData", JSON.stringify(jsPsych.data.get().ignore("internal_node_id").ignore("key_press").values()))
+
       const body = {
           method: 'POST',
           token: 'BBB56B8445954A08A65E9517DB426E2F',
@@ -892,6 +897,25 @@ var save_data = {
       };
 
       $.post(url, body)
+          .done(function(response) {
+              console.log('Creating record to REDCap. Response:', response);
+          })
+          .fail(function(error) {
+              console.error('Failed to create record to REDCap:', error);
+          });
+
+      const body2 = {
+        method: 'POST',
+        token: 'BBB56B8445954A08A65E9517DB426E2F',
+        content: 'file',
+        action: 'import',
+        field: 'prt_data_json'.concat("_", jsPsych.data.get().values()[0]['time']),
+        event: 'intake_arm_1',
+        record: jsPsych.data.get().values()[0]['subject_id'],
+        file: localStorage.getItem("userData"),
+      };
+
+      $.post(url, body2)
           .done(function(response) {
               console.log('Data sent to REDCap. Response:', response);
           })
