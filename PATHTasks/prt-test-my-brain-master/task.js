@@ -76,6 +76,15 @@ var id_entry = {
   }
 }
 
+var version_select_pre = {
+  type: 'survey-multi-choice',
+  preamble: '<p style="font-size:24px;">Welcome to the task!</p>',
+  questions: [{prompt: 'Please choose your Group Letter (A or B):', options: ["A", "B"], required: true},
+    {prompt: 'Please choose your Group Number (1 - 4):', options: ["1", "2", "3", "4"], required: true},
+    {prompt: 'Please choose your Time Point (1 - 5):', options: ["1", "2", "3", "4", "5"], required: true}
+  ],
+}
+
 var version_select = {
   type: 'survey-multi-choice',
   preamble: '<p style="font-size:24px;">Welcome to the task!</p>',
@@ -973,6 +982,7 @@ var final_screen = {
 var timeline_entry = [];
 
 timeline_entry.push(id_entry);
+timeline_entry.push(version_select_pre);
 timeline_entry.push(version_select);
 
 var audio = [];
