@@ -72,6 +72,7 @@ var id_entry = {
     jsPsych.data.addProperties({
       subject_id: id,
     });
+    console.log("Records ID");
   }
 }
 
