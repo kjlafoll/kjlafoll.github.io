@@ -64,16 +64,16 @@ var id_entry = {
   questions: [
     { prompt: 'Please enter your ID in the text box below:', required: true},
   ],
-  // data: {
-  //   task: 'start',
-  // },
-  // on_finish: function (data) {
-  //   var id = JSON.parse(data.responses).Q0;
-  //   jsPsych.data.addProperties({
-  //     subject_id: id,
-  //   });
-  //   console.log("Records ID");
-  // }
+  data: {
+    task: 'start',
+  },
+  on_finish: function (data) {
+    var id = JSON.parse(data.responses).Q0;
+    jsPsych.data.addProperties({
+      subject_id: id,
+    });
+    console.log("Records ID");
+  }
 }
 
 var version_select_pre = {
@@ -981,6 +981,7 @@ var final_screen = {
 /* initialization */
 var timeline_entry = [];
 
+timeline_entry.push(version_select_pre);
 timeline_entry.push(id_entry);
 timeline_entry.push(version_select_pre);
 timeline_entry.push(version_select);
