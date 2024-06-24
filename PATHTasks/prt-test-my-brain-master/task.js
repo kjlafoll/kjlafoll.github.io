@@ -87,9 +87,6 @@ var version_select = {
     ["1", "2", "3", "4", "5"]],
   required: [true, true, true],
   horizontal: false,
-  data: {
-    task: 'start',
-  },
   on_finish: function (data) {
     var group = JSON.parse(data.responses).Q0 + JSON.parse(data.responses).Q1;
     var time = JSON.parse(data.responses).Q2;
