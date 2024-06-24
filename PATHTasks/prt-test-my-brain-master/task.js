@@ -62,9 +62,8 @@ var id_entry = {
   type: 'survey-text',
   preamble: '<p style="font-size:24px;">Welcome to the task!</p>',
   questions: [
-    { prompt: 'Please enter your ID in the text box below:'},
+    { prompt: 'Please enter your ID in the text box below:', required: true},
   ],
-  required: [true],
   data: {
     task: 'start',
   },
@@ -85,9 +84,6 @@ var version_select = {
   options: [["A", "B"],
     ["1", "2", "3", "4"],
     ["1", "2", "3", "4", "5"]],
-  data: {
-    task: 'start',
-    },
   required: [true, true, true],
   horizontal: false,
   on_finish: function (data) {
