@@ -63,20 +63,38 @@ var id_entry = {
   preamble: '<p style="font-size:24px;">Welcome to the task!</p>',
   questions: [
     { prompt: 'Please enter your ID in the text box below:'},
-    { prompt: 'Please enter your Group Letter (A or B) in the text box below:'},
-    { prompt: 'Please enter your Group Number (1 - 4) in the text box below'},
-    { prompt: 'Please enter your Time Point (1 - 5) in the text box below:'}
   ],
+  required: [true],
   data: {
     task: 'start',
   },
   on_finish: function (data) {
     var id = JSON.parse(data.responses).Q0;
-    var group = JSON.parse(data.responses).Q1 + JSON.parse(data.responses).Q2;
-    var time = JSON.parse(data.responses).Q3;
-    specCONFIG = converter[group];
     jsPsych.data.addProperties({
       subject_id: id,
+    });
+  }
+}
+
+var version_select = {
+  type: 'survey-multi-choice',
+  preamble: '<p style="font-size:24px;">Welcome to the task!</p>',
+  questions: ['Please enter your Group Letter (A or B) in the text box below:',
+    'Please enter your Group Number (1 - 4) in the text box below',
+    'Please enter your Time Point (1 - 5) in the text box below:'],
+  options: [["A", "B"],
+    ["1", "2", "3", "4"],
+    ["1", "2", "3", "4", "5"]],
+  data: {
+    task: 'start',
+    },
+  required: [true, true, true],
+  horizontal: false,
+  on_finish: function (data) {
+    var group = JSON.parse(data.responses).Q0 + JSON.parse(data.responses).Q1;
+    var time = JSON.parse(data.responses).Q2;
+    specCONFIG = converter[group];
+    jsPsych.data.addProperties({
       group: group,
       time: time,
       left_shape: specCONFIG.LEFT_SHAPE,
@@ -91,7 +109,7 @@ var id_entry = {
     };
     const url = 'https://redcap.case.edu/api/';
     const datadict = {
-        'record_id': id,
+        'record_id': jsPsych.data.get().values()[0]['subject_id'],
         'redcap_event_name': 'intake_arm_1'
     };
     const body = {
@@ -168,6 +186,7 @@ var id_entry = {
       experiment_width: 800
     })
   }
+
 }
 
 var instructions_intro_1 = {
@@ -960,6 +979,7 @@ var final_screen = {
 var timeline_entry = [];
 
 timeline_entry.push(id_entry);
+timeline_entry.push(version_select);
 
 var audio = [];
 if (CONFIG.PLAY_REWARD_AUDIO) {
