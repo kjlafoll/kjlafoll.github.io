@@ -63,9 +63,9 @@ var id_entry = {
   preamble: '<p style="font-size:24px;">Welcome to the task!</p>',
   questions: [
     { prompt: 'Please enter your ID in the text box below:'},
-    { prompt: 'Please enter your Group Letter in the text box below:'},
-    { prompt: 'Please enter your Group Number in the text box below'},
-    { prompt: 'Please enter your Time Point in the text box below:'}
+    { prompt: 'Please enter your Group Letter (A or B) in the text box below:'},
+    { prompt: 'Please enter your Group Number (1 - 4) in the text box below'},
+    { prompt: 'Please enter your Time Point (1 - 5) in the text box below:'}
   ],
   data: {
     task: 'start',
@@ -88,7 +88,31 @@ var id_entry = {
       data: {
         phase: 'test'
       }
-    }
+    };
+    const url = 'https://redcap.case.edu/api/';
+    const datadict = {
+        'record_id': id,
+        'redcap_event_name': 'intake_arm_1'
+    };
+    const body = {
+      method: 'POST',
+      token: 'BBB56B8445954A08A65E9517DB426E2F',
+      content: 'record',
+      format: 'json',
+      type: 'flat',
+      overwriteBehavior: 'normal',
+      forceAutoNumber: 'false',
+      data: JSON.stringify([datadict]),
+      returnContent: 'count',
+      returnFormat: 'json'
+    };
+    $.post(url, body)
+      .done(function(response) {
+          console.log('Creating record to REDCap. Response:', response);
+      })
+      .fail(function(error) {
+          console.error('Failed to create record to REDCap:', error);
+      });
     for (var b = 1; b <= CONFIG.TOTAL_BLOCKS; b++) {
       var test_block = {
         timeline: [fixation, target_display, timeout_display, feedback, blank_in_place_of_feedback],
@@ -873,55 +897,29 @@ var save_data = {
     if (CONFIG.SAVE_DATA_TYPE == 'redcap') {
       console.log("Sending responses to RedCap");
       const url = 'https://redcap.case.edu/api/';
-      const datadict = {
-        'record_id': jsPsych.data.get().values()[0]['subject_id'],
-        'redcap_event_name': 'intake_arm_1'
-      };
-      // datadict['prt_data_json'.concat("_", jsPsych.data.get().values()[0]['time'])] = JSON.stringify(jsPsych.data.get().ignore("internal_node_id").ignore("key_press").values());
-      // var fs = require('fs');
       var filename = 'prt_data_json'.concat("_", jsPsych.data.get().values()[0]['subject_id'], "_", jsPsych.data.get().values()[0]['time'], ".json");
-      // fs.writeFile(filename, JSON.stringify(jsPsych.data.get().ignore("internal_node_id").ignore("key_press").values()));
       const file = new File([JSON.stringify(jsPsych.data.get().ignore("internal_node_id").ignore("key_press").values())], filename);
-
-      const body = {
-          method: 'POST',
-          token: 'BBB56B8445954A08A65E9517DB426E2F',
-          content: 'record',
-          format: 'json',
-          type: 'flat',
-          overwriteBehavior: 'normal',
-          forceAutoNumber: 'false',
-          data: JSON.stringify([datadict]),
-          returnContent: 'count',
-          returnFormat: 'json'
-      };
-
-      $.post(url, body)
-          .done(function(response) {
-              console.log('Creating record to REDCap. Response:', response);
-          })
-          .fail(function(error) {
-              console.error('Failed to create record to REDCap:', error);
-          });
-
-      const body2 = {
-        method: 'POST',
-        token: 'BBB56B8445954A08A65E9517DB426E2F',
-        content: 'file',
-        action: 'import',
-        field: 'prt_data_json'.concat("_", jsPsych.data.get().values()[0]['time']),
-        event: 'intake_arm_1',
-        record: jsPsych.data.get().values()[0]['subject_id'],
-        file: file,
-      };
-
-      $.post(url, body2)
-          .done(function(response) {
-              console.log('Data sent to REDCap. Response:', response);
-          })
-          .fail(function(error) {
-              console.error('Failed to send data to REDCap:', error);
-          });
+      const formData = new FormData();
+      formData.append('token', 'BBB56B8445954A08A65E9517DB426E2F');
+      formData.append('content', 'file');
+      formData.append('action', 'import');
+      formData.append('field', 'prt_data_json'.concat("_", jsPsych.data.get().values()[0]['time']));
+      formData.append('event', 'intake_arm_1');
+      formData.append('record', jsPsych.data.get().values()[0]['subject_id']);
+      formData.append('file', file);
+      $.ajax({
+        url: url,
+        type: 'POST',
+        data: formData,
+        contentType: false, // Set contentType to false to let jQuery set the correct content type
+        processData: false, // Set processData to false to prevent jQuery from processing the data
+        success: function(response) {
+            console.log('Data sent to REDCap. Response:', response);
+        },
+        error: function(error) {
+            console.error('Failed to send data to REDCap:', error);
+        }
+      });
     };
   }
 }
