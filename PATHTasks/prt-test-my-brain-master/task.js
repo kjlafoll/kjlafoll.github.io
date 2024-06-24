@@ -78,14 +78,17 @@ var id_entry = {
 var version_select = {
   type: 'survey-multi-choice',
   preamble: '<p style="font-size:24px;">Welcome to the task!</p>',
-  questions: ['Please enter your Group Letter (A or B) in the text box below:',
-    'Please enter your Group Number (1 - 4) in the text box below',
-    'Please enter your Time Point (1 - 5) in the text box below:'],
+  questions: ['Please choose your Group Letter (A or B):',
+    'Please choose your Group Number (1 - 4):',
+    'Please choose your Time Point (1 - 5):'],
   options: [["A", "B"],
     ["1", "2", "3", "4"],
     ["1", "2", "3", "4", "5"]],
   required: [true, true, true],
   horizontal: false,
+  data: {
+    task: 'start',
+  },
   on_finish: function (data) {
     var group = JSON.parse(data.responses).Q0 + JSON.parse(data.responses).Q1;
     var time = JSON.parse(data.responses).Q2;
