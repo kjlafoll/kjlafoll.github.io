@@ -167,7 +167,7 @@ var version_select = {
     var practice_procedure = {
       timeline: [practice_trials, instructions_practice_loop],
       loop_function: function (data) {
-        return data.last(1).values()[0].key_press == jsPsych.pluginAPI.convertKeyCharacterToKeyCode('y');
+        return more_practice == true;
       }
     }
     timeline = [];
@@ -188,6 +188,8 @@ var version_select = {
 
 }
 
+var more_practice = false;
+
 var instructions_intro_1 = {
   type: 'html-keyboard-response',
   stimulus: `<p>Before you begin, please do the following:</p> 
@@ -201,6 +203,18 @@ var instructions_intro_1 = {
 function advance(event) {
   click_X = event.clientX;
   jsPsych.finishTrial();
+}
+
+function tap_practice_loop(event) {
+  click_X = event.clientX;
+  if (click_X < window.innerWidth / 2) {
+    more_practice = true;  
+    jsPsych.finishTrial();
+  }
+  if (click_X > window.innerWidth / 2) {
+    more_practice = false;
+    jsPsych.finishTrial();
+  }
 }
 
 function click_left(event) {
@@ -381,7 +395,14 @@ var instructions_practice_loop = {
       return `<p>Would you like to practice more? LEFT = yes, RIGHT = no</p>`
     }
   },
-  choices: ['y', 'n']
+  choices: ['y', 'n'],
+  on_finish: function(data) {
+    if (data.key_press == jsPsych.pluginAPI.convertKeyCharacterToKeyCode('y')) {
+      more_practice = true;
+    } else if (data.key_press == jsPsych.pluginAPI.convertKeyCharacterToKeyCode('n')) {
+      more_practice = false;
+    }
+  }
 }
 
 var instructions_feedback_1 = {
@@ -494,10 +515,10 @@ var instructions_feedback_3 = {
 
 if (isMobile == true) {
   instructions_practice_loop.on_load = function() {
-    window.addEventListener("click", advance)
+    window.addEventListener("click", tap_practice_loop)
   }
   instructions_practice_loop.on_finish = function() {
-    window.removeEventListener("click", advance)
+    window.removeEventListener("click", tap_practice_loop)
   }
   instructions_feedback_1.on_load = function() {
     window.addEventListener("click", advance)
