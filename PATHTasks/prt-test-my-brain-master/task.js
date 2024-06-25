@@ -189,6 +189,7 @@ var version_select = {
 }
 
 var more_practice = false;
+var trial_start_time;
 
 var instructions_intro_1 = {
   type: 'html-keyboard-response',
@@ -201,11 +202,16 @@ var instructions_intro_1 = {
 }
 
 function advance(event) {
+  var click_time = performance.now();
+  var reaction_time = click_time - trial_start_time;
   click_X = event.clientX;
   jsPsych.finishTrial();
+  jsPsych.data.get().addToLast({rt: reaction_time});
 }
 
 function tap_practice_loop(event) {
+  var click_time = performance.now();
+  var reaction_time = click_time - trial_start_time;
   click_X = event.clientX;
   if (click_X < window.innerWidth / 2) {
     more_practice = true;  
@@ -215,20 +221,27 @@ function tap_practice_loop(event) {
     more_practice = false;
     jsPsych.finishTrial();
   }
+  jsPsych.data.get().addToLast({rt: reaction_time});
 }
 
 function click_left(event) {
+  var click_time = performance.now();
+  var reaction_time = click_time - trial_start_time;
   click_X = event.clientX;
   if (click_X < window.innerWidth / 2) {
     jsPsych.finishTrial();
   }
+  jsPsych.data.get().addToLast({rt: reaction_time});
 }
 
 function click_right(event) {
+  var click_time = performance.now();
+  var reaction_time = click_time - trial_start_time;
   click_X = event.clientX;
   if (click_X > window.innerWidth / 2) {
     jsPsych.finishTrial();
   }
+  jsPsych.data.get().addToLast({rt: reaction_time});
 }
 
 var instructions_intro_1a = {
@@ -345,39 +358,51 @@ var instructions_intro_3 = {
 
 if (isMobile == true) {
   instructions_intro_1.on_load = function() {
+    trial_start_time = performance.now();
     window.addEventListener("click", advance)
   }
   instructions_intro_1a.on_load = function() {
+    trial_start_time = performance.now();
     window.addEventListener("click", advance)
   }
   instructions_intro_2.on_load = function() {
+    trial_start_time = performance.now();
     window.addEventListener("click", advance)
   }
   instructions_intro_2a.on_load = function() {
+    trial_start_time = performance.now();
     window.addEventListener("click", click_left)
   }
   instructions_intro_2b.on_load = function() {
+    trial_start_time = performance.now();
     window.addEventListener("click", click_right)
   }
   instructions_intro_3.on_load = function() {
+    trial_start_time = performance.now();
     window.addEventListener("click", advance)
   }
   instructions_intro_1.on_finish = function() {
+    trial_start_time = performance.now();
     window.removeEventListener("click", advance)
   }
   instructions_intro_1a.on_finish = function() {
+    trial_start_time = performance.now();
     window.removeEventListener("click", advance)
   }
   instructions_intro_2.on_finish = function() {
+    trial_start_time = performance.now();
     window.removeEventListener("click", advance)
   }
   instructions_intro_2a.on_finish = function() {
+    trial_start_time = performance.now();
     window.removeEventListener("click", click_left)
   }
   instructions_intro_2b.on_finish = function() {
+    trial_start_time = performance.now();
     window.removeEventListener("click", click_right)
   }
   instructions_intro_3.on_finish = function() {
+    trial_start_time = performance.now();
     window.removeEventListener("click", advance)
   }
 }
@@ -440,15 +465,27 @@ if (CONFIG.PLAY_REWARD_AUDIO) {
       } else {
         fb = `<img src="${specCONFIG.REWARD_IMAGE}"></img><p class="feedback">Correct! You win ${specCONFIG.REWARD_AMOUNT} cents!</p>`
       }
-      fb += `
-          <div style="position: absolute; top: 2vh; left: 2vw;">
-            <img src="${specCONFIG.LEFT_SINGLE_EXAMPLE}" style="width:100px;"></img>
-            <p>${CONFIG.LEFT_KEY.toUpperCase()} = ${specCONFIG.LEFT_SHAPE}</p>
-          </div>
-          <div style="position: absolute; top: 2vh; right: 2vw;">
-            <img src="${specCONFIG.RIGHT_SINGLE_EXAMPLE}" style="width:100px;"></img>
-            <p>${CONFIG.RIGHT_KEY.toUpperCase()} = ${specCONFIG.RIGHT_SHAPE}</p>
-          </div>`
+      if (isMobile == false) {
+        fb += `
+            <div style="position: absolute; top: 2vh; left: 2vw;">
+              <img src="${specCONFIG.LEFT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+              <p>${CONFIG.LEFT_KEY.toUpperCase()} = ${specCONFIG.LEFT_SHAPE}</p>
+            </div>
+            <div style="position: absolute; top: 2vh; right: 2vw;">
+              <img src="${specCONFIG.RIGHT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+              <p>${CONFIG.RIGHT_KEY.toUpperCase()} = ${specCONFIG.RIGHT_SHAPE}</p>
+            </div>`
+      } else {
+        fb += `
+            <div style="position: absolute; top: 2vh; left: 2vw;">
+              <img src="${specCONFIG.LEFT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+              <p>LEFT = ${specCONFIG.LEFT_SHAPE}</p>
+            </div>
+            <div style="position: absolute; top: 2vh; right: 2vw;">
+              <img src="${specCONFIG.RIGHT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+              <p>RIGHT = ${specCONFIG.RIGHT_SHAPE}</p>
+            </div>`
+      }
       return fb;
     },
     trial_duration: CONFIG.FEEDBACK_DURATION,
@@ -464,15 +501,29 @@ if (CONFIG.PLAY_REWARD_AUDIO) {
         return `<img src="${specCONFIG.REWARD_IMAGE}"></img><p class="feedback">Correct! You win ${specCONFIG.REWARD_AMOUNT} cents!</p>`
       }
     },
-    prompt: `
-        <div style="position: absolute; top: 2vh; left: 2vw;">
+    prompt: function () {
+      var fb = "";
+      if (isMobile == false) {
+        fb += `<div style="position: absolute; top: 2vh; left: 2vw;">
           <img src="${specCONFIG.LEFT_SINGLE_EXAMPLE}" style="width:100px;"></img>
           <p>${CONFIG.LEFT_KEY.toUpperCase()} = ${specCONFIG.LEFT_SHAPE}</p>
         </div>
         <div style="position: absolute; top: 2vh; right: 2vw;">
           <img src="${specCONFIG.RIGHT_SINGLE_EXAMPLE}" style="width:100px;"></img>
           <p>${CONFIG.RIGHT_KEY.toUpperCase()} = ${specCONFIG.RIGHT_SHAPE}</p>
-        </div>`,
+        </div>`
+      } else {
+        `<div style="position: absolute; top: 2vh; left: 2vw;">
+          <img src="${specCONFIG.LEFT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+          <p>LEFT = ${specCONFIG.LEFT_SHAPE}</p>
+        </div>
+        <div style="position: absolute; top: 2vh; right: 2vw;">
+          <img src="${specCONFIG.RIGHT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+          <p>RIGHT = ${specCONFIG.RIGHT_SHAPE}</p>
+        </div>`
+      }
+      return fb;
+    },
     trial_duration: CONFIG.FEEDBACK_DURATION,
     choices: jsPsych.NO_KEYS
   }
@@ -515,27 +566,35 @@ var instructions_feedback_3 = {
 
 if (isMobile == true) {
   instructions_practice_loop.on_load = function() {
+    trial_start_time = performance.now();
     window.addEventListener("click", tap_practice_loop)
   }
   instructions_practice_loop.on_finish = function() {
+    trial_start_time = performance.now();
     window.removeEventListener("click", tap_practice_loop)
   }
   instructions_feedback_1.on_load = function() {
+    trial_start_time = performance.now();
     window.addEventListener("click", advance)
   }
   instructions_feedback_2.on_load = function() {
+    trial_start_time = performance.now();
     window.addEventListener("click", advance)
   }
   instructions_feedback_3.on_load = function() {
+    trial_start_time = performance.now();
     window.addEventListener("click", advance)
   }
   instructions_feedback_1.on_finish = function() {
+    trial_start_time = performance.now();
     window.removeEventListener("click", advance)
   }
   instructions_feedback_2.on_finish = function() {
+    trial_start_time = performance.now();
     window.removeEventListener("click", advance)
   }
   instructions_feedback_3.on_finish = function() {
+    trial_start_time = performance.now();
     window.removeEventListener("click", advance)
   }
 }
@@ -676,15 +735,19 @@ var target_display = {
         data.did_reward = false;
       }
     }
+    console.log(data.did_reward);
   }
 }
 
 if (isMobile == true) {
   target_display.on_load = function() {
     click_X = null;
+    trial_start_time = performance.now();
     window.addEventListener("click", advance)
   }
   target_display.on_finish = function (data) {
+    console.log(click_X);
+    console.log(data.correct);
     window.removeEventListener("click", advance)
     if (data.image.includes(specCONFIG.LEFT_PREFIX)) {
       data.correct_shape = specCONFIG.LEFT_SHAPE
@@ -693,17 +756,14 @@ if (isMobile == true) {
       data.correct_shape = specCONFIG.RIGHT_SHAPE
     }
     if (click_X == null) {
-      console.log(click_X);
       data.response = null;
       data.correct = false;
     }
     if (click_X < window.innerWidth / 2) {
-      console.log(click_X);
       data.response = specCONFIG.LEFT_SHAPE;
       data.correct = data.correct_shape == specCONFIG.LEFT_SHAPE;
     }
     if (click_X > window.innerWidth / 2) {
-      console.log(click_X);
       data.response = specCONFIG.RIGHT_SHAPE;
       data.correct = data.correct_shape == specCONFIG.RIGHT_SHAPE;
     }
@@ -745,6 +805,7 @@ if (isMobile == true) {
         data.did_reward = false;
       }
     }
+    console.log(data.did_reward);
   }
   window.removeEventListener("click", advance)
 }
@@ -752,10 +813,19 @@ if (isMobile == true) {
 var timeout_display = {
   timeline: [{
     type: 'html-keyboard-response',
-    stimulus: `<p>Time out!</p>
-          <p>Press the ${CONFIG.LEFT_KEY.toUpperCase()} or ${CONFIG.RIGHT_KEY.toUpperCase()} key to continue.</p>`,
+    stimulus: function () {
+      if (isMobile == false) {
+        return `<p>Time out!</p>
+          <p>Press the ${CONFIG.LEFT_KEY.toUpperCase()} or ${CONFIG.RIGHT_KEY.toUpperCase()} key to continue.</p>`
+      } else {
+        return `<p>Time out!</p>
+          <p>Tap to continue.</p>`
+      }
+    },
     choices: [CONFIG.LEFT_KEY, CONFIG.RIGHT_KEY],
-    prompt: `
+    prompt: function () {
+      if (isMobile == false) {
+        return `
         <div style="position: absolute; top: 2vh; left: 2vw;">
           <img src="${specCONFIG.LEFT_SINGLE_EXAMPLE}" style="width:100px;"></img>
           <p>${CONFIG.LEFT_KEY.toUpperCase()} = ${specCONFIG.LEFT_SHAPE}</p>
@@ -764,6 +834,18 @@ var timeout_display = {
           <img src="${specCONFIG.RIGHT_SINGLE_EXAMPLE}" style="width:100px;"></img>
           <p>${CONFIG.RIGHT_KEY.toUpperCase()} = ${specCONFIG.RIGHT_SHAPE}</p>
         </div>`
+      } else {
+        return `
+        <div style="position: absolute; top: 2vh; left: 2vw;">
+          <img src="${specCONFIG.LEFT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+          <p>LEFT = ${specCONFIG.LEFT_SHAPE}</p>
+        </div>
+        <div style="position: absolute; top: 2vh; right: 2vw;">
+          <img src="${specCONFIG.RIGHT_SINGLE_EXAMPLE}" style="width:100px;"></img>
+          <p>RIGHT = ${specCONFIG.RIGHT_SHAPE}</p>
+        </div>`
+      }
+    }
   }],
   conditional_function: function () {
     return jsPsych.data.get().filter({ task: 'respond' }).last(1).values()[0].response == null;
