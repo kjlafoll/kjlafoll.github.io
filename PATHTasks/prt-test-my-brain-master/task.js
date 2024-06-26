@@ -746,8 +746,6 @@ if (isMobile == true) {
     window.addEventListener("click", advance)
   }
   target_display.on_finish = function (data) {
-    console.log(click_X);
-    console.log(data.correct);
     window.removeEventListener("click", advance)
     if (data.image.includes(specCONFIG.LEFT_PREFIX)) {
       data.correct_shape = specCONFIG.LEFT_SHAPE
@@ -758,14 +756,16 @@ if (isMobile == true) {
     if (click_X == null) {
       data.response = null;
       data.correct = false;
-    }
-    if (click_X < window.innerWidth / 2) {
-      data.response = specCONFIG.LEFT_SHAPE;
-      data.correct = data.correct_shape == specCONFIG.LEFT_SHAPE;
-    }
-    if (click_X > window.innerWidth / 2) {
-      data.response = specCONFIG.RIGHT_SHAPE;
-      data.correct = data.correct_shape == specCONFIG.RIGHT_SHAPE;
+    } else {
+      if (click_X < window.innerWidth / 2) {
+        console.log(click_X);
+        data.response = specCONFIG.LEFT_SHAPE;
+        data.correct = data.correct_shape == specCONFIG.LEFT_SHAPE;
+      }
+      if (click_X > window.innerWidth / 2) {
+        data.response = specCONFIG.RIGHT_SHAPE;
+        data.correct = data.correct_shape == specCONFIG.RIGHT_SHAPE;
+      }
     }
     // below is to calculate whether a reward should be displayed on this trial
     // if a reward is scheduled...
@@ -805,7 +805,7 @@ if (isMobile == true) {
         data.did_reward = false;
       }
     }
-    console.log(data.did_reward);
+    console.log(data.response);
   }
   window.removeEventListener("click", advance)
 }
@@ -849,6 +849,16 @@ var timeout_display = {
   }],
   conditional_function: function () {
     return jsPsych.data.get().filter({ task: 'respond' }).last(1).values()[0].response == null;
+  }
+}
+
+if (isMobile == true) {
+  timeout_display.on_load = function() {
+    trial_start_time = performance.now();
+    window.addEventListener("click", advance);
+  }
+  timeout_display.on_finish = function (data) {
+    window.removeEventListener("click", advance);
   }
 }
 
