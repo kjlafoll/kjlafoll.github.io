@@ -74,7 +74,7 @@ var id_entry = {
     var id = JSON.parse(data.responses).Q0;
     jsPsych.data.addProperties({
       subject_id: id,
-      mobile: isMobile,
+      mobile: String(isMobile),
     });
     console.log("Records ID");
   }
