@@ -1065,7 +1065,7 @@ var final_screen = {
     var correct_trial_count = jsPsych.data.get().filter({ task: 'respond', phase: 'test', correct: true }).count();
     var total_trial_count = jsPsych.data.get().filter({ task: 'respond', phase: 'test' }).count();
 
-    var total_earned = jsPsych.data.get().filter({task: 'reward-feedback'}).count() * CONFIG.REWARD_AMOUNT / 100;
+    var total_earned = jsPsych.data.get().filter({task: 'reward-feedback'}).count() * specCONFIG.REWARD_AMOUNT / 100;
 
     var output_html = `<p>You have completed the task!</p>`
 
