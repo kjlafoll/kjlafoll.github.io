@@ -7,10 +7,15 @@
     <title>Vite + React</title>
   </head>
   <body>
-    <script src="node_modules copy/react/umd/react.development.js"></script>
-    <script src="node_modules copy/react-dom/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "react": "node_modules copy/react/umd/react.development.js",
+          "babel-runtime/regenerator": "node_modules copy/babel-runtime/regenerator/index.js"
+          "react-dom": "node_modules copy/react-dom/umd/react-dom.development.js"
+        }
+      }
+    </script>
     <div id="root"></div>
     <script type = "module" src="App.js"></script>
     <script type = "module" src="ArrowExperiment.js"></script>
