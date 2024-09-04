@@ -1,6 +1,6 @@
 /* add TMB script if using TMB to save data */
 
-var releaseversion = true;
+var releaseversion = false;
 
 if (CONFIG.SAVE_DATA_TYPE == 'tmb') {
   var head = document.getElementsByTagName('head')[0];
