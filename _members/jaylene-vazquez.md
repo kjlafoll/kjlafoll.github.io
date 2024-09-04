@@ -1,7 +1,7 @@
 ---
 name: Jaylene Vázquez
-image: images/photo.jpg
-role: undergrad
+image: images/jaylene-vazquez-photo.jpg
+role: postbac
 major: psych
 ---
 

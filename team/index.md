@@ -8,4 +8,5 @@ nav:
 # {% include icon.html icon="fa-solid fa-users" %}Team
 
 {% include list.html data="members" component="portrait" filters="role: phd" %}
-{% include list.html data="members" component="portrait" filters="role: ^(?!phd$)" %}
+{% include list.html data="members" component="portrait" filters="role: postbac" %}
+{% include list.html data="members" component="portrait" filters="role: undergrad" %}

@@ -12,11 +12,15 @@ postdoc:
 
 phd:
   icon: fa-solid fa-microscope
-  description: PhD Student
+  description: PhD Candidate
 
 undergrad:
   icon: fa-solid fa-user-graduate
   description: Undergraduate Student
+
+postbac:
+  icon: fa-solid fa-glasses
+  description: Post-Baccalaureate Volunteer
 
 programmer:
   icon: fa-solid fa-code
@@ -39,6 +43,10 @@ psych:
 cs-psych:
   icon: fa-solid fa-code-branch
   description: Computer Science and Psychology
+
+ds-psych:
+  icon: fa-solid fa-magnifying-glass-chart
+  description: Data Science and Psychology
 
 # general
 
