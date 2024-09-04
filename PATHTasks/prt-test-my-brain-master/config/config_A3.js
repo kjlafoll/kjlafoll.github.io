@@ -24,7 +24,7 @@ displayed. The rewarded variable controls whether the stimulus will be rewarded 
 
 var LEFT_IMG = 'dogs';
 var RIGHT_IMG = 'cats';
-var BIAS = 'cats';
+var BIAS = 'dogs';
 
 var IMG_FOLDER = 'img/cat1_dog1/';
 if ((LEFT_IMG == 'cats') && (RIGHT_IMG == 'dogs')) {

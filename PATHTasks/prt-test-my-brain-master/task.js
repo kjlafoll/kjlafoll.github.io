@@ -28,12 +28,16 @@ var converter = {
   C4: CONFIG_A4,
 }
 
-// /* add condition info to data */
-// jsPsych.data.addProperties({
-//   left_shape: CONFIG.LEFT_SHAPE,
-//   right_shape: CONFIG.RIGHT_SHAPE,
-//   bias_shape: CONFIG.BIAS_SHAPE
-// });
+var counterbalance = {
+  1: ['A1', 'B2', 'A3', 'B4', 'A2'],
+  2: ['B1', 'A2', 'B3', 'A4', 'B2'],
+  3: ['A2', 'B3', 'A4', 'B1', 'A3'],
+  4: ['B2', 'A3', 'B4', 'A1', 'B3'],
+  5: ['A3', 'B4', 'A1', 'B2', 'A4'],
+  6: ['B3', 'A4', 'B1', 'A2', 'B4'],
+  7: ['A4', 'B1', 'A2', 'B3', 'A1'],
+  8: ['B4', 'A1', 'B2', 'A3', 'B1'],
+}
 
 /* reward setup */
 var unrewarded_left_trials = 0;
@@ -83,16 +87,19 @@ var id_entry = {
 var version_select = {
   type: 'survey-multi-choice',
   preamble: '<p style="font-size:24px;">Welcome to the task!</p>',
-  questions: [{prompt: 'Please choose your Group Letter (A or B):', options: ["A", "B"], required: true, horizontal: true},
-    {prompt: 'Please choose your Group Number (1 - 4):', options: ["1", "2", "3", "4"], required: true, horizontal: true},
+  // questions: [{prompt: 'Please choose your Group Letter (A or B):', options: ["A", "B"], required: true, horizontal: true},
+  //   {prompt: 'Please choose your Group Number (1 - 4):', options: ["1", "2", "3", "4"], required: true, horizontal: true},
+  //   {prompt: 'Please choose your Time Point (1 - 5):', options: ["1", "2", "3", "4", "5"], required: true, horizontal: true}
+  // ],
+  questions: [{prompt: 'Please choose your Group Number:', options: ["1", "2", "3", "4", "5", "6", "7", "8"], required: true, horizontal: true},
     {prompt: 'Please choose your Time Point (1 - 5):', options: ["1", "2", "3", "4", "5"], required: true, horizontal: true}
   ],
   data: {
     task: 'start',
   },
   on_finish: function (data) {
-    var group = data.response.Q0 + data.response.Q1
-    var time = data.response.Q2;
+    var group = counterbalance[data.response.Q0][Number(data.response.Q1)-1];
+    var time = data.response.Q1;
     specCONFIG = converter[group];
     jsPsych.data.addProperties({
       group: group,
