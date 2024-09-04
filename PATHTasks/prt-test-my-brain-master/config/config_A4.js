@@ -51,7 +51,7 @@ var CONFIG_A4 = {
   RIGHT_SINGLE_EXAMPLE: IMG_FOLDER+RIGHT_IMG+'.jpeg', // for instructions, a single example of the shape
   LEFT_PREFIX: LEFT_MORE, // the part of the image filename that identifies that there are more LEFT_SHAPE than RIGHT_SHAPE
   RIGHT_PREFIX: RIGHT_MORE, // the part of the image filename that identifies that there are more RIGHT_SHAPE than LEFT_SHAPE
-  REWARD_AMOUNT: 25, // cents; set to null if no monetary reward
+  REWARD_AMOUNT: 20, // cents; set to null if no monetary reward
   TOTAL_REWARD: 16.40, // dollars
   REWARD_IMAGE: IMG_FOLDER+'reward.gif', // the image to show on a reward trial
 }

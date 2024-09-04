@@ -24,7 +24,7 @@ displayed. The rewarded variable controls whether the stimulus will be rewarded 
 
 var LEFT_IMG = 'cats';
 var RIGHT_IMG = 'dogs';
-var BIAS = 'dogs';
+var BIAS = 'cats';
 
 var IMG_FOLDER = 'img/cat1_dog1/';
 // if ((MORE == 'cats' && MORE == LEFT_IMG) || (MORE == 'dogs' && MORE == RIGHT_IMG)) {
@@ -58,7 +58,7 @@ var CONFIG_A2 = {
   RIGHT_SINGLE_EXAMPLE: IMG_FOLDER+RIGHT_IMG+'.jpeg', // for instructions, a single example of the shape
   LEFT_PREFIX: LEFT_MORE, // the part of the image filename that identifies that there are more LEFT_SHAPE than RIGHT_SHAPE
   RIGHT_PREFIX: RIGHT_MORE, // the part of the image filename that identifies that there are more RIGHT_SHAPE than LEFT_SHAPE
-  REWARD_AMOUNT: 15, // cents; set to null if no monetary reward
+  REWARD_AMOUNT: 20, // cents; set to null if no monetary reward
   TOTAL_REWARD: 16.20, // dollars
   REWARD_IMAGE: IMG_FOLDER+'reward.gif', // the image to show on a reward trial
 }
