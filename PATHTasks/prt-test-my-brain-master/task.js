@@ -1059,6 +1059,29 @@ var save_data = {
             console.error('Failed to send data to REDCap:', error);
         }
       });
+
+      const formData2 = new FormData();
+      formData2.append('token', 'BBB56B8445954A08A65E9517DB426E2F');
+      formData2.append('content', 'record');
+      formData2.append('action', 'import');
+      formData2.append('field', 'prt_t'.concat(jsPsych.data.get().values()[0]['time'], '_earnings'));
+      formData2.append('event', 'intake_arm_1');
+      formData2.append('record', jsPsych.data.get().values()[0]['subject_id']);
+      formData2.append('data', `$${total_earned.toFixed(2)}`);
+      $.ajax({
+        url: url,
+        type: 'POST',
+        data: formData2,
+        contentType: false, // Set contentType to false to let jQuery set the correct content type
+        processData: false, // Set processData to false to prevent jQuery from processing the data
+        success: function(response) {
+            console.log('Data sent to REDCap. Response:', response);
+        },
+        error: function(error) {
+            console.error('Failed to send data to REDCap:', error);
+        }
+      });
+
     };
   }
 }
