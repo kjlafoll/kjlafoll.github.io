@@ -1061,6 +1061,7 @@ var save_data = {
       });
 
       const formData2 = new FormData();
+      var total_earned = jsPsych.data.get().filter({task: 'reward-feedback'}).count() * specCONFIG.REWARD_AMOUNT / 100;
       formData2.append('token', 'BBB56B8445954A08A65E9517DB426E2F');
       formData2.append('content', 'record');
       formData2.append('action', 'import');
