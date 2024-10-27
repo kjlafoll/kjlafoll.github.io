@@ -44,8 +44,8 @@ var CONFIG = {
   ESTIMATED_TOTAL_DURATION: 10, // minutes
   TOTAL_BLOCKS: 3, // make sure this matches the numbers assigned in the stimulus info below
   BREAK_LENGTH: 10000, // ms length of break between blocks
-  REWARD_AMOUNT: 20, // cents; set to null if no monetary reward
-  TOTAL_REWARD: 24.20, // dollars
+  REWARD_AMOUNT: 4, // cents; set to null if no monetary reward
+  TOTAL_REWARD: 7, // dollars
   PLAY_REWARD_AUDIO: true,
   REWARD_IMAGE: 'img/reward.gif', // the image to show on a reward trial
   REWARD_SOUND: 'mp3/reward-coin-drop.mp3', // path to file (use mp3 if possible for browser compatibility), set to null if no sound
