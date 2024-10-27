@@ -100,7 +100,7 @@ var version_select = {
   on_finish: function (data) {
     var group = counterbalance[data.response.Q0][Number(data.response.Q1)-1];
     var time = data.response.Q1;
-    if (jsPsych.data.subject_id == 'kyletest') {
+    if (jsPsych.data.get().values()[0]['subject_id'] == 'kyletest') {
       specCONFIG = converter['B5'];
     } else {
       specCONFIG = converter[group];
@@ -445,7 +445,7 @@ var instructions_practice_loop = {
 var instructions_feedback_1 = {
   type: 'html-keyboard-response',
   stimulus: function () {
-    if (specCONFIG.REWARD_AMOUNT == 0 || specCONFIG.REWARD_AMOUNT == null) {
+    if (CONFIG.REWARD_AMOUNT == 0 || CONFIG.REWARD_AMOUNT == null) {
       if (isMobile == false) {
         return `<p>For some trials, a correct identification will be rewarded with positive feedback.</p>
           <p>Press the spacebar to see what this will look like.</p>`
@@ -455,10 +455,10 @@ var instructions_feedback_1 = {
       }
     } else {
       if (isMobile == false) {
-        return `<p>For some trials, a correct identification will result in a monetary reward of ${specCONFIG.REWARD_AMOUNT} cents.</p>
+        return `<p>For some trials, a correct identification will result in a monetary reward of ${CONFIG.REWARD_AMOUNT} cents.</p>
           <p>Press the spacebar to see what this will look like.</p>`
       } else {
-        return `<p>For some trials, a correct identification will result in a monetary reward of ${specCONFIG.REWARD_AMOUNT} cents.</p>
+        return `<p>For some trials, a correct identification will result in a monetary reward of ${CONFIG.REWARD_AMOUNT} cents.</p>
           <p>Tap the screen to see what this will look like.</p>`
       }
     }
@@ -472,10 +472,10 @@ if (CONFIG.PLAY_REWARD_AUDIO) {
     stimulus: CONFIG.REWARD_SOUND,
     prompt: function () {
       var fb = ""
-      if (specCONFIG.REWARD_AMOUNT == 0 || specCONFIG.REWARD_AMOUNT == null) {
+      if (CONFIG.REWARD_AMOUNT == 0 || CONFIG.REWARD_AMOUNT == null) {
         fb = `<img src="${specCONFIG.REWARD_IMAGE}"></img><p class="feedback">Correct!</p>`
       } else {
-        fb = `<img src="${specCONFIG.REWARD_IMAGE}"></img><p class="feedback">Correct! You win ${specCONFIG.REWARD_AMOUNT} cents!</p>`
+        fb = `<img src="${specCONFIG.REWARD_IMAGE}"></img><p class="feedback">Correct! You win ${CONFIG.REWARD_AMOUNT} cents!</p>`
       }
       if (isMobile == false) {
         fb += `
@@ -510,7 +510,7 @@ if (CONFIG.PLAY_REWARD_AUDIO) {
       if (specCONFIG.REWARD_AMOUNT == 0 || specCONFIG.REWARD_AMOUNT == null) {
         return `<img src="${specCONFIG.REWARD_IMAGE}"></img><p class="feedback">Correct!</p>`
       } else {
-        return `<img src="${specCONFIG.REWARD_IMAGE}"></img><p class="feedback">Correct! You win ${specCONFIG.REWARD_AMOUNT} cents!</p>`
+        return `<img src="${specCONFIG.REWARD_IMAGE}"></img><p class="feedback">Correct! You win ${CONFIG.REWARD_AMOUNT} cents!</p>`
       }
     },
     prompt: function () {
@@ -546,7 +546,7 @@ var instructions_feedback_2 = {
   type: 'html-keyboard-response',
   stimulus: function () {
     var html = `<p><span style="color:red; font-weight:bold;">Not all</span> correct responses will receive a reward.</p>`
-    if (specCONFIG.REWARD_AMOUNT != 0 && specCONFIG.REWARD_AMOUNT != null) {
+    if (CONFIG.REWARD_AMOUNT != 0 && CONFIG.REWARD_AMOUNT != null) {
       html += `<p>At the end of the experiment you will be given the amount of money you have accumulated. The more correct identifications
           you make, the more money you will take home.</p>`
     }
@@ -1065,9 +1065,9 @@ var save_data = {
       });
 
       const formData2 = new FormData();
-      var total_earned = jsPsych.data.get().filter({task: 'reward-feedback'}).count() * specCONFIG.REWARD_AMOUNT / 100;
-      if (total_earned.toFixed(2) > 7) {
-        var earned_redcap = 7.00;
+      var total_earned = jsPsych.data.get().filter({task: 'reward-feedback'}).count() * CONFIG.REWARD_AMOUNT / 100;
+      if (total_earned.toFixed(2) > CONFIG.TOTAL_REWARD) {
+        var earned_redcap = CONFIG.TOTAL_REWARD.toFixed(2);
       } else {
         var earned_redcap = total_earned.toFixed(2);
       }
@@ -1105,7 +1105,7 @@ var final_screen = {
     var correct_trial_count = jsPsych.data.get().filter({ task: 'respond', phase: 'test', correct: true }).count();
     var total_trial_count = jsPsych.data.get().filter({ task: 'respond', phase: 'test' }).count();
 
-    var total_earned = jsPsych.data.get().filter({task: 'reward-feedback'}).count() * specCONFIG.REWARD_AMOUNT / 100;
+    var total_earned = jsPsych.data.get().filter({task: 'reward-feedback'}).count() * CONFIG.REWARD_AMOUNT / 100;
 
     var output_html = `<p>You have completed the task!</p>`
 
@@ -1113,9 +1113,9 @@ var final_screen = {
 
       output_html += `<p>You responded correctly on ${correct_trial_count} of ${total_trial_count} trials.</p>`
     }
-    if (specCONFIG.REWARD_AMOUNT != null && specCONFIG.REWARD_AMOUNT != 0) {
-      if (total_earned.toFixed(2) > 7) {
-        output_html += `<p>You earned $7.00!</p>`
+    if (CONFIG.REWARD_AMOUNT != null && CONFIG.REWARD_AMOUNT != 0) {
+      if (total_earned.toFixed(2) > CONFIG.TOTAL_REWARD) {
+        output_html += `<p>You earned $${CONFIG.TOTAL_REWARD.toFixed(2)}!</p>`
       } else {
         output_html += `<p>You earned $${total_earned.toFixed(2)}!</p>`
       }
