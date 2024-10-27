@@ -1062,13 +1062,18 @@ var save_data = {
 
       const formData2 = new FormData();
       var total_earned = jsPsych.data.get().filter({task: 'reward-feedback'}).count() * specCONFIG.REWARD_AMOUNT / 100;
+      if (total_earned.toFixed(2) > 7) {
+        var earned_redcap = 7.00;
+      } else {
+        var earned_redcap = total_earned.toFixed(2);
+      }
       formData2.append('token', 'BBB56B8445954A08A65E9517DB426E2F');
       formData2.append('content', 'record');
       formData2.append('action', 'import');
       formData2.append('field', 'prt_t'.concat(jsPsych.data.get().values()[0]['time'], '_earnings'));
       formData2.append('event', 'intake_arm_1');
       formData2.append('record', jsPsych.data.get().values()[0]['subject_id']);
-      formData2.append('data', `$${total_earned.toFixed(2)}`);
+      formData2.append('data', `$${earned_redcap}`);
       $.ajax({
         url: url,
         type: 'POST',
@@ -1105,7 +1110,11 @@ var final_screen = {
       output_html += `<p>You responded correctly on ${correct_trial_count} of ${total_trial_count} trials.</p>`
     }
     if (specCONFIG.REWARD_AMOUNT != null && specCONFIG.REWARD_AMOUNT != 0) {
-      output_html += `<p>You earned $${total_earned.toFixed(2)}!</p>`
+      if (total_earned.toFixed(2) > 7) {
+        output_html += `<p>You earned $7.00!</p>`
+      } else {
+        output_html += `<p>You earned $${total_earned.toFixed(2)}!</p>`
+      }
     }
     output_html += `<p>Please let the study team know that you are finished with this task.</p>`
     return output_html;
