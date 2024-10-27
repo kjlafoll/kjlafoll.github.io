@@ -1064,34 +1064,37 @@ var save_data = {
         }
       });
 
-      const formData2 = new FormData();
       var total_earned = jsPsych.data.get().filter({task: 'reward-feedback'}).count() * CONFIG.REWARD_AMOUNT / 100;
       if (total_earned.toFixed(2) > CONFIG.TOTAL_REWARD) {
         var earned_redcap = CONFIG.TOTAL_REWARD.toFixed(2);
       } else {
         var earned_redcap = total_earned.toFixed(2);
       }
-      formData2.append('token', 'BBB56B8445954A08A65E9517DB426E2F');
-      formData2.append('content', 'record');
-      formData2.append('action', 'import');
-      formData2.append('field', 'prt_t'.concat(jsPsych.data.get().values()[0]['time'], '_earnings'));
-      formData2.append('event', 'intake_arm_1');
-      formData2.append('record', jsPsych.data.get().values()[0]['subject_id']);
-      formData2.append('data', `$${earned_redcap}`);
-      $.ajax({
-        url: url,
-        type: 'POST',
-        data: formData2,
-        contentType: false, // Set contentType to false to let jQuery set the correct content type
-        processData: false, // Set processData to false to prevent jQuery from processing the data
-        success: function(response) {
-            console.log('Data sent to REDCap. Response:', response);
-        },
-        error: function(error) {
-            console.error('Failed to send data to REDCap:', error);
-        }
-      });
-
+      var prtsend = 'prt_t'.concat(jsPsych.data.get().values()[0]['time'], '_earnings');
+      const datadict = {
+          'record_id': jsPsych.data.get().values()[0]['subject_id'],
+          'redcap_event_name': 'intake_arm_1'
+      };
+      datadict[prtsend] = `$${earned_redcap}`;
+      const body = {
+        method: 'POST',
+        token: 'BBB56B8445954A08A65E9517DB426E2F',
+        content: 'record',
+        format: 'json',
+        type: 'flat',
+        overwriteBehavior: 'normal',
+        forceAutoNumber: 'false',
+        data: JSON.stringify([datadict]),
+        returnContent: 'count',
+        returnFormat: 'json'
+      };
+      $.post(url, body)
+        .done(function(response) {
+            console.log('Creating record to REDCap. Response:', response);
+        })
+        .fail(function(error) {
+            console.error('Failed to create record to REDCap:', error);
+        });
     };
   }
 }
