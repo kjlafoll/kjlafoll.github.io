@@ -100,7 +100,11 @@ var version_select = {
   on_finish: function (data) {
     var group = counterbalance[data.response.Q0][Number(data.response.Q1)-1];
     var time = data.response.Q1;
-    specCONFIG = converter[group];
+    if (jsPsych.data.subject_id == 'kyletest') {
+      specCONFIG = converter['B5'];
+    } else {
+      specCONFIG = converter[group];
+    }
     jsPsych.data.addProperties({
       group: group,
       time: time,
