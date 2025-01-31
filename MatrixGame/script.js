@@ -1,5 +1,5 @@
 let gameData;
-let currentGameIndex = 0; // Index to track the current game
+let currentGameIndex = 0; // Index to track the current game/trial
 
 const filePath = './HeddenData.json';
 
@@ -13,21 +13,29 @@ fetch(filePath)
   .then(data => {
     gameData = data.map(g => ({
       ...g,
-      Trial: Number(g.Trial), // convert Trial to a number bc accidentally made it a string
+      Trial: Number(g.Trial), // convert trial to a number bc accidentally made it a string
     }));
-    console.log(gameData); // check data is loaded
+    console.log(gameData);
     setupGame(); // start the first game
   })
   .catch(error => console.error('Error loading the JSON file:', error));
 
-// Function to set up the game board
-function setupGame() {
+//// GAME SETUP
+async function setupGame() {
   if (!gameData || currentGameIndex >= gameData.length) {
     document.getElementById("status").textContent = "All trials completed! Thanks for playing.";
     return;
   }
+  showButtons();
 
   const game = gameData[currentGameIndex];
+
+  // Clear the board and show transition message
+  document.querySelectorAll("#gameBoard span").forEach(span => span.textContent = "");
+  document.querySelectorAll("#gameBoard td").forEach(cell => cell.classList.remove("highlight"));
+
+  // Pause execution for 0.5 seconds before proceeding
+  await delay(700);
 
   // Parse payoffs to setup the board
   const p1Payoff = game.P1Payoff.split(" ").map(Number);
@@ -44,11 +52,11 @@ function setupGame() {
   document.getElementById("D-p1").textContent = p1Payoff[3];
   document.getElementById("D-p2").textContent = p2Payoff[3];
 
-  // start in A
+  // Start in A
   let currentCell = "A";
   highlightCell(currentCell);
 
-  // Update status
+  // Update status message
   document.getElementById("status").textContent = `Trial ${game.Trial}: Player 1, make your move!`;
 
   // Remove and replace buttons to fix duplicates
@@ -81,8 +89,9 @@ function setupGame() {
       return; // End the game at cell D
     } else {
       document.getElementById("status").textContent = "Player 1 moved. It's Player 2's turn.";
+      hideButtons();
       document.getElementById("status").textContent = "Player 2 is making their move...";
-    
+      
       // Delay the computer move between 1 and 3 seconds
       const delay = Math.floor(Math.random() * 2000) + 1000; 
     
@@ -99,6 +108,7 @@ function setupGame() {
           currentCell = "C";
           highlightCell(currentCell);
           document.getElementById("status").textContent = "Player 2 moved. Player 1, make your move!";
+          showButtons();
         }
       }, delay);
     }
@@ -126,6 +136,7 @@ function decideComputerMove(quadruplet, player2Type) {
 }
 
 function showNextTrialButton() {
+  hideButtons();
   const nextButton = document.createElement("button");
   nextButton.textContent = "Next Trial";
   nextButton.id = "nextTrialButton";
@@ -138,4 +149,18 @@ function showNextTrialButton() {
   });
 
   document.body.appendChild(nextButton);
+}
+
+function hideButtons() {
+  const controls = document.getElementById("controls");
+  controls.style.display = "none";
+}
+
+function showButtons() {
+  const controls = document.getElementById("controls");
+  controls.style.display = "block";
+}
+
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }

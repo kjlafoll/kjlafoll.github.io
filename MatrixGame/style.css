@@ -16,7 +16,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
   }
   
   #gameBoard table {
@@ -37,11 +37,18 @@ body {
     background-color: yellow;
   }
   
-  #controls {
-    margin-top: 20px;
+  #status {
+    margin-bottom: 10px; 
   }
   
+  #controls {
+    margin-top: 10px; 
+    display: flex; 
+    gap: 10px; 
+  }
+
   button {
+    margin-top: 10px; 
     margin: 5px;
     padding: 10px 20px;
     font-size: 1em;
