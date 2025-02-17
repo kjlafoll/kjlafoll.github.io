@@ -282,8 +282,6 @@ function sendToRedCap() {
   console.log("Saving data locally before sending to REDCap...");
   saveDataLocally(); // Save locally first
 
-
-
   console.log("Preparing to send responses to REDCap");
   const url = 'https://redcap.case.edu/api/';
   const timestamp = Date.now();
