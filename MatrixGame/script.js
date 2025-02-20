@@ -19,9 +19,37 @@ fetch(filePath)
       Trial: Number(g.Trial), // convert trial to a number bc accidentally made it a string
     }));
     console.log(gameData);
-    setupGame(); // start the first game
+    // setupGame(); // start the first game
   })
   .catch(error => console.error('Error loading the JSON file:', error));
+
+document.addEventListener("DOMContentLoaded", function () {
+  const instructionOverlay = document.getElementById("instructionOverlay");
+  const startButton = document.getElementById("startButton");
+  const instructionText = document.getElementById("instructionText");
+
+
+  instructionText.innerHTML = `<strong style="font-size: 20px;">Welcome to the Matrix Game!</strong><br>
+  Your goal is to maximize the number of points you earn over the course of each trial.<br><br>
+  Your payoff at the end of each round will be the left number shown in the cell that the game ends on.<br>
+  You will begin in cell A (as shown below) and can decide to Stay (end the game in the current cell) or Move (to the next cell).<br><br>
+
+  <img src="./images/instructionscreenshot.png" alt="Matrix Game Screenshot" class="instruction-img">
+
+  <br>You will be playing against another player who receives the left number as payoff and is also trying to maximize their total points over the rounds.`;
+
+  // Ensure overlay is visible on page load
+  instructionOverlay.style.display = "flex";
+
+  // Clear the board initially
+  document.querySelectorAll("#gameBoard span").forEach(span => span.textContent = "");
+
+  startButton.addEventListener("click", function () {
+    instructionOverlay.style.display = "none"; // Hide overlay
+    hideButtons();
+    setupGame(); // Start the game only after user clicks start
+  });
+});
 
 //// GAME SETUP
 async function setupGame() {
@@ -29,15 +57,12 @@ async function setupGame() {
     document.getElementById("status").textContent = "All trials completed! Thanks for playing.";
     return;
   }
-  showButtons();
 
   const game = gameData[currentGameIndex];
 
   ///// For top corner data updates
-
   document.getElementById("trialType").textContent = game.Round;
-  document.getElementById("trialNumber").textContent = game.Trial;
-  
+  document.getElementById("trialNumber").textContent = `${game.Trial} / ${gameData.length}`;
 
   // Clear the board and show transition message
   document.querySelectorAll("#gameBoard span").forEach(span => span.textContent = "");
@@ -60,6 +85,8 @@ async function setupGame() {
   document.getElementById("C-p2").textContent = p2Payoff[2];
   document.getElementById("D-p1").textContent = p1Payoff[3];
   document.getElementById("D-p2").textContent = p2Payoff[3];
+
+  showButtons();
 
   // Start in A
   let currentCell = "A";
@@ -93,30 +120,34 @@ async function setupGame() {
     if (player1Data.length < currentGameIndex + 1) {
       const game = gameData[currentGameIndex];
       const quadruplet = game.Quadruplet.split(" ").map(Number);
-      
+
       let strategy = "trivial"; // Default for training trials
       if (game.Round === "Test") {
-          if (1 === quadruplet[2]) {
-              strategy = "myopic";
-          } else if (1 === quadruplet[3]) {
-              strategy = "predictive";
-          }
+        if (1 === quadruplet[2]) {
+          strategy = "myopic";
+        } else if (1 === quadruplet[3]) {
+          strategy = "predictive";
+        }
       }
 
       player1Data.push({
-          trial: game.Trial,
-          first_move: "move",
-          strategy: strategy,
-          decisionTime: decisiontime
+        trial: game.Trial,
+        first_move: "move",
+        strategy: strategy,
+        decisionTime: decisiontime,
+        P1Payoff: game.P1Payoff,
+        P2Payoff: game.P2Payoff,
+        Quadruplet: game.Quadruplet,
+        GameType: game.GameType
       });
     }
-  
+
     if (currentCell === "A") {
       currentCell = "B";
     } else if (currentCell === "B") {
-      currentCell = "C"; 
+      currentCell = "C";
     } else if (currentCell === "C") {
-      currentCell = "D"; 
+      currentCell = "D";
     } else {
       document.getElementById("status").textContent = "Game already ended!";
       return; // stop after cell D
@@ -126,32 +157,32 @@ async function setupGame() {
 
     if (currentCell === "D") {
       document.getElementById("status").textContent = "Game end!";
-      
+
       // Adding points
-      totalPoints += p1Payoff[3]; 
-      document.getElementById("totalPoints").textContent = totalPoints; 
+      totalPoints += p1Payoff[3];
+      document.getElementById("totalPoints").textContent = totalPoints;
 
       showNextTrialButton();
 
-      return; // End the game at cell D
+      return; // end the game at cell D
     } else {
       document.getElementById("status").textContent = "Player 1 moved. It's Player 2's turn.";
       hideButtons();
       document.getElementById("status").textContent = "Player 2 is making their move...";
-      
+
       // Delay the computer move between 1 and 3 seconds
-      const delay = Math.floor(Math.random() * 2000) + 1000; 
-    
-    
+      const delay = Math.floor(Math.random() * 2000) + 1000;
+
+
       setTimeout(() => {
         // Computer move 
         const computerAction = decideComputerMove(computerDecisionQuadruplet, game.Type);
-    
+
         if (computerAction === "stay") {
           document.getElementById("status").textContent = `Player 2 stayed. Game end at Cell ${currentCell}.`;
 
           // Adding points
-          totalPoints += p1Payoff[1]; 
+          totalPoints += p1Payoff[1];
           document.getElementById("totalPoints").textContent = totalPoints;
 
           showNextTrialButton();
@@ -177,22 +208,28 @@ async function setupGame() {
     if (player1Data.length < currentGameIndex + 1) {
       const game = gameData[currentGameIndex];
       const quadruplet = game.Quadruplet.split(" ").map(Number);
-      
+
       let strategy = "trivial"; // Default for training trials
       if (game.Round === "Test") {
-          if (0 === quadruplet[2]) {
-              strategy = "myopic";
-          } else if (0 === quadruplet[3]) {
-              strategy = "predictive";
-          }
+        if (0 === quadruplet[2]) {
+          strategy = "myopic";
+        } else if (0 === quadruplet[3]) {
+          strategy = "predictive";
+        }
       }
 
+
       player1Data.push({
-          trial: game.Trial,
-          first_move: "stay",
-          strategy: strategy,
-          decisionTime: decisiontime
+        trial: game.Trial,
+        first_move: "move",
+        strategy: strategy,
+        decisionTime: decisiontime,
+        P1Payoff: game.P1Payoff,
+        P2Payoff: game.P2Payoff,
+        Quadruplet: game.Quadruplet,
+        GameType: game.GameType
       });
+
     }
 
     // User decides to stay
@@ -200,7 +237,7 @@ async function setupGame() {
 
     // Adding points
     const cellIndexMap = { A: 0, B: 1, C: 2, D: 3 };
-    const cellIndex = cellIndexMap[currentCell]; 
+    const cellIndex = cellIndexMap[currentCell];
     totalPoints += p1Payoff[cellIndex];
     document.getElementById("totalPoints").textContent = totalPoints;
 
@@ -211,13 +248,12 @@ async function setupGame() {
 function highlightCell(cellId) {
   // Clear highlights
   document.querySelectorAll("#gameBoard td").forEach(cell => cell.classList.remove("highlight"));
-  
   // Highlight new cell
   document.getElementById(cellId).classList.add("highlight");
 }
 
 function decideComputerMove(quadruplet, player2Type) {
-  const decisionIndex = player2Type === "Myopic" ? 0 : 1; // Use the first or second move in quadruplet
+  const decisionIndex = player2Type === "Myopic" ? 0 : 1; // Use first or second move in quadruplet
   return quadruplet[decisionIndex] === 1 ? "move" : "stay";
 
 }
@@ -229,16 +265,38 @@ function showNextTrialButton() {
   nextButton.id = "nextTrialButton";
 
   nextButton.addEventListener("click", () => {
-      document.getElementById("status").textContent = ""; 
-      nextButton.remove();
-      currentGameIndex++;
+    document.getElementById("status").textContent = "";
+    nextButton.remove();
+    currentGameIndex++;
 
-      if (currentGameIndex < gameData.length) {
-          setupGame();
-      } else {
+    if (currentGameIndex < gameData.length) {
+      setupGame();
+    }
+    // last trial: create pop up for user to input instructions
+    else {
+      // Hide the game UI
+      document.getElementById("gameBoard").style.display = "none";
+      document.getElementById("controls").style.display = "none";
+      document.getElementById("status").textContent = "";
+
+      // Show user instruction input overlay
+      document.getElementById("userInstructionOverlay").style.display = "flex";
+
+      // Handle instruction submission
+      document.getElementById("submitUserInstructions").addEventListener("click", function () {
+        const instructions = document.getElementById("userInstructionInput").value.trim();
+        if (instructions) {
+          player1Data.push({ instructions });
+          // Hide input overlay
+          document.getElementById("userInstructionOverlay").style.display = "none";
+          // Send data 
           document.getElementById("status").textContent = "All trials completed! Sending data...";
           sendToRedCap();
-      }
+        } else {
+          alert("Please enter instructions before submitting.");
+        }
+      });
+    }
   });
 
   document.body.appendChild(nextButton);
@@ -278,6 +336,7 @@ function saveDataLocally() {
 }
 
 
+
 function sendToRedCap() {
   console.log("Saving data locally before sending to REDCap...");
   saveDataLocally(); // Save locally first
@@ -287,7 +346,7 @@ function sendToRedCap() {
   const timestamp = Date.now();
   const filename = `player_data.json`;
   const fileContent = JSON.stringify(player1Data);
-  
+
   console.log("Filename:", filename);
   console.log("File Content:", fileContent);
 
@@ -296,7 +355,7 @@ function sendToRedCap() {
 
   // NEW
   const dataDict = {
-    "record_id" : timestamp
+    "record_id": timestamp
   };
 
   const body = {
@@ -312,15 +371,15 @@ function sendToRedCap() {
     returnFormat: 'json'
   };
   $.post(url, body)
-    .done(function(response) {
-        console.log('Creating record to REDCap. Response:', response);
+    .done(function (response) {
+      console.log('Creating record to REDCap. Response:', response);
     })
-    .fail(function(error) {
-        console.error('Failed to create record to REDCap:', error);
+    .fail(function (error) {
+      console.error('Failed to create record to REDCap:', error);
     });
 
   // OG
-  formData.append('token', '2C941E2CCA757DF649E150366AD3904E');  
+  formData.append('token', '2C941E2CCA757DF649E150366AD3904E');
   formData.append('content', 'file');
   formData.append('action', 'import');
   formData.append('field', `prt_data_json`);
@@ -332,20 +391,19 @@ function sendToRedCap() {
   console.log("Form Data:", formData);
 
   $.ajax({
-      url: url,
-      type: 'POST',
-      data: formData,
-      contentType: false, 
-      processData: false, 
-      success: function(response) {
-          console.log('Data sent to REDCap. Response:', response);
-      },
-      error: function(error) {
-          console.error('Failed to send data to REDCap:', error);
-      }
+    url: url,
+    type: 'POST',
+    data: formData,
+    contentType: false,
+    processData: false,
+    success: function (response) {
+      console.log('Data sent to REDCap. Response:', response);
+    },
+    error: function (error) {
+      console.error('Failed to send data to REDCap:', error);
+    }
   });
 }
-
 
 // window.mobileAndTabletCheck = function() {
 //   let check = false;
