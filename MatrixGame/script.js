@@ -30,13 +30,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
   instructionText.innerHTML = `<strong style="font-size: 20px;">Welcome to the Matrix Game!</strong><br>
-  Your goal is to maximize the number of points you earn over the course of each trial.<br><br>
+  Your goal is to maximize the number of points you earn over the course of the following trials.<br><br>
   Your payoff at the end of each round will be the left number shown in the cell that the game ends on.<br>
   You will begin in cell A (as shown below) and can decide to Stay (end the game in the current cell) or Move (to the next cell).<br><br>
 
   <img src="./images/instructionscreenshot.png" alt="Matrix Game Screenshot" class="instruction-img">
 
-  <br>You will be playing against another player who receives the left number as payoff and is also trying to maximize their total points over the rounds.`;
+  <br>You will be playing against another player who receives the right number as payoff and is also trying to maximize their total points over the rounds.`;
 
   // Ensure overlay is visible on page load
   instructionOverlay.style.display = "flex";
