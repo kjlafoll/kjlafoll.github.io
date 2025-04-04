@@ -106,12 +106,22 @@ button {
   z-index: 1000;
 }
 
+/* .instruction-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  max-width: 900px;
+} */
+
 .instruction-content {
   background: white;
   padding: 20px;
   border-radius: 8px;
   text-align: center;
   max-width: 900px;
+  max-height: 80vh; /* Prevent it from taking up too much space */
+  overflow-y: auto; /* Enables scrolling if content overflows */
 }
 
 .instruction-content p,
@@ -126,17 +136,45 @@ button {
   width: 180px;
   height: auto;
   display: block;
-  margin: 10px auto;
+  margin: 0px auto;
 }
 
-#userInstructionInput {
+/* #userInstructionInput {
   width: 90%;
   margin-top: 10px;
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 5px;
   font-size: 14px;
+} */
+
+#userInstructionInput {
+  width: 90%;
+  max-width: 400px;
+  height: 100px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+  resize: none;
+  overflow-y: auto; /* Enables scrolling */
 }
+
+/*trying stuff for phones */
+
+#userInstructionInput::-webkit-scrollbar {
+  width: 6px;
+}
+
+#userInstructionInput::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+#userInstructionInput::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
 
 #submitUserInstructions {
   margin-top: 15px;
@@ -148,3 +186,60 @@ button {
   color: white;
   border-radius: 5px;
 }
+/* 
+@media (max-width: 768px) {
+  .game-info {
+    position: relative;
+    top: auto;
+    right: auto;
+    margin-bottom: 10px;
+    margin-top: 15px;
+  }
+
+  #gameBoard {
+    flex-direction: column;
+  }
+} */
+
+@media (max-width: 768px) {
+
+  .instruction-content {
+    font-size: 14px; /* Smaller font for mobile */
+    max-width: 90%; /* Reduce width */
+    padding: 15px;
+  }
+
+  
+
+  .instruction-content p,
+  .instruction-content h2 {
+    font-size: 14px; /* Smaller text */
+    line-height: 1.5; /* Less spacing for compactness */
+  }
+
+  .game-info {
+    position: relative;
+    top: auto;
+    right: auto;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    order: 3; /* Ensures it appears after the buttons */
+  }
+
+  #controls {
+    order: 2; /* Ensures the Move/Stay buttons stay above game-info */
+  }
+
+  #gameBoard {
+    flex-direction: column;
+    order: 1; /* Keeps game board at the top */
+  }
+
+  #gameContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+}
+
