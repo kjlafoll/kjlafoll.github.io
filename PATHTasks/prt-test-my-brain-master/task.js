@@ -1147,11 +1147,11 @@ var timeline_entry = [];
 timeline_entry.push(id_entry);
 timeline_entry.push(version_select);
 
-var repeat_loop = false;
+var repeat_loop = true;
 
 var repeat_message = {
   type: 'html-keyboard-response',
-  stimulus: '<p style="font-size:12px;position: static; top: 30%; left: 20%; text-align: center; ">Sorry, that was not a number between 0 and 9999</p><p style="font-size:12px;position: static; top: 60%; left: 25%; text-align: center;">Please press the space bar and try again</p>',
+  stimulus: '<p style="font-size:12px;position: static; top: 30%; left: 20%; text-align: center; ">Sorry, that was not a number between 1000 and 9999</p><p style="font-size:12px;position: static; top: 60%; left: 25%; text-align: center;">Please press the space bar and try again</p>',
   choices: ['space']
 };
 
@@ -1162,7 +1162,7 @@ var id_validation = {
     if (jsPsych.data.get().values()[0]['subject_id'] == 'kyletest') {
       repeat_loop = false;
       return false;
-    } else if (id >= 0 && id <= 9999) {
+    } else if (id >= 1000 && id <= 9999) {
       repeat_loop = false;
       return false; // exit the loop
     } else {
