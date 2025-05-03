@@ -1,50 +1,245 @@
 body {
-    font-family: Arial, sans-serif;
+  font-family: Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
+  padding: 20px;
+}
+
+h1 {
+  color: #333;
+  margin-bottom: 20px;
+}
+
+#gameBoard {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+#gameBoard table {
+  border-collapse: collapse;
+}
+
+#gameBoard td {
+  width: 100px;
+  height: 100px;
+  border: 1px solid #000;
+  text-align: center;
+  vertical-align: middle;
+  font-size: 1.5em;
+  position: relative;
+}
+
+#gameBoard td.highlight {
+  background-color: yellow;
+}
+
+#status {
+  margin-bottom: 10px;
+}
+
+#controls {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+}
+
+button {
+  margin-top: 10px;
+  margin: 5px;
+  padding: 10px 20px;
+  font-size: 1em;
+  cursor: pointer;
+}
+
+.game-info {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: white;
+  padding: 10px;
+  border-radius: 5px;
+  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+  font-size: 14px;
+}
+
+.overlay {
+  display: flex;
+  /* Ensure it's visible on page load */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+
+#startButton {
+  margin-top: 20px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  background-color: #4CAF50;
+  color: white;
+  border-radius: 5px;
+}
+
+#userInstructionOverlay {
+  display: none;
+  /* Hidden by default */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* .instruction-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  max-width: 900px;
+} */
+
+.instruction-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  max-width: 900px;
+  max-height: 80vh; /* Prevent it from taking up too much space */
+  overflow-y: auto; /* Enables scrolling if content overflows */
+}
+
+.instruction-content p,
+.instruction-content h2 {
+  font-size: 16px;
+  font-weight: normal;
+  text-align: center;
+  line-height: 1.7;
+}
+
+.instruction-img {
+  width: 180px;
+  height: auto;
+  display: block;
+  margin: 0px auto;
+}
+
+/* #userInstructionInput {
+  width: 90%;
+  margin-top: 10px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+} */
+
+#userInstructionInput {
+  width: 90%;
+  max-width: 400px;
+  height: 100px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+  resize: none;
+  overflow-y: auto; /* Enables scrolling */
+}
+
+/*trying stuff for phones */
+
+#userInstructionInput::-webkit-scrollbar {
+  width: 6px;
+}
+
+#userInstructionInput::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+#userInstructionInput::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+
+#submitUserInstructions {
+  margin-top: 15px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  background-color: #4CAF50;
+  color: white;
+  border-radius: 5px;
+}
+/* 
+@media (max-width: 768px) {
+  .game-info {
+    position: relative;
+    top: auto;
+    right: auto;
+    margin-bottom: 10px;
+    margin-top: 15px;
+  }
+
+  #gameBoard {
+    flex-direction: column;
+  }
+} */
+
+@media (max-width: 768px) {
+
+  .instruction-content {
+    font-size: 14px; /* Smaller font for mobile */
+    max-width: 90%; /* Reduce width */
+    padding: 15px;
+  }
+
+  
+
+  .instruction-content p,
+  .instruction-content h2 {
+    font-size: 14px; /* Smaller text */
+    line-height: 1.5; /* Less spacing for compactness */
+  }
+
+  .game-info {
+    position: relative;
+    top: auto;
+    right: auto;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    order: 3; /* Ensures it appears after the buttons */
+  }
+
+  #controls {
+    order: 2; /* Ensures the Move/Stay buttons stay above game-info */
+  }
+
+  #gameBoard {
+    flex-direction: column;
+    order: 1; /* Keeps game board at the top */
+  }
+
+  #gameContainer {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin: 0;
-    padding: 20px;
+    width: 100%;
   }
-  
-  h1 {
-    color: #333;
-    margin-bottom: 20px;
-  }
-  
-  #gameBoard {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 20px;
-  }
-  
-  #gameBoard table {
-    border-collapse: collapse;
-  }
-  
-  #gameBoard td {
-    width: 100px;
-    height: 100px;
-    border: 1px solid #000;
-    text-align: center;
-    vertical-align: middle;
-    font-size: 1.5em;
-    position: relative;
-  }
-  
-  #gameBoard td.highlight {
-    background-color: yellow;
-  }
-  
-  #controls {
-    margin-top: 20px;
-  }
-  
-  button {
-    margin: 5px;
-    padding: 10px 20px;
-    font-size: 1em;
-    cursor: pointer;
-  }
-  
+}
+

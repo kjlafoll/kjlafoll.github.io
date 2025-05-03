@@ -1,11 +1,17 @@
 <!DOCTYPE html>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Matrix Game</title>
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
   <h1>Matrix Game</h1>
   <div id="gameBoard">
@@ -32,13 +38,44 @@
       </tr>
     </table>
   </div>
+
+
+  <p id="status"></p>
+
   <div id="controls">
     <button id="moveButton">Move</button>
     <button id="stayButton">Stay</button>
   </div>
-  <p id="status"></p>
+
+  <div id="gameInfo" class="game-info">
+    <p><strong>Trial Type:</strong> <span id="trialType"></span></p>
+    <p><strong>Trial Number:</strong> <span id="trialNumber">1</span></p>
+    <p><strong>Total Points:</strong> <span id="totalPoints">0</span></p>
+  </div>
+
+  <div id="instructionOverlay" class="overlay">
+    <div class="instruction-content">
+      <h2 id="instructionText"></h2>
+      <button id="startButton">Start</button>
+    </div>
+  </div>
+
+  <div id="userInstructionOverlay" class="overlay" style="display: none;">
+    <div class="instruction-content">
+      <h2 style="font-weight: bold;">Instruct the Next Player</h2>
+      <p>
+        Pretend you are writing instructions for another player who is about to play the Matrix Game you just played.
+        Your goal is to help the player think as far ahead as possible when making their decision to 'Move' or 'Stay'.
+        In 1-3 sentences, write instructions for the next player.
+      </p>
+      <textarea id="userInstructionInput" rows="4" cols="50"></textarea>
+      <br>
+      <button id="submitUserInstructions">Submit Instructions</button>
+    </div>
+  </div>
+
+
   <script src="script.js"></script>
 </body>
+
 </html>
-
-
