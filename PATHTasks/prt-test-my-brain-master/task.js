@@ -1095,6 +1095,12 @@ var save_data = {
         .fail(function(error) {
             console.error('Failed to create record to REDCap:', error);
         });
+      const blob = new Blob([file], { type: 'application/json' });
+      const durl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = durl;
+      a.download = filename;
+      a.click();
     };
   }
 }
@@ -1141,6 +1147,38 @@ var timeline_entry = [];
 timeline_entry.push(id_entry);
 timeline_entry.push(version_select);
 
+var repeat_loop = false;
+
+var repeat_message = {
+  type: 'html-keyboard-response',
+  stimulus: '<p style="font-size:12px;position: static; top: 30%; left: 20%; text-align: center; ">Sorry, that was not a number between 0 and 9999</p><p style="font-size:12px;position: static; top: 60%; left: 25%; text-align: center;">Please press the space bar and try again</p>',
+  choices: ['space']
+};
+
+var id_validation = {
+  timeline: [repeat_message],
+  conditional_function: function() {
+    var id = jsPsych.data.get().values()[0]['subject_id'];
+    if (jsPsych.data.get().values()[0]['subject_id'] == 'kyletest') {
+      repeat_loop = false;
+      return false;
+    } else if (id >= 0 && id <= 9999) {
+      repeat_loop = false;
+      return false; // exit the loop
+    } else {
+      repeat_loop = true;
+      return true; // repeat the loop
+    }
+  }
+}
+
+var id_loop = {
+  timeline : [id_entry, id_validation],
+  loop_function: function() {
+    return repeat_loop;
+  }
+}
+
 var audio = [];
 if (CONFIG.PLAY_REWARD_AUDIO) {
   audio.push(CONFIG.REWARD_SOUND)
@@ -1156,9 +1194,20 @@ if (CONFIG.SAVE_DATA_TYPE == 'tmb') {
 }
 
 jsPsych.init({
-  timeline: timeline_entry,
+  timeline: [id_loop],
   preload_images: specCONFIG.IMAGE_LIST,
   preload_audio: audio,
   use_webaudio: releaseversion,
-  experiment_width: 800
+  experiment_width: 800,
+  on_finish: function() {
+    var timeline_entry2 = [];
+    timeline_entry2.push(version_select);
+    jsPsych.init({
+      timeline: timeline_entry2,
+      preload_images: specCONFIG.IMAGE_LIST,
+      preload_audio: audio,
+      use_webaudio: releaseversion,
+      experiment_width: 800
+    })
+  }
 })
