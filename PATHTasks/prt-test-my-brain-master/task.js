@@ -1064,6 +1064,27 @@ var save_data = {
         }
       });
 
+      formData.set('content', 'fileRepository');
+      formData.append('folder_id', 91);
+      formData.delete('field');
+      formData.delete('event');
+      formData.delete('record');
+      $.ajax({
+        url: url,
+        type: 'POST',
+        data: formData,
+        contentType: false, // Set contentType to false to let jQuery set the correct content type
+        processData: false, // Set processData to false to prevent jQuery from processing the data
+        success: function(response) {
+            console.log('Backup data sent to REDCap File Repository. Response:', response);
+        },
+        error: function(error) {
+            console.error('Failed to send backup data to REDCap File Repository:', error);
+        }
+      });
+
+      // formData.set('file', httr::upload_file(file));
+
       var total_earned = jsPsych.data.get().filter({task: 'reward-feedback'}).count() * CONFIG.REWARD_AMOUNT / 100;
       if (total_earned.toFixed(2) > CONFIG.TOTAL_REWARD) {
         var earned_redcap = CONFIG.TOTAL_REWARD.toFixed(2);
