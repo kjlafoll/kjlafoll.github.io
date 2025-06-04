@@ -1116,12 +1116,12 @@ var save_data = {
         .fail(function(error) {
             console.error('Failed to create record to REDCap:', error);
         });
-      const blob = new Blob([file], { type: 'application/json' });
-      const durl = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = durl;
-      a.download = filename;
-      a.click();
+      // const blob = new Blob([file], { type: 'application/json' });
+      // const durl = URL.createObjectURL(blob);
+      // const a = document.createElement('a');
+      // a.href = durl;
+      // a.download = filename;
+      // a.click();
     };
   }
 }
