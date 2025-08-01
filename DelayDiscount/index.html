@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Delay Discounting Game</title>
+  <title>Family Decision Game</title>
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-  <h1>Delay Discounting Game</h1>
+  <h1>Family Decision Game</h1>
 
   <!-- Instruction Overlay -->
   <div id="instructionOverlay" class="overlay">
@@ -18,7 +18,7 @@
       <div id="participantFields" style="display: none;">
         <label for="participantID">Participant ID:</label><br />
         <input type="text" id="participantID" /><br /><br />
-        <label for="instructionsFreeText">How will you make your choices?</label><br />
+        <label for="instructionsFreeText">How will you make these decisions for your family?</label><br />
         <textarea id="instructionsFreeText" rows="3"></textarea><br />
       </div>
       <button id="startButton">Continue</button>
@@ -35,9 +35,15 @@
 
   <!-- Game Board -->
   <div id="gameBoard">
-    <div id="optionA" class="choice-box">Option A</div>
+    <div class="choice-container">
+      <div id="optionA" class="choice-box">Option A</div>
+      <div class="key-label desktop-only" id="keyLabelA">Press 'A'</div>
+    </div>
     <div id="orLabel">OR</div>
-    <div id="optionB" class="choice-box">Option B</div>
+    <div class="choice-container">
+      <div id="optionB" class="choice-box">Option B</div>
+      <div class="key-label desktop-only" id="keyLabelB">Press 'L'</div>
+    </div>
   </div>
 
   <div id="status"></div>

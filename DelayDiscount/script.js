@@ -11,18 +11,19 @@ let trialTimeout;
 let isMobile = /android|iphone|ipad|mobile/i.test(navigator.userAgent);
 let inPractice = true;
 let introCompleted = false;
-let popupActive = true;   // Prevent input during popups
-let trialActive = false;  // Prevent input except during active trial
+let popupActive = true;
+let trialActive = false;
 
-// Intro popup steps
 const introMessages = [
-  "Welcome to the Delay Discounting Game!\n\nYou will make choices between two monetary rewards on each trial. Some rewards are immediate, others are delayed.",
-  "You must respond within 5 seconds on each trial. If you respond too slowly or too quickly (<150ms), the trial will be repeated later.\n\nUse the A and L keys on a computer or tap the left/right boxes on mobile.",
-  "Before we begin, please enter your Participant ID and briefly describe how you will make your choices."
+  "Welcome to the Family Decision Game!\n\nOn each trial, you will make a choice between two amounts of money that your FAMILY could receive. Some rewards are available immediately, while others are available after a delay.",
+  isMobile
+    ? "You must respond within 10 seconds on each trial.\n\nOn a mobile device, tap directly on the option you prefer.\n\nPlease choose as quickly and as accurately as possible."
+    : "You must respond within 10 seconds on each trial.\n\nOn a computer, press the **A key** to choose the LEFT option and the **L key** to choose the RIGHT option.\n\nPlease choose as quickly and as accurately as possible.",
+  "Before we begin, please enter your Participant ID and briefly describe how you will make these choices for your family."
 ];
+
 let introStep = 0;
 
-// DOM references
 const optionA = document.getElementById("optionA");
 const optionB = document.getElementById("optionB");
 const statusText = document.getElementById("status");
@@ -36,19 +37,26 @@ document.addEventListener("DOMContentLoaded", function () {
     .then(response => response.text())
     .then(text => {
       let data = Papa.parse(text, { header: true }).data;
-      trials = data.filter(row => row.ImmediateAmount && row.DelayedAmount);
-      shuffleArray(trials);
+      const allTrials = data.filter(row => row.ImmediateAmount && row.DelayedAmount);
+      const realTrials = allTrials.filter(row => row.AttentionCheck != "1");
+      const attentionTrials = allTrials.filter(row => row.AttentionCheck == "1");
 
-      // First 8 are practice, rest are main trials
-      practiceTrials = trials.slice(0, 8);
-      mainTrials = trials.slice(8);
+      shuffleArray(realTrials);
+      shuffleArray(attentionTrials);
+
+      // Practice trials: 8 non-attention trials
+      practiceTrials = realTrials.slice(0, 8);
+
+      // Main trials: 100 real + 5 attention checks
+      mainTrials = realTrials.slice(8, 108).concat(attentionTrials);
+      shuffleArray(mainTrials);
+
       trials = practiceTrials;
     });
 
   document.getElementById("introText").textContent = introMessages[introStep];
   document.getElementById("startButton").addEventListener("click", handleIntroSteps);
 
-  // Spacebar listeners for both intro and popup overlays
   document.addEventListener("keydown", (e) => {
     if (popupActive) {
       if (document.getElementById("instructionOverlay").style.display !== "none" && e.code === "Space") {
@@ -158,6 +166,8 @@ function showFixationCross() {
 
   optionA.classList.add("hidden-transparent");
   optionB.classList.add("hidden-transparent");
+  document.getElementById("keyLabelA").style.visibility = "hidden";
+  document.getElementById("keyLabelB").style.visibility = "hidden";
 
   orLabel.textContent = "+";
   orLabel.classList.add("cross-visible");
@@ -167,6 +177,10 @@ function showFixationCross() {
     optionB.classList.remove("hidden-transparent");
     orLabel.textContent = "OR";
     orLabel.classList.remove("cross-visible");
+    if (!isMobile) {
+      document.getElementById("keyLabelA").style.visibility = "visible";
+      document.getElementById("keyLabelB").style.visibility = "visible";
+    }
     startTrial();
   }, 1000);
 }
@@ -198,31 +212,33 @@ function startTrial() {
   }
 
   const trial = trials[currentTrialIndex];
-
-  const immText = trial.ImmediateDelay == 0 ? "now" : `in ${trial.ImmediateDelay} days`;
-  const delText = trial.DelayedDelay == 0 ? "now" : `in ${trial.DelayedDelay} days`;
+  const immText = trial.ImmediateDelay == 0 ? "right now" : `in ${trial.ImmediateDelay} days`;
+  const delText = trial.DelayedDelay == 0 ? "right now" : `in ${trial.DelayedDelay} days`;
 
   optionA.style.border = "2px solid #000";
   optionB.style.border = "2px solid #000";
 
   if (trial.NowOnLeft == "1") {
-    optionA.textContent = `$${trial.ImmediateAmount} ${immText}`;
-    optionB.textContent = `$${trial.DelayedAmount} ${delText}`;
+    optionA.textContent = `Your family receives $${trial.ImmediateAmount} ${immText}`;
+    optionB.textContent = `Your family receives $${trial.DelayedAmount} ${delText}`;
     optionA.dataset.choice = "A";
     optionB.dataset.choice = "B";
   } else {
-    optionA.textContent = `$${trial.DelayedAmount} ${delText}`;
-    optionB.textContent = `$${trial.ImmediateAmount} ${immText}`;
+    optionA.textContent = `Your family receives $${trial.DelayedAmount} ${delText}`;
+    optionB.textContent = `Your family receives $${trial.ImmediateAmount} ${immText}`;
     optionA.dataset.choice = "B";
     optionB.dataset.choice = "A";
   }
 
-  statusText.textContent = "Make your choice! (A / L or tap)";
+  statusText.textContent = isMobile
+    ? "Tap to make your choice!"
+    : "Make your choice! (Press 'A' for LEFT or 'L' for RIGHT)";
+  
   trialActive = true;
   startTime = new Date().getTime();
 
   clearTimeout(trialTimeout);
-  trialTimeout = setTimeout(() => handleLapse(trial), 5000);
+  trialTimeout = setTimeout(() => handleLapse(trial), 10000);
 }
 
 function handleKeyChoice(event) {
@@ -240,6 +256,9 @@ function handleChoice(choice) {
   clearTimeout(trialTimeout);
   const trial = trials[currentTrialIndex];
   const isFalseStart = rt < 150;
+
+  const correctChoice = trial.ImmediateAmount > trial.DelayedAmount && trial.ImmediateDelay <= trial.DelayedDelay ? "A" :
+                       trial.DelayedAmount > trial.ImmediateAmount && trial.DelayedDelay <= trial.ImmediateDelay ? (trial.NowOnLeft == "1" ? "B" : "A") : null;
 
   if (optionA.dataset.choice === choice) {
     optionA.style.border = "4px solid green";
@@ -261,6 +280,8 @@ function handleChoice(choice) {
       DelayedAmount: trial.DelayedAmount,
       DelayedDelay: trial.DelayedDelay,
       NowOnLeft: trial.NowOnLeft,
+      AttentionCheck: trial.AttentionCheck || 0,
+      PassedAttention: (trial.AttentionCheck == "1" && choice === correctChoice) ? 1 : (trial.AttentionCheck == "1" ? 0 : null),
       PreInstructions: preInstructions,
       startTimeAbsolute: new Date(trialStart).toISOString(),
       endTimeAbsolute: new Date().toISOString()
@@ -281,7 +302,7 @@ function handleChoice(choice) {
 function handleLapse(trial) {
   popupActive = true;
   trialActive = false;
-  showPopup("Too slow! Press SPACE or tap Continue to move on.", () => {
+  showPopup("Too slow! You have 10 seconds to respond. Press SPACE or tap Continue to move on.", () => {
     popupActive = false;
     if (!inPractice) requeueTrials.push(trial);
     currentTrialIndex++;
@@ -310,7 +331,7 @@ function showPopup(message, callback) {
 
 async function endGame() {
   statusText.textContent = "All trials completed! Saving data...";
-  const filename = `delay_discounting_${participantID}.json`;
+  const filename = `family_delay_discounting_${participantID}.json`;
   const dataStr = JSON.stringify(results, null, 2);
   const blob = new Blob([dataStr], { type: "application/json" });
   const url_local = URL.createObjectURL(blob);

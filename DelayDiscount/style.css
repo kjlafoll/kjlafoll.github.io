@@ -191,3 +191,19 @@ body.mobile textarea,
 body.mobile input {
   font-size: 3.5vw;
 }
+
+.choice-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.key-label {
+  font-size: 0.9em;
+  color: #555;
+  margin-top: 4px;
+}
+
+body.mobile .desktop-only {
+  display: none !important;
+}
