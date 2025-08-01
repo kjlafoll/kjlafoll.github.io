@@ -1,0 +1,193 @@
+body {
+  font-family: Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
+  padding: 20px;
+}
+
+h1 {
+  color: #333;
+  margin-bottom: 20px;
+}
+
+#gameBoard {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 20px;
+  position: relative;
+  width: 90vw;
+  max-width: 1000px;
+}
+
+.choice-box {
+  width: 220px;
+  height: 150px;
+  border: 2px solid #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.2em;
+  text-align: center;
+  padding: 10px;
+  background-color: #f0f0f0;
+  cursor: default;
+  user-select: none;
+  word-wrap: break-word;
+  white-space: normal;
+  box-sizing: border-box;
+}
+
+#orLabel {
+  display: flex;
+  font-weight: bold;
+  font-size: 2em;
+  align-self: center;
+  transition: opacity 0.2s ease;
+  text-align: center;
+}
+
+#status {
+  margin-bottom: 10px;
+  font-size: 1.1em;
+  text-align: center;
+}
+
+.overlay {
+  display: flex;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.instruction-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  max-width: 500px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+
+.instruction-content p,
+.instruction-content h2 {
+  font-size: 16px;
+  font-weight: normal;
+  text-align: center;
+  line-height: 1.7;
+}
+
+#popupOverlay {
+  display: none;
+}
+
+#popupContinue {
+  margin-top: 20px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  background-color: #4CAF50;
+  color: white;
+  border-radius: 5px;
+}
+
+textarea, input {
+  width: 90%;
+  max-width: 400px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+.hidden-transparent {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.cross-visible {
+  opacity: 1;
+  color: black;
+  font-size: 2.5em;
+}
+
+/* ✅ Mobile layout fix with strict sizing and margins */
+body.mobile #gameBoard {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 96vw;
+  max-width: 96vw;
+  padding: 0 2vw;
+  margin: 0;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+body.mobile .choice-box {
+  flex: 0 0 38vw !important;
+  width: 38vw !important;
+  max-width: 38vw !important;
+  height: 18vh !important;
+  min-height: 14vh;
+  margin: 0;
+  padding: 5px;
+  font-size: calc(3.5vw + 0.3vh);
+  box-sizing: border-box;
+  text-align: center;
+  overflow-wrap: break-word;
+  background-color: #f0f0f0;
+}
+
+/* ✅ Resize OR label on mobile */
+body.mobile #orLabel {
+  flex: 0 0 8vw !important;
+  width: 8vw !important;
+  max-width: 8vw !important;
+  font-size: 5vw !important;
+  text-align: center;
+  word-wrap: break-word;
+  margin: 0;
+  padding: 0;
+}
+
+/* ✅ Popup scaling dynamically on mobile */
+body.mobile .instruction-content {
+  width: 90vw;
+  max-width: 90vw;
+  max-height: 80vh;
+  overflow-y: auto;
+  font-size: 3.5vw;
+  word-wrap: break-word;
+  white-space: normal;
+}
+
+body.mobile #popupContinue {
+  padding: 12px 18px;
+  font-size: 4vw;
+}
+
+body.mobile .instruction-content p,
+body.mobile .instruction-content h2 {
+  font-size: 3.5vw;
+  line-height: 1.4;
+}
+
+body.mobile textarea,
+body.mobile input {
+  font-size: 3.5vw;
+}
