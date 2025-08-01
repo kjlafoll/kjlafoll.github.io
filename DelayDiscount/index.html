@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Delay Discounting Game</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+  <h1>Delay Discounting Game</h1>
+
+  <!-- Instruction Overlay -->
+  <div id="instructionOverlay" class="overlay">
+    <div class="instruction-content">
+      <p id="introText"></p>
+      <div id="participantFields" style="display: none;">
+        <label for="participantID">Participant ID:</label><br />
+        <input type="text" id="participantID" /><br /><br />
+        <label for="instructionsFreeText">How will you make your choices?</label><br />
+        <textarea id="instructionsFreeText" rows="3"></textarea><br />
+      </div>
+      <button id="startButton">Continue</button>
+    </div>
+  </div>
+
+  <!-- Popup Overlay -->
+  <div id="popupOverlay" class="overlay">
+    <div class="instruction-content">
+      <p id="popupMessage"></p>
+      <button id="popupContinue">Continue</button>
+    </div>
+  </div>
+
+  <!-- Game Board -->
+  <div id="gameBoard">
+    <div id="optionA" class="choice-box">Option A</div>
+    <div id="orLabel">OR</div>
+    <div id="optionB" class="choice-box">Option B</div>
+  </div>
+
+  <div id="status"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
