@@ -1,209 +1,177 @@
 body {
   font-family: Arial, sans-serif;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  text-align: center;
   margin: 0;
-  padding: 20px;
-}
-
-h1 {
-  color: #333;
-  margin-bottom: 20px;
-}
-
-#gameBoard {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 20px;
-  gap: 20px;
-  position: relative;
-  width: 90vw;
-  max-width: 1000px;
-}
-
-.choice-box {
-  width: 220px;
-  height: 150px;
-  border: 2px solid #000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 1.2em;
-  text-align: center;
-  padding: 10px;
-  background-color: #f0f0f0;
-  cursor: default;
-  user-select: none;
-  word-wrap: break-word;
-  white-space: normal;
-  box-sizing: border-box;
-}
-
-#orLabel {
-  display: flex;
-  font-weight: bold;
-  font-size: 2em;
-  align-self: center;
-  transition: opacity 0.2s ease;
-  text-align: center;
-}
-
-#status {
-  margin-bottom: 10px;
-  font-size: 1.1em;
-  text-align: center;
+  padding: 0;
+  background-color: #f5f5f5;
 }
 
 .overlay {
-  display: flex;
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.7);
-  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
   align-items: center;
+  justify-content: center;
   z-index: 1000;
 }
 
-.instruction-content {
+.instruction-content, .popup-content {
   background: white;
   padding: 20px;
-  border-radius: 8px;
+  border-radius: 10px;
   text-align: center;
   max-width: 500px;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  white-space: normal;
+  width: 90%;
+  box-sizing: border-box;
+  overflow-y: auto;
 }
 
-.instruction-content p,
-.instruction-content h2 {
-  font-size: 16px;
-  font-weight: normal;
-  text-align: center;
-  line-height: 1.7;
+.instruction-content p, .popup-content p {
+  margin-bottom: 15px;
 }
 
-#popupOverlay {
-  display: none;
-}
-
-#popupContinue {
-  margin-top: 20px;
+button {
   padding: 10px 20px;
+  margin-top: 10px;
   font-size: 16px;
   cursor: pointer;
+  border-radius: 6px;
   border: none;
-  background-color: #4CAF50;
+  background-color: #007BFF;
   color: white;
-  border-radius: 5px;
+  transition: background-color 0.2s ease;
 }
 
-textarea, input {
-  width: 90%;
-  max-width: 400px;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-size: 14px;
+button:hover {
+  background-color: #0056b3;
+}
+
+/* Survey buttons container */
+#popupButtons {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+/* Individual survey response buttons */
+#popupButtons button {
+  width: 45px;
+  height: 45px;
+  font-size: 16px;
+  background-color: #ddd;
+  color: #000;
+  border: 1px solid #999;
+  border-radius: 6px;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+/* ✅ Highlight selected button */
+#popupButtons button.selected {
+  background-color: #007BFF;
+  color: #fff;
+  border: 2px solid #0056b3;
+  transform: scale(1.05);
+}
+
+#popupButtons button:hover {
+  background-color: #bbb;
+}
+
+/* Trial display */
+#trialContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 40px;
+  gap: 15px;
+  flex-wrap: nowrap;
+}
+
+.option-box {
+  width: 40%;
+  max-width: 220px;
+  height: 150px;
+  background-color: #fff;
+  border: 2px solid #000;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 1.2em;
+  padding: 10px;
+  word-wrap: break-word;
+  box-sizing: border-box;
+}
+
+#orLabel {
+  font-weight: bold;
+  font-size: 1.5em;
+}
+
+.key-label {
+  font-size: 0.9em;
   margin-top: 5px;
 }
 
 .hidden-transparent {
   opacity: 0;
-  pointer-events: none;
 }
 
 .cross-visible {
   opacity: 1;
-  color: black;
-  font-size: 2.5em;
+  font-size: 2em;
 }
 
-/* ✅ Mobile layout fix with strict sizing and margins */
-body.mobile #gameBoard {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  width: 96vw;
-  max-width: 96vw;
-  padding: 0 2vw;
-  margin: 0;
-  box-sizing: border-box;
-  overflow-x: hidden;
+/* Status text */
+#status {
+  margin-top: 20px;
+  font-weight: bold;
 }
 
-body.mobile .choice-box {
-  flex: 0 0 38vw !important;
-  width: 38vw !important;
-  max-width: 38vw !important;
-  height: 18vh !important;
-  min-height: 14vh;
-  margin: 0;
-  padding: 5px;
-  font-size: calc(3.5vw + 0.3vh);
-  box-sizing: border-box;
-  text-align: center;
-  overflow-wrap: break-word;
-  background-color: #f0f0f0;
-}
-
-/* ✅ Resize OR label on mobile */
-body.mobile #orLabel {
-  flex: 0 0 8vw !important;
-  width: 8vw !important;
-  max-width: 8vw !important;
-  font-size: 5vw !important;
-  text-align: center;
-  word-wrap: break-word;
-  margin: 0;
-  padding: 0;
-}
-
-/* ✅ Popup scaling dynamically on mobile */
-body.mobile .instruction-content {
-  width: 90vw;
-  max-width: 90vw;
-  max-height: 80vh;
-  overflow-y: auto;
-  font-size: 3.5vw;
-  word-wrap: break-word;
-  white-space: normal;
-}
-
-body.mobile #popupContinue {
-  padding: 12px 18px;
+/* Mobile adjustments */
+body.mobile .option-box {
+  width: 42%;
+  height: auto;
+  min-height: 100px;
   font-size: 4vw;
 }
 
-body.mobile .instruction-content p,
-body.mobile .instruction-content h2 {
-  font-size: 3.5vw;
-  line-height: 1.4;
+body.mobile #popupButtons button {
+  width: 12vw;
+  height: 12vw;
+  font-size: 4vw;
 }
 
-body.mobile textarea,
-body.mobile input {
-  font-size: 3.5vw;
+#numberButtons button {
+  width: 45px;
+  height: 45px;
+  font-size: 16px;
+  background-color: #ddd;
+  color: #000;
+  border: 1px solid #999;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
 }
 
-.choice-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+#numberButtons button:hover {
+  background-color: #bbb;
 }
 
-.key-label {
-  font-size: 0.9em;
-  color: #555;
-  margin-top: 4px;
+#numberButtons button.selected {
+  background-color: #007BFF !important;
+  color: white !important;
+  border: 2px solid #0056b3;
 }
 
-body.mobile .desktop-only {
-  display: none !important;
+#popupButtons button.selected {
+  background-color: #007BFF !important;
+  color: #fff !important;
+  border: 2px solid #0056b3 !important;
 }
