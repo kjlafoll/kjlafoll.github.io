@@ -9,44 +9,42 @@
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-  <h1>Family Decision Game</h1>
-
-  <!-- Instruction Overlay -->
   <div id="instructionOverlay" class="overlay">
     <div class="instruction-content">
       <p id="introText"></p>
-      <div id="participantFields" style="display: none;">
-        <label for="participantID">Participant ID:</label><br />
-        <input type="text" id="participantID" /><br /><br />
-        <label for="instructionsFreeText">How will you make these decisions for your family?</label><br />
-        <textarea id="instructionsFreeText" rows="3"></textarea><br />
+      <div id="participantFields" style="display: none; margin-top: 15px;">
+        <label for="participantID">Participant ID:</label><br>
+        <input type="text" id="participantID" placeholder="Enter ID" />
       </div>
-      <button id="startButton">Continue</button>
+      <button id="startButton">Next</button>
     </div>
   </div>
 
-  <!-- Popup Overlay -->
-  <div id="popupOverlay" class="overlay">
-    <div class="instruction-content">
+  <!-- Trial display -->
+  <div id="trialContainer">
+    <div id="keyLabelA" class="key-label">Press A</div>
+    <div id="optionA" class="option-box"></div>
+    <div id="orLabel">OR</div>
+    <div id="optionB" class="option-box"></div>
+    <div id="keyLabelB" class="key-label">Press L</div>
+  </div>
+  <div id="status"></div>
+
+  <div id="popupOverlay" class="overlay" style="display: none;">
+    <div class="popup-content">
       <p id="popupMessage"></p>
+      <div id="popupButtons">
+        <button type="button">1</button>
+        <button type="button">2</button>
+        <button type="button">3</button>
+        <button type="button">4</button>
+        <button type="button">5</button>
+        <button type="button">6</button>
+        <button type="button">7</button>
+      </div>
       <button id="popupContinue">Continue</button>
     </div>
   </div>
-
-  <!-- Game Board -->
-  <div id="gameBoard">
-    <div class="choice-container">
-      <div id="optionA" class="choice-box">Option A</div>
-      <div class="key-label desktop-only" id="keyLabelA">Press 'A'</div>
-    </div>
-    <div id="orLabel">OR</div>
-    <div class="choice-container">
-      <div id="optionB" class="choice-box">Option B</div>
-      <div class="key-label desktop-only" id="keyLabelB">Press 'L'</div>
-    </div>
-  </div>
-
-  <div id="status"></div>
 
   <script src="script.js"></script>
 </body>

@@ -13,13 +13,11 @@ let inPractice = true;
 let introCompleted = false;
 let popupActive = true;
 let trialActive = false;
+let surveyResponses = {};
 
 const introMessages = [
-  "Welcome to the Family Decision Game!\n\nOn each trial, you will make a choice between two amounts of money that your FAMILY could receive. Some rewards are available immediately, while others are available after a delay.",
-  isMobile
-    ? "You must respond within 10 seconds on each trial.\n\nOn a mobile device, tap directly on the option you prefer.\n\nPlease choose as quickly and as accurately as possible."
-    : "You must respond within 10 seconds on each trial.\n\nOn a computer, press the **A key** to choose the LEFT option and the **L key** to choose the RIGHT option.\n\nPlease choose as quickly and as accurately as possible.",
-  "Before we begin, please enter your Participant ID and briefly describe how you will make these choices for your family."
+  "Welcome to the Family Decision Game!\n\nBefore starting the game, you'll answer a few short questions about financial decision-making in relationships.",
+  "Please enter your Participant ID below."
 ];
 
 let introStep = 0;
@@ -28,6 +26,7 @@ const optionA = document.getElementById("optionA");
 const optionB = document.getElementById("optionB");
 const statusText = document.getElementById("status");
 const orLabel = document.getElementById("orLabel");
+const numberButtons = document.getElementById("popupButtons");
 
 document.addEventListener("DOMContentLoaded", function () {
   adjustForMobile();
@@ -44,10 +43,7 @@ document.addEventListener("DOMContentLoaded", function () {
       shuffleArray(realTrials);
       shuffleArray(attentionTrials);
 
-      // Practice trials: 8 non-attention trials
       practiceTrials = realTrials.slice(0, 8);
-
-      // Main trials: 100 real + 5 attention checks
       mainTrials = realTrials.slice(8, 108).concat(attentionTrials);
       shuffleArray(mainTrials);
 
@@ -59,13 +55,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
   document.addEventListener("keydown", (e) => {
     if (popupActive) {
-      if (document.getElementById("instructionOverlay").style.display !== "none" && e.code === "Space") {
-        e.preventDefault();
-        document.getElementById("startButton").click();
-      }
-      if (document.getElementById("popupOverlay").style.display !== "none" && e.code === "Space") {
-        e.preventDefault();
-        document.getElementById("popupContinue").click();
+      const activeInput = document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "TEXTAREA";
+      if (!activeInput) {  // ✅ Only allow SPACE if not typing
+        if (document.getElementById("instructionOverlay").style.display !== "none" && e.code === "Space") {
+          e.preventDefault();
+          document.getElementById("startButton").click();
+        }
+        if (document.getElementById("popupOverlay").style.display !== "none" && e.code === "Space") {
+          e.preventDefault();
+          document.getElementById("popupContinue").click();
+        }
       }
     }
   });
@@ -82,6 +81,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 });
 
+/** ---------------- MOBILE RESPONSIVENESS ---------------- */
 function adjustForMobile() {
   const width = window.innerWidth;
   const height = window.innerHeight;
@@ -89,12 +89,10 @@ function adjustForMobile() {
   if (width <= 768) {
     document.body.classList.add("mobile");
     document.body.classList.remove("desktop");
-
     [optionA, optionB].forEach(box => {
       box.style.height = Math.floor(height * 0.18) + "px";
       box.style.fontSize = Math.max(12, Math.min(width * 0.04, height * 0.04)) + "px";
     });
-
     const popupFontSize = Math.max(12, Math.min(width * 0.045, height * 0.025));
     document.querySelectorAll(".instruction-content").forEach(p => {
       p.style.width = Math.floor(width * 0.9) + "px";
@@ -118,33 +116,105 @@ function adjustForMobile() {
   }
 }
 
+/** ---------------- SURVEY QUESTIONS ---------------- */
+const surveyQuestions = [
+  { id: "relative_income", text: "How much money do you make as compared to your partner?<br><br>1 = I make a lot less than my partner<br>2 = I make moderately less<br>3 = I make slightly less<br>4 = Exactly the same<br>5 = Slightly more<br>6 = Moderately more<br>7 = A lot more" },
+  { id: "joint_ownership_1", text: "It makes no difference which account or name money is kept in—all the money belongs to both of us.<br><br>1 = Strongly disagree<br>7 = Strongly agree" },
+  { id: "joint_ownership_2", text: "We see ourselves as independent from each other financially.<br><br>1 = Strongly disagree<br>7 = Strongly agree" },
+  { id: "joint_ownership_3", text: "It’s important that each of us has their own savings (e.g., bank account, personal savings).<br><br>1 = Strongly disagree<br>7 = Strongly agree" },
+  { id: "proj_20_80", text: "Over the course of their relationship, Partner A contributed around 80% of their total assets, while Partner B contributed around 20%.<br>How fair is it if they split up their assets this way?<br><br>Partner A gets 20%, Partner B gets 80%<br><br>1 = Extremely fair<br>7 = Extremely unfair" },
+  { id: "proj_30_70", text: "Over the course of their relationship, Partner A contributed around 80% of their total assets, while Partner B contributed around 20%.<br>How fair is it if they split up their assets this way?<br><br>Partner A gets 30%, Partner B gets 70%<br><br>1 = Extremely fair<br>7 = Extremely unfair" },
+  { id: "proj_40_60", text: "Over the course of their relationship, Partner A contributed around 80% of their total assets, while Partner B contributed around 20%.<br>How fair is it if they split up their assets this way?<br><br>Partner A gets 40%, Partner B gets 60%<br><br>1 = Extremely fair<br>7 = Extremely unfair" },
+  { id: "proj_50_50", text: "Over the course of their relationship, Partner A contributed around 80% of their total assets, while Partner B contributed around 20%.<br>How fair is it if they split up their assets this way?<br><br>Partner A gets 50%, Partner B gets 50%<br><br>1 = Extremely fair<br>7 = Extremely unfair" },
+  { id: "proj_60_40", text: "Over the course of their relationship, Partner A contributed around 80% of their total assets, while Partner B contributed around 20%.<br>How fair is it if they split up their assets this way?<br><br>Partner A gets 60%, Partner B gets 40%<br><br>1 = Extremely fair<br>7 = Extremely unfair" },
+  { id: "proj_70_30", text: "Over the course of their relationship, Partner A contributed around 80% of their total assets, while Partner B contributed around 20%.<br>How fair is it if they split up their assets this way?<br><br>Partner A gets 70%, Partner B gets 30%<br><br>1 = Extremely fair<br>7 = Extremely unfair" },
+  { id: "proj_80_20", text: "Over the course of their relationship, Partner A contributed around 80% of their total assets, while Partner B contributed around 20%.<br>How fair is it if they split up their assets this way?<br><br>Partner A gets 80%, Partner B gets 20%<br><br>1 = Extremely fair<br>7 = Extremely unfair" }
+];
+
+let currentSurveyIndex = 0;
+let selectedValue = null;
+
+function showSurveyQuestion(index) {
+  popupActive = true;
+  trialActive = false;
+  document.getElementById("popupOverlay").style.display = "flex";
+  document.getElementById("popupMessage").innerHTML = surveyQuestions[index].text;
+  numberButtons.style.display = "flex";
+
+  // Reset selection
+  selectedValue = null;
+
+  // Attach listeners once per question
+  numberButtons.querySelectorAll("button").forEach(btn => {
+    btn.classList.remove("selected");
+    btn.onclick = () => {
+      // Clear previous selection
+      numberButtons.querySelectorAll("button").forEach(b => b.classList.remove("selected"));
+      // Highlight this one
+      btn.classList.add("selected");
+      selectedValue = btn.textContent.trim();
+    };
+  });
+
+  // Continue button
+  const continueBtn = document.getElementById("popupContinue");
+  continueBtn.onclick = () => {
+    if (!selectedValue) {
+      alert("Please select a number before continuing.");
+      return;
+    }
+
+    // Save response
+    surveyResponses[surveyQuestions[index].id] = selectedValue;
+
+    currentSurveyIndex++;
+    if (currentSurveyIndex < surveyQuestions.length) {
+      showSurveyQuestion(currentSurveyIndex);
+    } else {
+      numberButtons.style.display = "none";
+      popupActive = false;
+      document.getElementById("popupOverlay").style.display = "none";
+      // 🔹 Show instructions here
+      showPopup(isMobile
+          ? "You must respond within 10 seconds on each trial.\n\nOn a mobile device, tap directly on the option you prefer.\n\nPlease choose as quickly and as accurately as possible."
+          : "You must respond within 10 seconds on each trial.\n\nOn a computer, press the **A key** to choose the LEFT option and the **L key** to choose the RIGHT option.\n\nPlease choose as quickly and as accurately as possible.",
+          () => {
+              popupActive = false;
+              startPractice();
+          });
+    }
+  };
+}
+
+
+
+/** ---------------- INTRO STEPS ---------------- */
 function handleIntroSteps() {
   if (introStep < introMessages.length - 1) {
     introStep++;
     document.getElementById("introText").textContent = introMessages[introStep];
-
     if (introStep === introMessages.length - 1) {
       document.getElementById("participantFields").style.display = "block";
-      document.getElementById("startButton").textContent = "Start Game";
+      document.getElementById("startButton").textContent = "Next";
     }
     return;
   }
 
   participantID = document.getElementById("participantID").value.trim();
-  preInstructions = document.getElementById("instructionsFreeText").value.trim();
-
-  if (!participantID || !preInstructions) {
-    alert("Please complete all fields before starting.");
-    return;
+  if (!participantID) {
+      alert("Please enter your Participant ID.");
+      return;
   }
   introCompleted = true;
   document.getElementById("instructionOverlay").style.display = "none";
-  popupActive = true; 
-  showPopup("You will begin with 8 practice trials.\nPress SPACE or tap Continue to start.", () => {
-    popupActive = false;
-    startPractice();
-  });
+  showSurveyQuestion(currentSurveyIndex);
+
 }
+
+
+/* ------------------------
+   TRIAL FUNCTIONS
+------------------------- */
 
 function startPractice() {
   inPractice = true;
@@ -284,7 +354,10 @@ function handleChoice(choice) {
       PassedAttention: (trial.AttentionCheck == "1" && choice === correctChoice) ? 1 : (trial.AttentionCheck == "1" ? 0 : null),
       PreInstructions: preInstructions,
       startTimeAbsolute: new Date(trialStart).toISOString(),
-      endTimeAbsolute: new Date().toISOString()
+      endTimeAbsolute: new Date().toISOString(),
+      relativeIncome: relativeIncome,
+      jointOwnershipResponses: JSON.stringify(jointOwnershipResponses),
+      projectionsResponses: JSON.stringify(projectionsResponses),
     });
   }
 
@@ -364,7 +437,13 @@ async function sendToRedCap(dataArray, filename) {
     returnFormat: 'json'
   };
 
-  $.post(url, body);
+  $.post(url, body)
+    .done(function(response) {
+        console.log("REDCap record created:", response);
+      })
+      .fail(function(error) {
+        console.error("REDCap create error:", error);
+      });
   await delay(700);
 
   const file = new File([fileContent], filename, { type: "application/json" });
@@ -377,7 +456,19 @@ async function sendToRedCap(dataArray, filename) {
   formData.append('record', timestamp);
   formData.append('file', file);
 
-  $.ajax({ url, type: 'POST', data: formData, contentType: false, processData: false });
+  $.ajax({
+    url,
+    type: 'POST',
+    data: formData,
+    contentType: false,
+    processData: false
+  })
+  .done(function(response) {
+    console.log("File uploaded:", response);
+  })
+  .fail(function(error) {
+    console.error("File upload error:", error);
+  });
 }
 
 function delay(ms) {
