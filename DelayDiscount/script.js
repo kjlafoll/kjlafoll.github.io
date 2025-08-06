@@ -355,9 +355,7 @@ function handleChoice(choice) {
       PreInstructions: preInstructions,
       startTimeAbsolute: new Date(trialStart).toISOString(),
       endTimeAbsolute: new Date().toISOString(),
-      relativeIncome: relativeIncome,
-      jointOwnershipResponses: JSON.stringify(jointOwnershipResponses),
-      projectionsResponses: JSON.stringify(projectionsResponses),
+      surveyResponses: JSON.stringify(surveyResponses)
     });
   }
 
