@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rating Game</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+  <!-- Intro / Instruction Overlay -->
+  <div id="instructionOverlay" class="overlay">
+    <div class="instruction-content">
+      <p id="introText">Welcome to the Rating Game!</p>
+      <div id="participantFields" style="display: none; margin-top: 15px;">
+        <label for="participantID">Participant ID:</label><br>
+        <input type="text" id="participantID" placeholder="Enter ID" /><br><br>
+      </div>
+      <button id="startButton">Next</button>
+    </div>
+  </div>
+
+  <!-- Trial Container -->
+  <div id="trialContainer">
+    <div id="fixation">+</div>
+    <div id="keyLabelLeft" class="key-label desktop-only">A = Cold</div>
+    <img id="stimulusImage" src="" alt="stimulus" style="display: none;" />
+    <div id="keyLabelRight" class="key-label desktop-only">L = Warm</div>
+  </div>
+
+  <!-- Mobile Tap Instructions -->
+  <div id="mobileTapReminder" class="mobile-only">
+    <span class="mobile-left">Tap left<br>for Cold</span>
+    <span class="mobile-right">Tap right<br>for Warm</span>
+  </div>
+
+  <!-- Trial Status -->
+  <div id="status"></div>
+
+  <!-- Popup Overlay -->
+  <div id="popupOverlay" class="overlay" style="display: none;">
+    <div class="popup-content">
+      <p id="popupMessage"></p>
+      <button id="popupContinue">Continue</button>
+    </div>
+  </div>
+
+  <!-- Main Script -->
+  <script src="script.js"></script>
+</body>
+</html>
