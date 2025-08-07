@@ -1,4 +1,4 @@
-// Rating Game: JS file
+// Rating Game: JS file with skewed image sampling
 
 let trials = [];
 let practiceTrials = [];
@@ -13,24 +13,20 @@ let isMobile = /android|iphone|ipad|mobile/i.test(navigator.userAgent);
 let inPractice = true;
 let popupActive = true;
 let trialActive = false;
+let ratingMap = {}; // { '0001.png': 5.32, ... }
 
-const optionWarm = document.getElementById("warmButton");
-const optionCold = document.getElementById("coldButton");
+const optionWarm = document.getElementById("optionA");
+const optionCold = document.getElementById("optionB");
 const statusText = document.getElementById("status");
-const fixation = document.getElementById("fixation");
+const orLabel = document.getElementById("orLabel");
 const stimulusImage = document.getElementById("stimulusImage");
-
-const allImageFilenames = Array.from({ length: 1000 }, (_, i) => `${(i + 1).toString().padStart(4, '0')}.png`);
-shuffleArray(allImageFilenames);
-practiceTrials = allImageFilenames.slice(0, 8);
-mainTrials = allImageFilenames.slice(8, 108);
-trials = practiceTrials;
+const fixation = document.getElementById("fixation");
 
 const introMessages = [
   "Welcome to the Rating Game!",
   isMobile
-    ? "Tap the left or right side of the screen to rate each face as 'Cold' or 'Warm'. You have 5 seconds to respond."
-    : "Press 'A' for COLD or 'L' for WARM to rate each face. You have 5 seconds to respond.",
+    ? "Tap left or right to rate the friendliness of each person. You have 5 seconds to respond."
+    : "Press 'A' for NO or 'L' for YES to rate the friendliness of each person. You have 5 seconds to respond.",
   "Please enter your Participant ID below."
 ];
 
@@ -45,11 +41,10 @@ document.addEventListener("DOMContentLoaded", function () {
   document.getElementById("startButton").addEventListener("click", handleIntroSteps);
 
   document.addEventListener("keydown", (e) => {
-    if (popupActive && e.code === "Space" && document.getElementById("popupOverlay").style.display !== "none" && !isMobile) {
+    if (popupActive && e.code === "Space" && document.getElementById("popupOverlay").style.display !== "none") {
       e.preventDefault();
       document.getElementById("popupContinue").click();
-    }
-    if (popupActive && e.code === "Space" && document.getElementById("instructionOverlay").style.display !== "none") {
+    } else if (popupActive && e.code === "Space" && document.getElementById("instructionOverlay").style.display !== "none") {
       e.preventDefault();
       document.getElementById("startButton").click();
     }
@@ -58,21 +53,16 @@ document.addEventListener("DOMContentLoaded", function () {
   if (!isMobile) {
     document.addEventListener("keydown", handleKeyChoice);
   } else {
-    document.addEventListener("touchstart", handleMobileTouch);
+    document.addEventListener("touchstart", handleTouchChoice);
   }
+
+  loadCSV("target_means.csv", processCSVAndStartGame);
 });
 
 function adjustForMobile() {
   const width = window.innerWidth;
-  const height = window.innerHeight;
-
-  if (width <= 768) {
-    document.body.classList.add("mobile");
-    document.body.classList.remove("desktop");
-  } else {
-    document.body.classList.add("desktop");
-    document.body.classList.remove("mobile");
-  }
+  document.body.classList.toggle("mobile", width <= 768);
+  document.body.classList.toggle("desktop", width > 768);
 }
 
 function handleIntroSteps() {
@@ -114,9 +104,8 @@ function startMainGame() {
 function showFixationCross() {
   trialActive = false;
   statusText.textContent = "";
-  stimulusImage.style.display = "none";
   fixation.style.display = "block";
-
+  stimulusImage.style.display = "none";
   setTimeout(() => {
     fixation.style.display = "none";
     stimulusImage.style.display = "block";
@@ -126,36 +115,31 @@ function showFixationCross() {
 
 function startTrial() {
   const trial = trials[currentTrialIndex];
-  const imagePath = `Faces/${trial}`;
-  stimulusImage.src = imagePath;
+  stimulusImage.src = `Faces/${trial}`;
   trialActive = true;
-  startTime = new Date().getTime();
+  startTime = Date.now();
   clearTimeout(trialTimeout);
   trialTimeout = setTimeout(() => handleLapse(trial), 5000);
 }
 
-function handleKeyChoice(event) {
-  if (popupActive || !trialActive) return;
-  if (event.key.toLowerCase() === 'a') handleChoice("Cold");
-  if (event.key.toLowerCase() === 'l') handleChoice("Warm");
+function handleKeyChoice(e) {
+  if (!trialActive || popupActive) return;
+  const key = e.key.toLowerCase();
+  if (key === 'a') handleChoice("No");
+  if (key === 'l') handleChoice("Yes");
 }
 
-function handleMobileTouch(event) {
-  if (popupActive || !trialActive) return;
-  const x = event.touches[0].clientX;
-  const screenWidth = window.innerWidth;
-  if (x < screenWidth / 2) {
-    handleChoice("Cold");
-  } else {
-    handleChoice("Warm");
-  }
+function handleTouchChoice(e) {
+  if (!trialActive || popupActive) return;
+  const x = e.touches[0].clientX;
+  const choice = x < window.innerWidth / 2 ? "No" : "Yes";
+  handleChoice(choice);
 }
 
 function handleChoice(choice) {
-  if (popupActive || !trialActive) return;
   trialActive = false;
-  const rt = new Date().getTime() - startTime;
   clearTimeout(trialTimeout);
+  const rt = Date.now() - startTime;
   const trial = trials[currentTrialIndex];
 
   if (!inPractice) {
@@ -174,11 +158,7 @@ function handleChoice(choice) {
   currentTrialIndex++;
   if (currentTrialIndex >= trials.length) {
     if (inPractice) {
-      popupActive = true;
-      showPopup("Practice complete!" + (isMobile ? " Tap Continue to start the real game." : " Press SPACE or tap Continue to start the real game."), () => {
-        popupActive = false;
-        startMainGame();
-      });
+      showPopup("Practice complete!", startMainGame);
     } else {
       endGame();
     }
@@ -188,8 +168,8 @@ function handleChoice(choice) {
 }
 
 function handleLapse(trial) {
-  popupActive = true;
   trialActive = false;
+  popupActive = true;
   if (!inPractice) {
     results.push({
       participantID,
@@ -202,7 +182,7 @@ function handleLapse(trial) {
       endTimeAbsolute: new Date().toISOString()
     });
   }
-  showPopup("Too slow! You have 5 seconds to respond." + (isMobile ? " Tap Continue." : " Press SPACE or tap Continue."), () => {
+  showPopup("Too slow!", () => {
     popupActive = false;
     currentTrialIndex++;
     showFixationCross();
@@ -211,20 +191,17 @@ function handleLapse(trial) {
 
 function showPopup(message, callback) {
   popupActive = true;
-  const popup = document.getElementById("popupOverlay");
   document.getElementById("popupMessage").textContent = message;
-  popup.style.display = "flex";
-
-  const btn = document.getElementById("popupContinue");
-  btn.onclick = () => {
-    popup.style.display = "none";
+  document.getElementById("popupOverlay").style.display = "flex";
+  document.getElementById("popupContinue").onclick = () => {
+    document.getElementById("popupOverlay").style.display = "none";
     popupActive = false;
     callback();
   };
 }
 
 async function endGame() {
-  statusText.textContent = "All trials completed! Saving data...";
+  statusText.textContent = "All done! Saving data...";
   const filename = `rating_game_${participantID}.json`;
   const dataStr = JSON.stringify(results, null, 2);
   const blob = new Blob([dataStr], { type: "application/json" });
@@ -284,3 +261,57 @@ function shuffleArray(array) {
     [array[i], array[j]] = [array[j], array[i]];
   }
 }
+
+function loadCSV(url, callback) {
+  Papa.parse(url, {
+    download: true,
+    header: true,
+    complete: function (results) {
+      if (!results || !results.data || results.data.length === 0) {
+        console.error("❌ PapaParse failed or CSV empty");
+        return;
+      }
+      callback(results.data);
+    },
+    error: function (err) {
+      console.error("❌ Failed to parse CSV with PapaParse:", err);
+    }
+  });
+}
+
+function processCSVAndStartGame(data) {
+  console.log("🚀 processCSVAndStartGame triggered");
+
+  // Filter for Friendliness rows and build ratingMap
+  data.forEach(row => {
+    const stereotype = row["stereotype"]?.trim();
+    const targetId = row["target_id"]?.trim();
+    const rating = parseFloat(row["rating"]);
+
+    if (stereotype === "Friendliness" && !isNaN(rating)) {
+      const paddedId = targetId.padStart(4, '0');  // Pad with zeros
+      ratingMap[`${paddedId}.png`] = rating;
+    }
+  });
+
+  const skewParam = new URLSearchParams(window.location.search).get("sk");
+  const all = Object.entries(ratingMap);
+
+  const filtered = skewParam === "l"
+    ? all.filter(([_, val]) => Math.random() < Math.pow(val / 7, 3))   // left-skewed
+    : skewParam === "r"
+      ? all.filter(([_, val]) => Math.random() < Math.pow(1 - val / 7, 3)) // right-skewed
+      : all;
+
+  shuffleArray(filtered);
+  mainTrials = filtered.slice(0, 100).map(([filename]) => filename);
+  const shuffled = [...Object.keys(ratingMap)];
+  shuffleArray(shuffled);
+  practiceTrials = shuffled.slice(0, 8);
+
+  // ✅ Sanity check
+  const sampledMeans = mainTrials.map(img => ratingMap[img]);
+  const meanSampledValue = sampledMeans.reduce((acc, val) => acc + val, 0) / sampledMeans.length;
+  console.log("✅ Mean friendliness of sampled main images:", meanSampledValue.toFixed(3));
+}
+
