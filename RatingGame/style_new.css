@@ -159,3 +159,32 @@ body.mobile #mobileTapReminder {
   display: block;
 }
 
+#stimulusBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  position: relative;
+  min-height: 460px; /* 60px for prompt + 400px image max-height */
+  margin-bottom: 20px;
+}
+
+#stimulusPrompt {
+  font-size: 2em;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+#stimulusImageContainer {
+  width: 300px;
+  height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#stimulusImage {
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+}

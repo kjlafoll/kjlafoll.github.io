@@ -4,8 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Rating Game</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style_new.css" />
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 </head>
 <body>
   <!-- Intro / Instruction Overlay -->
@@ -23,15 +24,24 @@
   <!-- Trial Container -->
   <div id="trialContainer">
     <div id="fixation">+</div>
-    <div id="keyLabelLeft" class="key-label desktop-only">A = Cold</div>
-    <img id="stimulusImage" src="" alt="stimulus" style="display: none;" />
-    <div id="keyLabelRight" class="key-label desktop-only">L = Warm</div>
+
+    <!-- Prompt and image block -->
+    <div id="stimulusBlock">
+      <div id="stimulusPrompt">Friendly?</div>
+      <div id="stimulusImageContainer">
+        <img id="stimulusImage" src="" alt="stimulus" />
+      </div>
+    </div>
+
+    <!-- Desktop key labels -->
+    <div id="keyLabelLeft" class="key-label desktop-only">A = No</div>
+    <div id="keyLabelRight" class="key-label desktop-only">L = Yes</div>
   </div>
 
   <!-- Mobile Tap Instructions -->
   <div id="mobileTapReminder" class="mobile-only">
-    <span class="mobile-left">Tap left<br>for Cold</span>
-    <span class="mobile-right">Tap right<br>for Warm</span>
+    <span class="mobile-left">Tap left<br>for No</span>
+    <span class="mobile-right">Tap right<br>for Yes</span>
   </div>
 
   <!-- Trial Status -->
@@ -46,6 +56,6 @@
   </div>
 
   <!-- Main Script -->
-  <script src="script.js"></script>
+  <script src="script_new.js"></script>
 </body>
 </html>
