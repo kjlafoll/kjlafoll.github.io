@@ -22,12 +22,28 @@ const orLabel = document.getElementById("orLabel");
 const stimulusImage = document.getElementById("stimulusImage");
 const fixation = document.getElementById("fixation");
 
+function getParam(name) {
+  try {
+    const u = new URL(window.location.href);
+    return u.searchParams.get(name);
+  } catch {
+    return null;
+  }
+}
+
+function getSkParam() {
+  const v = (getParam("sk") || getParam("cond") || getParam("condition") || "").toLowerCase();
+  if (["l", "left", "low"].includes(v)) return "l";
+  if (["r", "right", "high"].includes(v)) return "r";
+  return null; // fall back to your default sampling when null
+}
+
 const introMessages = [
   "Welcome to the Rating Game!",
   isMobile
     ? "Tap left or right to rate the friendliness of each person. You have 5 seconds to respond."
     : "Press 'A' for NO or 'L' for YES to rate the friendliness of each person. You have 5 seconds to respond.",
-  "Please enter your Participant ID below."
+  "Press Start to complete a short practice before the main task."
 ];
 
 let introStep = 0;
@@ -36,6 +52,9 @@ let introStep = 0;
 document.addEventListener("DOMContentLoaded", function () {
   adjustForMobile();
   window.addEventListener("resize", adjustForMobile);
+
+  const pidFromURL = getParam("pid") || getParam("PROLIFIC_PID") || getParam("workerId");
+  participantID = (pidFromURL || "").trim();
 
   document.getElementById("introText").textContent = introMessages[introStep];
   document.getElementById("startButton").addEventListener("click", handleIntroSteps);
@@ -70,18 +89,10 @@ function handleIntroSteps() {
     introStep++;
     document.getElementById("introText").textContent = introMessages[introStep];
     if (introStep === introMessages.length - 1) {
-      document.getElementById("participantFields").style.display = "block";
       document.getElementById("startButton").textContent = "Start";
     }
     return;
   }
-
-  participantID = document.getElementById("participantID").value.trim();
-  if (!participantID) {
-    alert("Please enter a valid Participant ID.");
-    return;
-  }
-
   document.getElementById("instructionOverlay").style.display = "none";
   popupActive = false;
   startPractice();
@@ -204,6 +215,8 @@ async function endGame() {
   statusText.textContent = "All done! Saving data...";
   const filename = `rating_game_${participantID}.json`;
   const dataStr = JSON.stringify(results, null, 2);
+
+  // (optional) keep local download:
   const blob = new Blob([dataStr], { type: "application/json" });
   const url_local = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -213,42 +226,23 @@ async function endGame() {
   a.click();
   document.body.removeChild(a);
 
-  await sendToRedCap(results, filename);
-}
-
-async function sendToRedCap(dataArray, filename) {
-  const url = 'https://redcap.case.edu/api/';
-  const timestamp = Date.now().toString();
-  const fileContent = JSON.stringify(dataArray);
-
-  const dataDict = { "record_id": timestamp };
-  const body = {
-    method: 'POST',
-    token: '2C941E2CCA757DF649E150366AD3904E',
-    content: 'record',
-    format: 'json',
-    type: 'flat',
-    overwriteBehavior: 'normal',
-    forceAutoNumber: 'false',
-    data: JSON.stringify([dataDict]),
-    returnContent: 'count',
-    returnFormat: 'json'
-  };
-
-  $.post(url, body);
-  await delay(700);
-
-  const file = new File([fileContent], filename, { type: "application/json" });
-  const formData = new FormData();
-  formData.append('token', '2C941E2CCA757DF649E150366AD3904E');
-  formData.append('content', 'file');
-  formData.append('action', 'import');
-  formData.append('field', 'prt_data_json');
-  formData.append("overwriteBehavior", "normal");
-  formData.append('record', timestamp);
-  formData.append('file', file);
-
-  $.ajax({ url, type: 'POST', data: formData, contentType: false, processData: false });
+  // 🔁 NEW: send results to Qualtrics parent (the survey page)
+  try {
+    window.parent.postMessage(
+      {
+        type: "RG_DONE",
+        payload: {
+          participantID,
+          results // array of trial objects
+        }
+      },
+      "*" // you can harden this: replace "*" with your Qualtrics domain origin
+    );
+    statusText.textContent = "Uploaded to Qualtrics. Thanks!";
+  } catch (e) {
+    console.error("postMessage failed:", e);
+    alert("Could not send data to Qualtrics. Please contact the researcher.");
+  }
 }
 
 function delay(ms) {
@@ -294,7 +288,7 @@ function processCSVAndStartGame(data) {
     }
   });
 
-  const skewParam = new URLSearchParams(window.location.search).get("sk");
+  const skewParam = getSkParam();
   const all = Object.entries(ratingMap);
 
   const filtered = skewParam === "l"
