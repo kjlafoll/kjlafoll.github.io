@@ -32,6 +32,7 @@ function getParam(name) {
 }
 
 const cond2 = (getParam("cond2") || "").toLowerCase();
+const traitWord = cond2 === "a" ? "attractiveness" : "friendliness";
 
 function getSkParam() {
   const v = (getParam("sk") || getParam("cond") || getParam("condition") || "").toLowerCase();
@@ -43,8 +44,8 @@ function getSkParam() {
 const introMessages = [
   "Welcome to the Rating Game!",
   isMobile
-    ? "Tap left or right to rate the friendliness of each person. You have 5 seconds to respond."
-    : "Press 'A' for NO or 'L' for YES to rate the friendliness of each person. You have 5 seconds to respond.",
+    ? `Tap left or right to rate the ${traitWord} of each person. You have 5 seconds to respond.`
+    : `Press 'A' for NO or 'L' for YES to rate the ${traitWord} of each person. You have 5 seconds to respond.`,
   "Press Start to complete a short practice before the main task."
 ];
 
