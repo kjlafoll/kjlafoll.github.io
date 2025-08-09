@@ -9,12 +9,16 @@ let requeueTrials = [];
 let startTime;
 let participantID = "";
 let trialTimeout;
-let uaMobile = /android|iphone|ipad|mobile/i.test(navigator.userAgent);
-let isMobile = uaMobile || window.innerWidth <= 768;
 let inPractice = true;
 let popupActive = true;
 let trialActive = false;
 let ratingMap = {}; // { '0001.png': 5.32, ... }
+
+const isTouch =
+  (window.matchMedia && window.matchMedia("(hover: none) and (pointer: coarse)").matches) ||
+  "ontouchstart" in window ||
+  navigator.maxTouchPoints > 0;
+let isMobile = isTouch; // use this everywhere you branch instructions/UI
 
 const optionWarm = document.getElementById("optionA");
 const optionCold = document.getElementById("optionB");
