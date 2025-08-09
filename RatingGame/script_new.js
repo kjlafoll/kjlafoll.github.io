@@ -31,6 +31,8 @@ function getParam(name) {
   }
 }
 
+const cond2 = (getParam("cond2") || "").toLowerCase();
+
 function getSkParam() {
   const v = (getParam("sk") || getParam("cond") || getParam("condition") || "").toLowerCase();
   if (["l", "left", "low"].includes(v)) return "l";
@@ -58,6 +60,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
   document.getElementById("introText").textContent = introMessages[introStep];
   document.getElementById("startButton").addEventListener("click", handleIntroSteps);
+  const promptEl = document.getElementById("stimulusPrompt");
+  if (promptEl) {
+    promptEl.textContent = cond2 === "a" ? "Attractive?" : "Friendly?";
+  }
 
   document.addEventListener("keydown", (e) => {
     if (popupActive && e.code === "Space" && document.getElementById("popupOverlay").style.display !== "none") {
@@ -275,14 +281,14 @@ function loadCSV(url, callback) {
 
 function processCSVAndStartGame(data) {
   console.log("🚀 processCSVAndStartGame triggered");
+  const targetStereotype = cond2 === "a" ? "Attractiveness" : "Friendliness";
 
   // Filter for Friendliness rows and build ratingMap
   data.forEach(row => {
     const stereotype = row["stereotype"]?.trim();
     const targetId = row["target_id"]?.trim();
     const rating = parseFloat(row["rating"]);
-
-    if (stereotype === "Friendliness" && !isNaN(rating)) {
+    if (stereotype === targetStereotype && !isNaN(rating)) {
       const paddedId = targetId.padStart(4, '0');  // Pad with zeros
       ratingMap[`${paddedId}.png`] = rating;
     }
