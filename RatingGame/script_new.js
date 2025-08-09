@@ -20,6 +20,11 @@ const isTouch =
   navigator.maxTouchPoints > 0;
 let isMobile = isTouch; // use this everywhere you branch instructions/UI
 
+function applyInputModeClasses() {
+  document.body.classList.toggle("mobile", isMobile);
+  document.body.classList.toggle("desktop", !isMobile);
+}
+
 const optionWarm = document.getElementById("optionA");
 const optionCold = document.getElementById("optionB");
 const statusText = document.getElementById("status");
@@ -58,6 +63,7 @@ let introStep = 0;
 
 /** ------------------ SETUP ------------------ */
 document.addEventListener("DOMContentLoaded", function () {
+  applyInputModeClasses();
   adjustForMobile();
   window.addEventListener("resize", adjustForMobile);
 
@@ -91,9 +97,8 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 function adjustForMobile() {
-  const width = window.innerWidth;
-  document.body.classList.toggle("mobile", width <= 768);
-  document.body.classList.toggle("desktop", width > 768);
+  const narrow = window.innerWidth <= 768;
+  document.body.classList.toggle("narrow", narrow); // optional class for sizing if you want
 }
 
 function handleIntroSteps() {
