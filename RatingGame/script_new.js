@@ -237,33 +237,33 @@ async function endGame() {
   const filename = `rating_game_${participantID}.json`;
   const dataStr = JSON.stringify(results, null, 2);
 
-  // (optional) keep local download:
-  const blob = new Blob([dataStr], { type: "application/json" });
-  const url_local = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url_local;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  // // (optional) keep local download:
+  // const blob = new Blob([dataStr], { type: "application/json" });
+  // const url_local = URL.createObjectURL(blob);
+  // const a = document.createElement("a");
+  // a.href = url_local;
+  // a.download = filename;
+  // document.body.appendChild(a);
+  // a.click();
+  // document.body.removeChild(a);
   showKDEQuiz();
 
-  // 🔁 NEW: send results to Qualtrics parent (the survey page)
-  try {
-    window.parent.postMessage(
-      {
-        type: "RG_DONE",
-        payload: {
-          participantID,
-          results // array of trial objects
-        }
-      },
-      "*" // you can harden this: replace "*" with your Qualtrics domain origin
-    );
-  } catch (e) {
-    console.error("postMessage failed:", e);
-    alert("Could not send data to Qualtrics. Please contact the researcher.");
-  }
+  // // 🔁 NEW: send results to Qualtrics parent (the survey page)
+  // try {
+  //   window.parent.postMessage(
+  //     {
+  //       type: "RG_DONE",
+  //       payload: {
+  //         participantID,
+  //         results // array of trial objects
+  //       }
+  //     },
+  //     "*" // you can harden this: replace "*" with your Qualtrics domain origin
+  //   );
+  // } catch (e) {
+  //   console.error("postMessage failed:", e);
+  //   alert("Could not send data to Qualtrics. Please contact the researcher.");
+  // }
 }
 
 function delay(ms) {
