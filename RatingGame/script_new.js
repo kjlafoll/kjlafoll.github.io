@@ -17,6 +17,12 @@ let populationRatings = {
   Friendliness: [],
   Attractiveness: []
 };
+let redoSet = new Set();
+let inRedoPass = false;
+const MAX_TOTAL_TRIALS = 150; 
+function completedChoicesCount() {
+  return results.filter(r => !r.lapse).length; // non-lapse trials recorded
+}
 
 const isTouch =
   (window.matchMedia && window.matchMedia("(hover: none) and (pointer: coarse)").matches) ||
@@ -197,18 +203,11 @@ function handleChoice(choice) {
       startTimeAbsolute: new Date(startTime).toISOString(),
       endTimeAbsolute: new Date().toISOString()
     });
+    redoSet.delete(trial);
   }
 
   currentTrialIndex++;
-  if (currentTrialIndex >= trials.length) {
-    if (inPractice) {
-      showPopup("Practice complete!", startMainGame);
-    } else {
-      endGame();
-    }
-  } else {
-    showFixationCross();
-  }
+  proceedAfterTrial();
 }
 
 function handleLapse(trial) {
@@ -225,12 +224,47 @@ function handleLapse(trial) {
       startTimeAbsolute: new Date(startTime).toISOString(),
       endTimeAbsolute: new Date().toISOString()
     });
+    redoSet.add(trial);
   }
   showPopup("Too slow!", () => {
     popupActive = false;
     currentTrialIndex++;
-    showFixationCross();
+    proceedAfterTrial();
   });
+}
+
+function proceedAfterTrial() {
+  // safety cap (optional)
+  if (!inPractice && results.length >= MAX_TOTAL_TRIALS) {
+    console.warn("Reached safety cap; ending.");
+    endGame();
+    return;
+  }
+
+  if (currentTrialIndex < trials.length) {
+    showFixationCross();
+    return;
+  }
+
+  // finished a pass
+  if (inPractice) {
+    showPopup("Practice complete!", startMainGame);
+    return;
+  }
+
+  // main task: if any lapsed images remain unresolved, do a redo pass
+  if (redoSet.size > 0) {
+    const remaining = Array.from(redoSet);
+    shuffleArray(remaining);         // avoid same order
+    trials = remaining;
+    currentTrialIndex = 0;
+    inRedoPass = true;
+    return;
+  }
+
+  // all images have a choice → done
+  inRedoPass = false;
+  endGame();
 }
 
 function showPopup(message, callback) {
