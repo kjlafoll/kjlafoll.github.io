@@ -46,7 +46,19 @@ function getParam(name) {
 }
 
 const cond2 = (getParam("cond2") || "").toLowerCase();
-const traitWord = cond2 === "a" ? "attractiveness" : "friendliness";
+
+const TRAIT_VARIANTS = cond2 === 'a'
+  ? [
+      { adj: 'Attractive', noun: 'Attractiveness', code: 'attractive' },
+      { adj: 'Beautiful',  noun: 'Beauty',          code: 'beautiful'  }
+    ]
+  : [
+      { adj: 'Friendly', noun: 'Friendliness', code: 'friendly' },
+      { adj: 'Warm',     noun: 'Warmth',       code: 'warm'     }
+    ];
+
+// Pick one variant and keep it for the whole experiment
+const chosenTrait = TRAIT_VARIANTS[Math.random() < 0.5 ? 0 : 1];
 
 function getSkParam() {
   const v = (getParam("sk") || getParam("cond") || getParam("condition") || "").toLowerCase();
@@ -58,8 +70,8 @@ function getSkParam() {
 const introMessages = [
   "Welcome to the Rating Game!",
   isMobile
-    ? `Tap left or right to rate the ${traitWord} of each person. You have 5 seconds to respond.`
-    : `Press 'A' for NO or 'L' for YES to rate the ${traitWord} of each person. You have 5 seconds to respond.`,
+    ? `Tap left or right to rate the ${chosenTrait.noun.toLowerCase()} of each person. You have 5 seconds to respond.`
+    : `Press 'A' for NO or 'L' for YES to rate the ${chosenTrait.noun.toLowerCase()} of each person. You have 5 seconds to respond.`,
   "Press Start to complete a short practice before the main task."
 ];
 
@@ -78,7 +90,7 @@ document.addEventListener("DOMContentLoaded", function () {
   document.getElementById("startButton").addEventListener("click", handleIntroSteps);
   const promptEl = document.getElementById("stimulusPrompt");
   if (promptEl) {
-    promptEl.textContent = cond2 === "a" ? "Attractive?" : "Friendly?";
+    promptEl.textContent = `${chosenTrait.adj}?`;
   }
 
   document.addEventListener("keydown", (e) => {
@@ -233,7 +245,6 @@ function showPopup(message, callback) {
 }
 
 async function endGame() {
-  statusText.textContent = "All done! Saving data...";
   const filename = `rating_game_${participantID}.json`;
   const dataStr = JSON.stringify(results, null, 2);
 
@@ -363,7 +374,7 @@ function kdeEstimate(xs, samples, h) {
   });
 }
 
-function drawKDE(canvas, xVals, yBlack, yRed) {
+function drawKDE(canvas, xVals, yBlack, yRed, axisLabels) {
   const ctx = canvas.getContext('2d');
   const W = canvas.width, H = canvas.height;
   ctx.clearRect(0,0,W,H);
@@ -374,32 +385,44 @@ function drawKDE(canvas, xVals, yBlack, yRed) {
   const plotH = H - m.t - m.b;
 
   // Scales
-  const xMin = Math.min(...xVals), xMax = Math.max(...xVals);
+  const xMin = 1, xMax = 7;
   const yMax = Math.max(...yBlack, ...yRed, 0.001);
 
-  function xPix(x){ return m.l + ((x - xMin)/(xMax - xMin)) * plotW; }
-  function yPix(y){ return m.t + (1 - y / yMax) * plotH; }
+  const xPix = x => m.l + ((x - xMin)/(xMax - xMin)) * plotW;
+  const yPix = y => m.t + (1 - y / yMax) * plotH;
 
   // Axes
-  ctx.strokeStyle = '#666'; ctx.lineWidth = 1;
+  ctx.strokeStyle = '#666'; ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.moveTo(m.l, m.t); ctx.lineTo(m.l, m.t+plotH); ctx.lineTo(m.l+plotW, m.t+plotH);
   ctx.stroke();
 
   // X ticks at integers 1..7
-  ctx.fillStyle = '#444'; ctx.font = '12px Arial';
-  for (let r=1; r<=7; r++) {
-    const x = xPix(r);
-    ctx.beginPath(); ctx.moveTo(x, m.t+plotH); ctx.lineTo(x, m.t+plotH+5); ctx.stroke();
-    ctx.textAlign = 'center'; ctx.fillText(String(r), x, m.t+plotH+18);
-  }
-  ctx.save(); ctx.translate(14, m.t + plotH/2); ctx.rotate(-Math.PI/2);
-  ctx.textAlign = 'center'; ctx.fillText('Density', 0, 0);
+  ctx.fillStyle = '#444'; ctx.font = '12px Arial'; ctx.textAlign = 'center';
+  const xticks = [
+    {x:1, label:axisLabels.left},
+    {x:4, label:axisLabels.mid},
+    {x:7, label:axisLabels.right}
+  ];
+  xticks.forEach(t => {
+    const xp = xPix(t.x);
+    ctx.beginPath(); ctx.moveTo(xp, m.t+plotH); ctx.lineTo(xp, m.t+plotH+5); ctx.stroke();
+    ctx.save();
+    ctx.translate(xp, m.t+plotH+18);
+    ctx.fillText(t.label, 0, 0);
+    ctx.restore();
+  });
+
+  // Y label: "Frequency"
+  ctx.save();
+  ctx.translate(16, m.t + plotH/2);
+  ctx.rotate(-Math.PI/2);
+  ctx.textAlign = 'center';
+  ctx.fillText(axisLabels.y || 'Frequency', 0, 0);
   ctx.restore();
-  ctx.textAlign = 'center'; ctx.fillText('Rating', m.l + plotW/2, H - 5);
 
   // Draw black curve (real)
-  ctx.strokeStyle = '#000'; ctx.lineWidth = 2;
+  ctx.strokeStyle = '#000'; ctx.lineWidth = 4;
   ctx.beginPath();
   for (let i=0; i<xVals.length; i++) {
     const xp = xPix(xVals[i]), yp = yPix(yBlack[i]);
@@ -408,7 +431,7 @@ function drawKDE(canvas, xVals, yBlack, yRed) {
   ctx.stroke();
 
   // Draw red curve (sampled)
-  ctx.strokeStyle = '#c62828'; ctx.lineWidth = 2;
+  ctx.strokeStyle = '#c62828'; ctx.lineWidth = 4;
   ctx.beginPath();
   for (let i=0; i<xVals.length; i++) {
     const xp = xPix(xVals[i]), yp = yPix(yRed[i]);
@@ -448,7 +471,9 @@ function showKDEQuiz() {
   c.width  = Math.round(cssWidth * DPR);
   c.height = Math.round(cssHeight * DPR);
 
-  drawKDE(c, xVals, yBlack, yRed);
+  const notAdj = `Not ${chosenTrait.adj}`;
+  const axisLabels = { left: notAdj, mid: "Neutral", right: chosenTrait.adj, y: "Frequency" };
+  drawKDE(c, xVals, yBlack, yRed, axisLabels);
 
   // Enable Continue when both answers selected
   const btn = document.getElementById('kdeSubmit');
@@ -490,7 +515,8 @@ function finishAndSend() {
       mapping,                                            // ground truth of which color = which trait
       correct_real_color: correctReal,                    // what we expect for "real"
       correct_experienced_color: correctExp               // what we expect for "experienced"
-    }
+    },
+    label_variant: chosenTrait.code
   };
 
   // Send to Qualtrics parent
