@@ -380,7 +380,7 @@ function drawKDE(canvas, xVals, yBlack, yRed, axisLabels) {
   ctx.clearRect(0,0,W,H);
 
   // Margins
-  const m = { l:50, r:15, t:10, b:35 };
+  const m = { l:50, r:50, t:10, b:35 };
   const plotW = W - m.l - m.r;
   const plotH = H - m.t - m.b;
 
