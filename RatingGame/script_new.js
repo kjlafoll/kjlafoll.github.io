@@ -242,6 +242,7 @@ async function endGame() {
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
+  showKDEQuiz();
 
   // 🔁 NEW: send results to Qualtrics parent (the survey page)
   try {
@@ -326,3 +327,146 @@ function processCSVAndStartGame(data) {
   console.log("✅ Mean friendliness of sampled main images:", meanSampledValue.toFixed(3));
 }
 
+// --- KDE helpers ---
+function gaussianKernel(u) { return Math.exp(-0.5 * u * u) / Math.sqrt(2 * Math.PI); }
+
+// Silverman's rule-of-thumb bandwidth on 1–7 ratings (clamped to reasonable)
+function silvermanBandwidth(arr) {
+  if (!arr.length) return 0.3;
+  const n = arr.length;
+  const mean = arr.reduce((a,b)=>a+b,0)/n;
+  const sd = Math.sqrt(arr.reduce((a,b)=>a+(b-mean)*(b-mean),0)/n) || 0.01;
+  let h = 1.06 * sd * Math.pow(n, -1/5);
+  if (h < 0.15) h = 0.15;
+  if (h > 0.6)  h = 0.6;
+  return h;
+}
+
+function kdeEstimate(xs, samples, h) {
+  const n = samples.length;
+  if (!n) return xs.map(()=>0);
+  const invNh = 1 / (n * h);
+  return xs.map(x => {
+    let s = 0;
+    for (let i=0; i<n; i++) s += gaussianKernel((x - samples[i]) / h);
+    return s * invNh;
+  });
+}
+
+function drawKDE(canvas, xVals, yBlack, yRed) {
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0,0,W,H);
+
+  // Margins
+  const m = { l:50, r:15, t:10, b:35 };
+  const plotW = W - m.l - m.r;
+  const plotH = H - m.t - m.b;
+
+  // Scales
+  const xMin = Math.min(...xVals), xMax = Math.max(...xVals);
+  const yMax = Math.max(...yBlack, ...yRed, 0.001);
+
+  function xPix(x){ return m.l + ((x - xMin)/(xMax - xMin)) * plotW; }
+  function yPix(y){ return m.t + (1 - y / yMax) * plotH; }
+
+  // Axes
+  ctx.strokeStyle = '#666'; ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(m.l, m.t); ctx.lineTo(m.l, m.t+plotH); ctx.lineTo(m.l+plotW, m.t+plotH);
+  ctx.stroke();
+
+  // X ticks at integers 1..7
+  ctx.fillStyle = '#444'; ctx.font = '12px Arial';
+  for (let r=1; r<=7; r++) {
+    const x = xPix(r);
+    ctx.beginPath(); ctx.moveTo(x, m.t+plotH); ctx.lineTo(x, m.t+plotH+5); ctx.stroke();
+    ctx.textAlign = 'center'; ctx.fillText(String(r), x, m.t+plotH+18);
+  }
+  ctx.save(); ctx.translate(14, m.t + plotH/2); ctx.rotate(-Math.PI/2);
+  ctx.textAlign = 'center'; ctx.fillText('Density', 0, 0);
+  ctx.restore();
+  ctx.textAlign = 'center'; ctx.fillText('Rating', m.l + plotW/2, H - 5);
+
+  // Draw black curve (real)
+  ctx.strokeStyle = '#000'; ctx.lineWidth = 2;
+  ctx.beginPath();
+  for (let i=0; i<xVals.length; i++) {
+    const xp = xPix(xVals[i]), yp = yPix(yBlack[i]);
+    if (i===0) ctx.moveTo(xp, yp); else ctx.lineTo(xp, yp);
+  }
+  ctx.stroke();
+
+  // Draw red curve (sampled)
+  ctx.strokeStyle = '#c62828'; ctx.lineWidth = 2;
+  ctx.beginPath();
+  for (let i=0; i<xVals.length; i++) {
+    const xp = xPix(xVals[i]), yp = yPix(yRed[i]);
+    if (i===0) ctx.moveTo(xp, yp); else ctx.lineTo(xp, yp);
+  }
+  ctx.stroke();
+}
+
+// --- KDE Quiz flow ---
+let kdeAnswers = { real_choice: null, exp_choice: null };
+
+function showKDEQuiz() {
+  // Build arrays from your data
+  // ratingMap: { '0001.png': rating, ... } for chosen stereotype
+  // mainTrials: the 100 (filenames) actually shown to the participant
+  const population = Object.values(ratingMap).filter(v=>typeof v==='number' && !isNaN(v));
+  const sampled = (mainTrials || []).map(fn => ratingMap[fn]).filter(v=>typeof v==='number' && !isNaN(v));
+
+  // x grid across 1..7
+  const xVals = [];
+  for (let x=1; x<=7; x+=0.05) xVals.push(+x.toFixed(2));
+
+  // KDEs
+  const hPop = silvermanBandwidth(population);
+  const hSamp = silvermanBandwidth(sampled);
+  const yBlack = kdeEstimate(xVals, population, hPop); // black = real-world
+  const yRed   = kdeEstimate(xVals, sampled, hSamp);   // red = experienced
+
+  // Show overlay and draw
+  const overlay = document.getElementById('kdeOverlay');
+  overlay.style.display = 'flex';
+
+  const c = document.getElementById('kdeCanvas');
+  // Ensure device-pixel crisp drawing
+  const rect = c.getBoundingClientRect();
+  c.width = Math.round(rect.width * window.devicePixelRatio);
+  c.height = Math.round(320 * window.devicePixelRatio);
+  c.style.height = '320px';
+  drawKDE(c, xVals, yBlack, yRed);
+
+  // Enable Continue when both answers selected
+  const btn = document.getElementById('kdeSubmit');
+  function checkReady(){
+    btn.disabled = !(kdeAnswers.real_choice && kdeAnswers.exp_choice);
+  }
+  document.querySelectorAll('input[name="kde_real_choice"]').forEach(el=>{
+    el.addEventListener('change', e=>{ kdeAnswers.real_choice = e.target.value; checkReady(); });
+  });
+  document.querySelectorAll('input[name="kde_exp_choice"]').forEach(el=>{
+    el.addEventListener('change', e=>{ kdeAnswers.exp_choice = e.target.value; checkReady(); });
+  });
+
+  btn.addEventListener('click', ()=> {
+    overlay.style.display = 'none';
+    finishAndSend(); // proceed to your existing completion (download + postMessage)
+  }, { once:true });
+}
+
+function finishAndSend() {
+  const payload = {
+    participantID,
+    results,
+    kde_quiz: {
+      real_choice: kdeAnswers.real_choice,        // "black" or "red"
+      experienced_choice: kdeAnswers.exp_choice,  // "black" or "red"
+      // hidden ground truth mapping used in the plot:
+      mapping: { black: "real", red: "experienced" }
+    }
+  };
+  window.parent.postMessage({ type: "RG_DONE", payload }, "*");
+}
