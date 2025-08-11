@@ -13,6 +13,10 @@ let inPractice = true;
 let popupActive = true;
 let trialActive = false;
 let ratingMap = {}; // { '0001.png': 5.32, ... }
+let populationRatings = {
+  Friendliness: [],
+  Attractiveness: []
+};
 
 const isTouch =
   (window.matchMedia && window.matchMedia("(hover: none) and (pointer: coarse)").matches) ||
@@ -256,7 +260,6 @@ async function endGame() {
       },
       "*" // you can harden this: replace "*" with your Qualtrics domain origin
     );
-    statusText.textContent = "Uploaded to Qualtrics. Thanks!";
   } catch (e) {
     console.error("postMessage failed:", e);
     alert("Could not send data to Qualtrics. Please contact the researcher.");
@@ -293,6 +296,9 @@ function loadCSV(url, callback) {
 
 function processCSVAndStartGame(data) {
   console.log("🚀 processCSVAndStartGame triggered");
+  populationRatings.Friendliness = [];
+  populationRatings.Attractiveness = [];
+  ratingMap = {};
   const targetStereotype = cond2 === "a" ? "Attractiveness" : "Friendliness";
 
   // Filter for Friendliness rows and build ratingMap
@@ -300,6 +306,10 @@ function processCSVAndStartGame(data) {
     const stereotype = row["stereotype"]?.trim();
     const targetId = row["target_id"]?.trim();
     const rating = parseFloat(row["rating"]);
+    if (!isNaN(rating)) {
+      if (stereotype === "Friendliness") populationRatings.Friendliness.push(rating);
+      if (stereotype === "Attractiveness") populationRatings.Attractiveness.push(rating);
+    }
     if (stereotype === targetStereotype && !isNaN(rating)) {
       const paddedId = targetId.padStart(4, '0');  // Pad with zeros
       ratingMap[`${paddedId}.png`] = rating;
@@ -308,7 +318,6 @@ function processCSVAndStartGame(data) {
 
   const skewParam = getSkParam();
   const all = Object.entries(ratingMap);
-
   const filtered = skewParam === "l"
     ? all.filter(([_, val]) => Math.random() < Math.pow(val / 7, 3))   // left-skewed
     : skewParam === "r"
@@ -317,6 +326,7 @@ function processCSVAndStartGame(data) {
 
   shuffleArray(filtered);
   mainTrials = filtered.slice(0, 10).map(([filename]) => filename);
+  
   const shuffled = [...Object.keys(ratingMap)];
   shuffleArray(shuffled);
   practiceTrials = shuffled.slice(0, 8);
@@ -411,39 +421,38 @@ function drawKDE(canvas, xVals, yBlack, yRed) {
 let kdeAnswers = { real_choice: null, exp_choice: null };
 
 function showKDEQuiz() {
-  // Build arrays from your data
-  // ratingMap: { '0001.png': rating, ... } for chosen stereotype
-  // mainTrials: the 100 (filenames) actually shown to the participant
-  const population = Object.values(ratingMap).filter(v=>typeof v==='number' && !isNaN(v));
-  const sampled = (mainTrials || []).map(fn => ratingMap[fn]).filter(v=>typeof v==='number' && !isNaN(v));
+  // Build KDEs for the two REAL distributions
+  const popF = populationRatings.Friendliness.filter(Number.isFinite);
+  const popA = populationRatings.Attractiveness.filter(Number.isFinite);
+  if (!popF.length || !popA.length) {
+    console.warn("Population arrays missing; skipping KDE quiz.");
+    finishAndSend(); // fail-safe
+    return;
+  }
 
-  // x grid across 1..7
-  const xVals = [];
-  for (let x=1; x<=7; x+=0.05) xVals.push(+x.toFixed(2));
+  // X grid 1..7
+  const xVals = []; for (let x=1; x<=7; x+=0.05) xVals.push(+x.toFixed(2));
+  const yBlack = kdeEstimate(xVals, popF, silvermanBandwidth(popF)); // Black = Friendliness (left-skew)
+  const yRed   = kdeEstimate(xVals, popA, silvermanBandwidth(popA)); // Red   = Attractiveness (right-skew)
 
-  // KDEs
-  const hPop = silvermanBandwidth(population);
-  const hSamp = silvermanBandwidth(sampled);
-  const yBlack = kdeEstimate(xVals, population, hPop); // black = real-world
-  const yRed   = kdeEstimate(xVals, sampled, hSamp);   // red = experienced
-
-  // Show overlay and draw
+  // Show overlay & size canvas compactly
   const overlay = document.getElementById('kdeOverlay');
   overlay.style.display = 'flex';
 
   const c = document.getElementById('kdeCanvas');
   const DPR = window.devicePixelRatio || 1;
-  // Ensure device-pixel crisp drawing
   const cssWidth  = Math.min(c.getBoundingClientRect().width || 480, 560);
-  const cssHeight = 200; // smaller graph so the MCQs fit without clipping
+  const cssHeight = 200; // compact
   c.style.width  = cssWidth + "px";
   c.style.height = cssHeight + "px";
   c.width  = Math.round(cssWidth * DPR);
-  c.height = Math.round(cssHeight * DPR)
+  c.height = Math.round(cssHeight * DPR);
+
   drawKDE(c, xVals, yBlack, yRed);
 
   // Enable Continue when both answers selected
   const btn = document.getElementById('kdeSubmit');
+  kdeAnswers = { real_choice: null, exp_choice: null };
   function checkReady(){
     btn.disabled = !(kdeAnswers.real_choice && kdeAnswers.exp_choice);
   }
@@ -456,20 +465,39 @@ function showKDEQuiz() {
 
   btn.addEventListener('click', ()=> {
     overlay.style.display = 'none';
-    finishAndSend(); // proceed to your existing completion (download + postMessage)
+    finishAndSend(); // proceed
   }, { once:true });
 }
 
 function finishAndSend() {
+  // Colors in our plot: black = Friendliness, red = Attractiveness
+  const mapping = { black: "friendliness", red: "attractiveness" };
+
+  // Correct REAL answer should match cond2 (trait): f -> black, a -> red
+  const cond2 = (getParam("cond2") || "").toLowerCase(); // 'f' or 'a'
+  const correctReal = cond2 === "a" ? "red" : "black";
+
+  // Correct EXPERIENCED answer should match skew cond: l -> left-skew (Friendliness -> black), r -> right-skew (Attractiveness -> red)
+  const cond = (getParam("sk") || getParam("cond") || "").toLowerCase(); // 'l' or 'r'
+  const correctExp = cond === "r" ? "red" : "black";
+
   const payload = {
     participantID,
     results,
     kde_quiz: {
-      real_choice: kdeAnswers.real_choice,        // "black" or "red"
-      experienced_choice: kdeAnswers.exp_choice,  // "black" or "red"
-      // hidden ground truth mapping used in the plot:
-      mapping: { black: "real", red: "experienced" }
+      real_choice: kdeAnswers.real_choice || "",          // "black"|"red"
+      experienced_choice: kdeAnswers.exp_choice || "",    // "black"|"red"
+      mapping,                                            // ground truth of which color = which trait
+      correct_real_color: correctReal,                    // what we expect for "real"
+      correct_experienced_color: correctExp               // what we expect for "experienced"
     }
   };
-  window.parent.postMessage({ type: "RG_DONE", payload }, "*");
+
+  // Send to Qualtrics parent
+  try {
+    window.parent.postMessage({ type: "RG_DONE", payload }, "*"); // or restrict origin
+  } catch (e) {
+    console.error("postMessage failed:", e);
+  }
 }
+
