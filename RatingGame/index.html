@@ -55,6 +55,54 @@
     </div>
   </div>
 
+  <!-- KDE Quiz Overlay -->
+  <div id="kdeOverlay" class="overlay" style="display:none;">
+    <div class="popup-content" style="max-width:720px;">
+      <h2 style="margin-top:0;">Quick question about the images you saw</h2>
+      <p style="margin-bottom:10px;">
+        Below are two smoothed curves (kernel density estimates) of ratings. One curve summarizes ratings across
+        <strong>for profiles you might encounter in the real world</strong>. The other summarizes ratings for the <strong>profiles shown in this experiment</strong>.
+        Taller parts of a curve indicate ratings that were more common.
+      </p>
+
+      <div style="border:1px solid #ddd; border-radius:10px; padding:12px; margin:12px 0;">
+        <canvas id="kdeCanvas" width="660" height="320" style="width:100%; height:auto;"></canvas>
+        <div style="display:flex; gap:16px; align-items:center; margin-top:6px; font-size:14px;">
+          <span style="display:inline-flex; align-items:center; gap:6px;">
+            <span style="width:18px; height:2px; background:#000; display:inline-block;"></span> Black curve
+          </span>
+          <span style="display:inline-flex; align-items:center; gap:6px;">
+            <span style="width:18px; height:2px; background:#c62828; display:inline-block;"></span> Red curve
+          </span>
+        </div>
+        <div style="margin-top:6px; color:#666; font-size:12px;">
+          X-axis: rating (1–7). Y-axis: relative frequency (higher = more common).
+        </div>
+      </div>
+
+      <div style="margin-top:10px;">
+        <div style="margin-bottom:8px; font-weight:600;">1) Which curve shows the real-world distribution of ratings?</div>
+        <label><input type="radio" name="kde_real_choice" value="black"> Black</label>&nbsp;&nbsp;
+        <label><input type="radio" name="kde_real_choice" value="red"> Red</label>
+      </div>
+
+      <div style="margin-top:14px;">
+        <div style="margin-bottom:8px; font-weight:600;">2) Which curve shows the distribution you experienced in this experiment?</div>
+        <label><input type="radio" name="kde_exp_choice" value="black"> Black</label>&nbsp;&nbsp;
+        <label><input type="radio" name="kde_exp_choice" value="red"> Red</label>
+      </div>
+
+      <div style="margin-top:16px; font-size:13px; color:#555;">
+        Note: It’s okay if you think the <em>same</em> curve is the correct answer for both questions.
+      </div>
+
+      <div style="margin-top:18px; display:flex; justify-content:flex-end; gap:10px;">
+        <button id="kdeSubmit" disabled>Continue</button>
+      </div>
+    </div>
+  </div>
+
+
   <!-- Main Script -->
   <script src="script_new.js"></script>
 </body>

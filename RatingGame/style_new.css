@@ -188,3 +188,13 @@ body.mobile #mobileTapReminder {
   max-height: 100%;
   display: block;
 }
+
+#kdeSubmit {
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: none;
+  background: #2d6cdf;
+  color: #fff;
+  cursor: pointer;
+}
+#kdeSubmit:disabled { opacity: 0.6; cursor: not-allowed; }
