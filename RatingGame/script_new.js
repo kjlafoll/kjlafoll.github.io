@@ -259,6 +259,8 @@ function proceedAfterTrial() {
     trials = remaining;
     currentTrialIndex = 0;
     inRedoPass = true;
+    popupActive = false;
+    showFixationCross();
     return;
   }
 
