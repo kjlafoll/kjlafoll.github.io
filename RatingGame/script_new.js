@@ -432,11 +432,14 @@ function showKDEQuiz() {
   overlay.style.display = 'flex';
 
   const c = document.getElementById('kdeCanvas');
+  const DPR = window.devicePixelRatio || 1;
   // Ensure device-pixel crisp drawing
-  const rect = c.getBoundingClientRect();
-  c.width = Math.round(rect.width * window.devicePixelRatio);
-  c.height = Math.round(320 * window.devicePixelRatio);
-  c.style.height = '320px';
+  const cssWidth  = Math.min(c.getBoundingClientRect().width || 480, 560);
+  const cssHeight = 200; // smaller graph so the MCQs fit without clipping
+  c.style.width  = cssWidth + "px";
+  c.style.height = cssHeight + "px";
+  c.width  = Math.round(cssWidth * DPR);
+  c.height = Math.round(cssHeight * DPR)
   drawKDE(c, xVals, yBlack, yRed);
 
   // Enable Continue when both answers selected
