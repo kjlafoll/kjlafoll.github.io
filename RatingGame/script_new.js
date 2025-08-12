@@ -158,14 +158,24 @@ function showFixationCross() {
   stimulusImage.style.display = "none";
   setTimeout(() => {
     fixation.style.display = "none";
-    stimulusImage.style.display = "block";
     startTrial();
   }, 1000);
 }
 
-function startTrial() {
+async function startTrial() {
   const trial = trials[currentTrialIndex];
-  stimulusImage.src = `Faces/${trial}`;
+  const path = `Faces/${trial}`;
+  stimulusImage.style.display = "none";
+
+  const img = new Image();
+  img.decoding = "async";
+  const ready = new Promise((res, rej) => { img.onload = res; img.onerror = rej; });
+  img.src = path;
+  await ready;
+  try { if (img.decode) await img.decode(); } catch {}
+
+  stimulusImage.src = img.src;
+  stimulusImage.style.display = "block";
   trialActive = true;
   startTime = Date.now();
   clearTimeout(trialTimeout);
