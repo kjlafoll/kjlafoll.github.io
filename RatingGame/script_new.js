@@ -382,7 +382,7 @@ function processCSVAndStartGame(data) {
       : all;
 
   shuffleArray(filtered);
-  mainTrials = filtered.slice(0, 10).map(([filename]) => filename);
+  mainTrials = filtered.slice(0, 100).map(([filename]) => filename);
   
   const shuffled = [...Object.keys(ratingMap)];
   shuffleArray(shuffled);
