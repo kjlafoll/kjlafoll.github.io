@@ -1,3 +1,36 @@
+html, body {
+  height: 100%;
+}
+
+body {
+  /* center the main stage; overlays keep working (they are fixed) */
+  min-height: 100vh;
+  display: flex;
+  align-items: center;     /* vertical center */
+  justify-content: center; /* horizontal center */
+}
+
+body.mobile #stage { padding-top: 12px; padding-bottom: 12px; }
+
+body.mobile .option-box {
+  max-width: 90vw; /* keep boxes fully visible on narrow screens */
+}
+
+#stage {
+  width: 100%;
+  max-width: 980px;        /* optional: keeps content from stretching too wide */
+  padding: 24px 16px;      /* breathing room */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+/* remove the top push so true centering works */
+#trialContainer {
+  margin-top: 0;
+}
+
 body {
   font-family: Arial, sans-serif;
   text-align: center;
