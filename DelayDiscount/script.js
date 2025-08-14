@@ -50,6 +50,8 @@ document.addEventListener("DOMContentLoaded", function () {
   applyInputModeClasses();
   adjustForMobile();
   window.addEventListener("resize", adjustForMobile);
+  const numberButtons = document.getElementById("popupButtons");
+  if (numberButtons) numberButtons.style.display = "none";
 
   // Pull PID from URL (Prolific)
   const pidFromURL = getParam("pid") || getParam("PROLIFIC_PID") || getParam("workerId");
@@ -98,7 +100,7 @@ document.addEventListener("DOMContentLoaded", function () {
       shuffleArray(attentionTrials);
 
       practiceTrials = realTrials.slice(0, 8);
-      mainTrials = realTrials.slice(8, 108).concat(attentionTrials);
+      mainTrials = realTrials.slice(8, 10).concat(attentionTrials); // change to 108 for full
       shuffleArray(mainTrials);
 
       trials = practiceTrials; // start with practice
@@ -315,9 +317,12 @@ function showPopup(message, callback) {
   popupActive = true;
   trialActive = false;
   const popup = document.getElementById("popupOverlay");
-  document.getElementById("popupMessage").textContent = message;
-  popup.style.display = "flex";
+  const msgEl = document.getElementById("popupMessage");
   const btn = document.getElementById("popupContinue");
+  const numberButtons = document.getElementById("popupButtons");
+  if (numberButtons) numberButtons.style.display = "none"
+  msgEl.textContent = message;
+  popup.style.display = "flex";
   btn.onclick = () => {
     popup.style.display = "none";
     popupActive = false;
@@ -357,7 +362,7 @@ function endGame() {
     participantID,
     results, // full per-trial rows
     summary: {
-      nTrials, nLapses, meanRT, nAttention, nAttentionPassed
+      nTrials, nLapses, nAttention, nAttentionPassed
     }
   };
 
