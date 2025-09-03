@@ -122,7 +122,7 @@ button:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 40px;
+  height: 100vh;
   gap: 15px;
   flex-wrap: nowrap;
 }
