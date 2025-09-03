@@ -194,7 +194,7 @@ function startTrial() {
   if (currentTrialIndex >= trials.length) {
     if (inPractice) {
       popupActive = true;
-      showPopup("Practice complete! Press SPACE or tap Continue to start the real game.", () => {
+      showPopup("Practice complete! Press SPACE or tap Continue to start the real game. You will now make 55 decisions for your family.", () => {
         popupActive = false;
         startMainGame();
       });
