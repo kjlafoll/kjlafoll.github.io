@@ -35,8 +35,8 @@ const orLabel = document.getElementById("orLabel");
 const introMessages = [
   "Welcome to the Family Decision Game!",
   isMobile
-    ? "You must respond within 10 seconds on each trial. On a mobile device, tap the option you prefer. Please choose as quickly and as accurately as possible."
-    : "You must respond within 10 seconds on each trial. On a computer, press the A key for LEFT and the L key for RIGHT. Please choose as quickly and as accurately as possible.",
+    ? "You must respond within 20 seconds on each trial. On a mobile device, tap the option you prefer. Please choose as quickly and as accurately as possible."
+    : "You must respond within 20 seconds on each trial. On a computer, press the A key for LEFT and the L key for RIGHT. Please choose as quickly and as accurately as possible.",
   "Press Start to complete a short practice before the main task."
 ];
 let introStep = 0;
@@ -100,7 +100,7 @@ document.addEventListener("DOMContentLoaded", function () {
       shuffleArray(attentionTrials);
 
       practiceTrials = realTrials.slice(0, 8);
-      mainTrials = realTrials.slice(8, 10).concat(attentionTrials); // change to 108 for full
+      mainTrials = realTrials.slice(8, 65).concat(attentionTrials); // change to 108 for full
       shuffleArray(mainTrials);
 
       trials = practiceTrials; // start with practice
@@ -119,7 +119,7 @@ function adjustForMobile() {
     document.body.classList.add("desktop"); document.body.classList.remove("mobile");
     [optionA, optionB].forEach(box => {
       box.style.width = "220px";
-      box.style.height = "150px";
+      box.style.height = Math.floor(height * 0.25) + "px";
       box.style.fontSize = "1.2em";
     });
   }
@@ -214,8 +214,8 @@ function startTrial() {
   }
 
   const trial = trials[currentTrialIndex];
-  const immText = trial.ImmediateDelay == 0 ? "right now" : `in ${trial.ImmediateDelay} days`;
-  const delText = trial.DelayedDelay == 0 ? "right now" : `in ${trial.DelayedDelay} days`;
+  const immText = trial.ImmediateDelay == 0 ? "right now" : `in ${trial.ImmediateDelay} ${trial.ImmediateDelay === 1 ? "day" : "days"}`;
+  const delText = trial.DelayedDelay == 0 ? "right now" : `in ${trial.DelayedDelay} ${trial.DelayedDelay === 1 ? "day" : "days"}`;
 
   optionA.style.border = "2px solid #000";
   optionB.style.border = "2px solid #000";
@@ -240,7 +240,7 @@ function startTrial() {
   startTime = Date.now();
 
   clearTimeout(trialTimeout);
-  trialTimeout = setTimeout(() => handleLapse(trial), 10000);
+  trialTimeout = setTimeout(() => handleLapse(trial), 20000);
 }
 
 function handleKeyChoice(event) {
@@ -304,7 +304,7 @@ function handleChoice(choice) {
 function handleLapse(trial) {
   popupActive = true;
   trialActive = false;
-  showPopup("Too slow! You have 10 seconds to respond. Press SPACE or tap Continue to move on.", () => {
+  showPopup("Too slow! You have 20 seconds to respond. Press SPACE or tap Continue to move on.", () => {
     popupActive = false;
     if (!inPractice) requeueTrials.push(trial);
     currentTrialIndex++;
