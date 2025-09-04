@@ -33,7 +33,7 @@ const orLabel = document.getElementById("orLabel");
 
 // --- intro (no PID prompt; no questionnaires) ---
 const introMessages = [
-  "Welcome to the Family Decision Game!",
+  "Welcome to the Household Decision Game!",
   isMobile
     ? "You must respond within 20 seconds on each trial. On a mobile device, tap the option you prefer. Please choose as quickly and as accurately as possible."
     : "You must respond within 20 seconds on each trial. On a computer, press the A key for LEFT and the L key for RIGHT. Please choose as quickly and as accurately as possible.",
@@ -194,7 +194,7 @@ function startTrial() {
   if (currentTrialIndex >= trials.length) {
     if (inPractice) {
       popupActive = true;
-      showPopup("Practice complete! Press SPACE or tap Continue to start the real game. You will now make 55 decisions for your family.", () => {
+      showPopup("Practice complete! Press SPACE or tap Continue to start the real game. You will now make 55 decisions for your household.", () => {
         popupActive = false;
         startMainGame();
       });
@@ -221,13 +221,13 @@ function startTrial() {
   optionB.style.border = "2px solid #000";
 
   if (trial.NowOnLeft == "1") {
-    optionA.textContent = `Your family receives $${trial.ImmediateAmount} ${immText}`;
-    optionB.textContent = `Your family receives $${trial.DelayedAmount} ${delText}`;
+    optionA.textContent = `Your household receives $${trial.ImmediateAmount} ${immText}`;
+    optionB.textContent = `Your household receives $${trial.DelayedAmount} ${delText}`;
     optionA.dataset.choice = "A";
     optionB.dataset.choice = "B";
   } else {
-    optionA.textContent = `Your family receives $${trial.DelayedAmount} ${delText}`;
-    optionB.textContent = `Your family receives $${trial.ImmediateAmount} ${immText}`;
+    optionA.textContent = `Your household receives $${trial.DelayedAmount} ${delText}`;
+    optionB.textContent = `Your household receives $${trial.ImmediateAmount} ${immText}`;
     optionA.dataset.choice = "B";
     optionB.dataset.choice = "A";
   }
