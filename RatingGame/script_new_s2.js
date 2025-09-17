@@ -569,7 +569,7 @@ function selectTargetedImages(
     n = 100,
     binWidth = 0.25,
     medTol = 0.10,         // tolerance for median
-    skewTol = 0.25,        // tolerance for skewness
+    skewTol = 0.10,        // tolerance for skewness
     protectBand = 0.20     // keep boundary items within ± this of the target median
   } = {}
 ) {
@@ -709,7 +709,7 @@ function selectTargetedImages(
   }
 
   // --- Tighten skew while preserving the anchored median ---
-  const skewTarget = (cond2 === 'n') ? 0 : ((cond === 'r') ? -1 : +1);
+  const skewTarget = (cond2 === 'n') ? 0 : ((cond === 'r') ? -2 : +2);
   const resultIdxs = tightenMedianSkewFixedMedian(chosenIdxs, values, {
     med: medTarget, skew: skewTarget, medTol, skewTol, protectBand,
     favorSkew: (cond2 === 'h') ? 2.5 : 1.0
