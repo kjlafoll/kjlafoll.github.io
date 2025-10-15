@@ -34,6 +34,9 @@ const orLabel = document.getElementById("orLabel");
 // --- intro (no PID prompt; no questionnaires) ---
 const introMessages = [
   "Welcome to the Household Decision Game!",
+  "Imagine you and your partner are planning for big life goals like making a down payment on a home, where amounts can reach tens of thousands and the timeline can span years.",
+  "You will now be asked to choose between receiving a smaller amount now and a larger amount after a longer delay, much like deciding between keeping cash on hand or letting it grow for long-term savings.",
+  "IMPORTANT: Please make decisions as if you are choosing for your PARTNER, considering both your and your partner's preferences.",
   isMobile
     ? "You must respond within 20 seconds on each trial. On a mobile device, tap the option you prefer. Please choose as quickly and as accurately as possible."
     : "You must respond within 20 seconds on each trial. On a computer, press the A key for LEFT and the L key for RIGHT. Please choose as quickly and as accurately as possible.",
@@ -99,8 +102,12 @@ document.addEventListener("DOMContentLoaded", function () {
       shuffleArray(realTrials);
       shuffleArray(attentionTrials);
 
-      practiceTrials = realTrials.slice(0, 8);
-      mainTrials = realTrials.slice(8, 65).concat(attentionTrials); // change to 108 for full
+      practiceTrials = realTrials.slice(0, 3);
+
+      shuffleArray(realTrials);
+
+      mainTrials = realTrials.slice(0, 65).concat(attentionTrials); // change to 108 for full
+      
       shuffleArray(mainTrials);
 
       trials = practiceTrials; // start with practice
@@ -194,7 +201,7 @@ function startTrial() {
   if (currentTrialIndex >= trials.length) {
     if (inPractice) {
       popupActive = true;
-      showPopup("Practice complete! Press SPACE or tap Continue to start the real game. You will now make 55 decisions for your household.", () => {
+      showPopup("Practice complete! Press SPACE or tap Continue to start the real game. You will now make 33 decisions for your household.\nRemember: Please make decisions as if you are choosing for your PARTNER, considering both your and your partner's preferences.", () => {
         popupActive = false;
         startMainGame();
       });
@@ -215,19 +222,20 @@ function startTrial() {
 
   const trial = trials[currentTrialIndex];
   const immText = trial.ImmediateDelay == 0 ? "right now" : `in ${trial.ImmediateDelay} ${trial.ImmediateDelay === 1 ? "day" : "days"}`;
-  const delText = trial.DelayedDelay == 0 ? "right now" : `in ${trial.DelayedDelay} ${trial.DelayedDelay === 1 ? "day" : "days"}`;
+  const delText = (()=>{const y=Number(trial?.DelayedDelay ?? 0), m=Number(trial?.DelayedDelay_Month ?? trial?.DelayedDelayMonth ?? 0); return (y===0&&m===0)?"right now":`in ${[y>0?`${y} ${y===1?"year":"years"}`:null, m>0?`${m} ${m===1?"month":"months"}`:null].filter(Boolean).join(" and ")}`;})();
+  // const delText = trial.DelayedDelay == 0 ? "right now" : `in ${trial.DelayedDelay} ${trial.DelayedDelay === 1 ? "year" : "years"}`;
 
   optionA.style.border = "2px solid #000";
   optionB.style.border = "2px solid #000";
 
   if (trial.NowOnLeft == "1") {
-    optionA.textContent = `Your household receives $${trial.ImmediateAmount} ${immText}`;
-    optionB.textContent = `Your household receives $${trial.DelayedAmount} ${delText}`;
+    optionA.textContent = `Your partner receives $${trial.ImmediateAmount} ${immText}`;
+    optionB.textContent = `Your partner receives $${trial.DelayedAmount} ${delText}`;
     optionA.dataset.choice = "A";
     optionB.dataset.choice = "B";
   } else {
-    optionA.textContent = `Your household receives $${trial.DelayedAmount} ${delText}`;
-    optionB.textContent = `Your household receives $${trial.ImmediateAmount} ${immText}`;
+    optionA.textContent = `Your partner receives $${trial.DelayedAmount} ${delText}`;
+    optionB.textContent = `Your partner receives $${trial.ImmediateAmount} ${immText}`;
     optionA.dataset.choice = "B";
     optionB.dataset.choice = "A";
   }
@@ -282,6 +290,7 @@ function handleChoice(choice) {
       ImmediateDelay: trial.ImmediateDelay,
       DelayedAmount: trial.DelayedAmount,
       DelayedDelay: trial.DelayedDelay,
+      DelayedDelay_Months: trial.DelayedDelay_Months,
       NowOnLeft: trial.NowOnLeft,
       AttentionCheck: trial.AttentionCheck || 0,
       PassedAttention: (trial.AttentionCheck == "1" && choice === correctChoice) ? 1 : (trial.AttentionCheck == "1" ? 0 : null),
