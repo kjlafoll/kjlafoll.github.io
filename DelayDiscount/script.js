@@ -36,7 +36,7 @@ const introMessages = [
   "Welcome to the Household Decision Game!",
   "Imagine you and your partner are planning for big life goals like making a down payment on a home, where amounts can reach tens of thousands and the timeline can span years.",
   "You will now be asked to choose between receiving a smaller amount now and a larger amount after a longer delay, much like deciding between keeping cash on hand or letting it grow for long-term savings.",
-  "IMPORTANT: Please make decisions as if you are choosing for your PARTNER, considering both your and your partner's preferences.",
+  "IMPORTANT: Please make decisions for your PARTNER.",
   isMobile
     ? "You must respond within 20 seconds on each trial. On a mobile device, tap the option you prefer. Please choose as quickly and as accurately as possible."
     : "You must respond within 20 seconds on each trial. On a computer, press the A key for LEFT and the L key for RIGHT. Please choose as quickly and as accurately as possible.",
@@ -201,7 +201,7 @@ function startTrial() {
   if (currentTrialIndex >= trials.length) {
     if (inPractice) {
       popupActive = true;
-      showPopup("Practice complete! Press SPACE or tap Continue to start the real game. You will now make 33 decisions for your household.\nRemember: Please make decisions as if you are choosing for your PARTNER, considering both your and your partner's preferences.", () => {
+      showPopup("Practice complete! Press SPACE or tap Continue to start the real game. You will now make 33 decisions for your household.\nRemember: Please make decisions for your PARTNER.", () => {
         popupActive = false;
         startMainGame();
       });
@@ -229,13 +229,13 @@ function startTrial() {
   optionB.style.border = "2px solid #000";
 
   if (trial.NowOnLeft == "1") {
-    optionA.textContent = `Your partner receives $${trial.ImmediateAmount} ${immText}`;
-    optionB.textContent = `Your partner receives $${trial.DelayedAmount} ${delText}`;
+    optionA.textContent = `Your partner receives $${Number(trial.ImmediateAmount).toLocaleString('en-US')} ${immText}`;
+    optionB.textContent = `Your partner receives $${Number(trial.DelayedAmount).toLocaleString('en-US')} ${delText}`;
     optionA.dataset.choice = "A";
     optionB.dataset.choice = "B";
   } else {
-    optionA.textContent = `Your partner receives $${trial.DelayedAmount} ${delText}`;
-    optionB.textContent = `Your partner receives $${trial.ImmediateAmount} ${immText}`;
+    optionA.textContent = `Your partner receives $${Number(trial.DelayedAmount).toLocaleString('en-US')} ${delText}`;
+    optionB.textContent = `Your partner receives $${Number(trial.ImmediateAmount).toLocaleString('en-US')} ${immText}`;
     optionA.dataset.choice = "B";
     optionB.dataset.choice = "A";
   }
