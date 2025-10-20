@@ -222,7 +222,7 @@ function startTrial() {
 
   const trial = trials[currentTrialIndex];
   const immText = trial.ImmediateDelay == 0 ? "right now" : `in ${trial.ImmediateDelay} ${trial.ImmediateDelay === 1 ? "day" : "days"}`;
-  const delText = (()=>{const y=Number(trial?.DelayedDelay ?? 0), m=Number(trial?.DelayedDelay_Month ?? trial?.DelayedDelayMonth ?? 0); return (y===0&&m===0)?"right now":`in ${[y>0?`${y} ${y===1?"year":"years"}`:null, m>0?`${m} ${m===1?"month":"months"}`:null].filter(Boolean).join(" and ")}`;})();
+  const delText = (()=>{const y=Number(trial?.DelayedDelay ?? 0), m=Number(trial?.DelayedDelay_Month ?? trial?.DelayedDelay_Month ?? 0); return (y===0&&m===0)?"right now":`in ${[y>0?`${y} ${y===1?"year":"years"}`:null, m>0?`${m} ${m===1?"month":"months"}`:null].filter(Boolean).join(" and ")}`;})();
   // const delText = trial.DelayedDelay == 0 ? "right now" : `in ${trial.DelayedDelay} ${trial.DelayedDelay === 1 ? "year" : "years"}`;
 
   optionA.style.border = "2px solid #000";
@@ -290,7 +290,7 @@ function handleChoice(choice) {
       ImmediateDelay: trial.ImmediateDelay,
       DelayedAmount: trial.DelayedAmount,
       DelayedDelay: trial.DelayedDelay,
-      DelayedDelay_Months: trial.DelayedDelay_Months,
+      DelayedDelay_Months: trial.DelayedDelay_Month,
       NowOnLeft: trial.NowOnLeft,
       AttentionCheck: trial.AttentionCheck || 0,
       PassedAttention: (trial.AttentionCheck == "1" && choice === correctChoice) ? 1 : (trial.AttentionCheck == "1" ? 0 : null),
