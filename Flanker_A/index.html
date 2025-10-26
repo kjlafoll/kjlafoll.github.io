@@ -16,11 +16,12 @@
     .btn:hover{background:#666}
     .row{display:flex;gap:16px;align-items:center;justify-content:center}
     .stimulus{display:grid;grid-template-columns:repeat(5, minmax(60px, 120px));gap:16px;align-items:center;justify-items:center}
-    .stimulus img{height:100px;width:100px;object-fit:cover;image-rendering:auto;}
+    .stimulus img{height:100px;width:100px;object-fit:contain;image-rendering:auto;}
     .fix{font-size:120px;line-height:1;}
     .kbdhelp{position:fixed;top:16px;left:16px;display:flex;align-items:center;gap:8px;border:2px solid #fff;padding:8px 12px;border-radius:12px;pointer-events:none;z-index:1}
-    .kbdhelp img{height:28px;width:28px;object-fit:cover}
     .kbdhelp.right{left:auto;right:16px}
+    .kbdkey{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-weight:700}
+    .kbdarrow{font-size:22px}
     .subtle{color:var(--muted);font-size:14px}
     .warn{color:var(--warn);font-weight:700}
     .hidden{display:none !important}
@@ -41,19 +42,19 @@
  * CONFIG
  *******************/
 const CONFIG = {
-  scheduleCSV: 'flanker_schedule_mini.csv', //'flanker_schedule_f_webp.csv',
-  preloadParam: '?nf_resize=fit&w=1000',
+  // Point this at your arrow schedule (e.g., 'flanker_schedule_a1.csv')
+  scheduleCSV: 'flanker_schedule_a1.csv',
+  preloadParam: '',               // keep empty if your arrow files are exact-size
   practiceTrials: 8,
   fixationMs: 500,
   blankMs: 500,
   timeoutMs: 2000,
   tooFastMs: 150,
-  breakEvery: 1, // 50,
+  breakEvery: 50,
   breakSeconds: 10,
   showKeyCues: true,
   showProgress: false
 };
-instface = 'WM'
 
 /*******************
  * STATE
@@ -85,7 +86,7 @@ function h(tag, attrs={}, ...kids){
   Object.entries(attrs).forEach(([k,v])=>{
      if(k==='class') el.className = v;
      else if(k==='html') el.innerHTML = v;
-     else if(/^on/.test(k) && typeof v === 'function') el[k] = v; // bind real event handler
+     else if(/^on/.test(k) && typeof v === 'function') el[k] = v; // event
      else el.setAttribute(k,v);
   });
   kids.flat().forEach(k=>{
@@ -95,16 +96,12 @@ function h(tag, attrs={}, ...kids){
   });
   return el;
 }
-
 function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
-
 function download(filename, text){
   const blob = new Blob([text], {type:'application/json'});
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = filename; a.click(); URL.revokeObjectURL(url);
+  const a = document.createElement('a'); a.href = url; a.download = filename; a.click(); URL.revokeObjectURL(url);
 }
-
 function parseCSV(text){
   const rows = text.trim().split(/\r?\n/);
   const header = rows.shift().split(',').map(s=>s.trim());
@@ -119,16 +116,20 @@ function parseCSV(text){
       images: [flk[0], flk[1], (cols[idx('target')]||'').trim(), flk[2], flk[3]],
       correct: (cols[idx('correct')]||'').trim().toUpperCase(),
       congruency: (cols[idx('congruency')]||'').trim(),
-      faces: (cols[idx('faces')]||'').trim(),
-      type: (cols[idx('type')]||'exp').trim().toLowerCase() 
+      faces: (cols[idx('faces')]||'').trim(), // kept for compatibility
+      type: (cols[idx('type')]||'exp').trim().toLowerCase()
     });
   }
   return out;
 }
-
 async function preload(srcs){
   const uniq = Array.from(new Set(srcs));
-  const loadOne = (src)=> new Promise(res=>{ const img=new Image(); img.onload=()=>res({src,ok:true}); img.onerror=()=>res({src,ok:false}); img.src = src + (CONFIG.preloadParam||''); });
+  const loadOne = (src)=> new Promise(res=>{
+    const img=new Image();
+    img.onload=()=>res({src,ok:true});
+    img.onerror=()=>res({src,ok:false});
+    img.src = src + (CONFIG.preloadParam||'');
+  });
   const results = await Promise.all(uniq.map(loadOne));
   const failed = results.filter(r=>!r.ok);
   if(failed.length){ console.warn('Failed to preload:', failed.map(f=>f.src)); }
@@ -143,10 +144,19 @@ function render(){
   document.body.classList.toggle('hide-cursor', ['fix','blank','stim'].includes(s));
   app.innerHTML = '';
 
-  if(CONFIG.showKeyCues && (s==='practice' || s==='main' || s==='fix' || s==='blank' || s==='stim' || s==='tooFast' || s==='tooSlow' || s==='inst1' || s==='inst2' || s==='inst3' || s==='practiceIntro')){
+  // Q/P helper cards: LEFT vs RIGHT arrows
+  if(CONFIG.showKeyCues && (['practice','main','fix','blank','stim','tooFast','tooSlow','inst1','inst2','inst3','practiceIntro'].includes(s))){
     app.append(
-      h('div',{class:'kbdhelp'}, h('span',{class:'mono'},'Q'), ' Not emotional ', h('img',{src:'neutral_face.png',alt:'neutral'})),
-      h('div',{class:'kbdhelp right'}, h('span',{class:'mono'},'P'), ' Emotional ', h('img',{src:'angry_face.png',alt:'angry'}))
+      h('div',{class:'kbdhelp'},
+        h('span',{class:'kbdkey'},'Q'),
+        ' = LEFT ',
+        h('span',{class:'kbdarrow'},'←')
+      ),
+      h('div',{class:'kbdhelp right'},
+        h('span',{class:'kbdkey'},'P'),
+        ' = RIGHT ',
+        h('span',{class:'kbdarrow'},'→')
+      )
     );
   }
 
@@ -161,30 +171,26 @@ function render(){
     );
   }
   else if(s==='inst1'){
-    // Congruent example above text
+    // Congruent example (all left)
     container.append(
-      h('div',{class:'stimulus'}, ...[0,1,2,3,4].map(()=> h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_NC.bmp`,alt:'not emotional face'}))),
+      h('div',{class:'stimulus'}, ...[0,1,2,3,4].map(()=> arrowCell('left'))),
       h('h2',{style:'margin:1px 0'},'Task Instructions'),
       h('div',{},
-        h('p',{style:'margin:1px 0'},'You will see five faces in a row. Your job is to judge the emotion of the ', h('b',{},'MIDDLE'), ' face only.'),
-        h('p',{style:'margin:1px 0'}, h('span',{class:'mono'},'Q'),' = not emotional (neutral). ', h('span',{class:'mono'},'P'),' = emotional (e.g., angry).')
+        h('p',{style:'margin:1px 0'},'You will see five arrows in a row. Your job is to judge the direction of the ', h('b',{},'MIDDLE'), ' arrow only.'),
+        h('p',{style:'margin:1px 0'}, h('span',{class:'mono'},'Q'),' = LEFT. ', h('span',{class:'mono'},'P'),' = RIGHT.')
       ),
       h('button',{class:'btn',onclick:()=>go('inst2')},'Continue')
     );
   }
   else if(s==='inst2'){
-    // Incongruent example above text
+    // Incongruent example (flankers left, middle right)
     container.append(
       h('div',{class:'stimulus'},
-        h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_NC.bmp`,alt:'not emotional face'}),
-        h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_NC.bmp`,alt:'not emotional face'}),
-        h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_AC.bmp`,alt:'emotional face'}),
-        h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_NC.bmp`,alt:'not emotional face'}),
-        h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_NC.bmp`,alt:'not emotional face'})
+        arrowCell('left'), arrowCell('left'), arrowCell('right'), arrowCell('left'), arrowCell('left')
       ),
       h('h2',{style:'margin:1px 0'},'Important'),
-      h('p',{style:'margin:1px 0'},'Sometimes the surrounding faces will have different emotionality than the face in the middle.'),
-      h('p',{style:'margin:1px 0'},'Only pay attention to the MIDDLE face!'),
+      h('p',{style:'margin:1px 0'},'Sometimes the surrounding arrows will point in a different direction than the arrow in the middle.'),
+      h('p',{style:'margin:1px 0'},'Only pay attention to the MIDDLE arrow!'),
       h('p',{style:'margin:1px 0'},'Press Continue to read further instruction.'),
       h('button',{class:'btn',onclick:()=>go('inst3')},'Continue')
     );
@@ -193,17 +199,11 @@ function render(){
     container.append(
       h('h2',{style:'margin:1px 0'},'Examples'),
       h('p',{style:'margin:1px 0'},'In the example below, the left [Q]-key is correct:'),
-      h('div',{class:'stimulus'}, ...[0,1,2,3,4].map(()=> h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_NC.bmp`,alt:'not emotional face'}))),
-      h('p',{style:'margin:1px 0'},'since the middle face is not emotional.'),
+      h('div',{class:'stimulus'}, ...[0,1,2,3,4].map(()=> arrowCell('left'))),
+      h('p',{style:'margin:1px 0'},'since the middle arrow points left.'),
       h('p',{style:'margin:1px 0'},'In the example below, the right [P]-key is correct:'),
-      h('div',{class:'stimulus'},
-        h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_NC.bmp`,alt:'not emotional face'}),
-        h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_NC.bmp`,alt:'not emotional face'}),
-        h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_AC.bmp`,alt:'emotional face'}),
-        h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_NC.bmp`,alt:'not emotional face'}),
-        h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_NC.bmp`,alt:'not emotional face'})
-      ),
-      h('p',{style:'margin:1px 0'},'since the middle face is emotional.'),
+      h('div',{class:'stimulus'}, arrowCell('left'), arrowCell('left'), arrowCell('right'), arrowCell('left'), arrowCell('left')),
+      h('p',{style:'margin:1px 0'},'since the middle arrow points right.'),
       h('p',{style:'margin:1px 0'},'Press Continue for further instruction.'),
       h('button',{class:'btn',onclick:()=>go('practiceIntro')},'Continue')
     );
@@ -212,7 +212,7 @@ function render(){
     container.append(
       h('h2',{},'Practice'),
       h('p',{},'Place your index fingers on ', h('b',{},'Q'),' and ', h('b',{},'P'),'. Respond as quickly and accurately as possible.'),
-      h('p',{class:'subtle'},'Press Space to begin the practice block.'),
+      h('p',{class:'subtle'},'Press Space to begin the practice block.')
     );
   }
   else if(s==='fix'){
@@ -225,7 +225,9 @@ function render(){
     const trial = currentTrial();
     container.append(
       ...(CONFIG.showProgress ? [progressBar()] : []),
-      h('div',{class:'stimulus'}, ...trial.images.map((src, i)=> h('img',{src: src + (CONFIG.preloadParam||''), alt: i===2?'target':'flanker'})))
+      h('div',{class:'stimulus'},
+        ...trial.images.map((src, i)=> h('img',{src: src + (CONFIG.preloadParam||''), alt: i===2?'target':'flanker'}))
+      )
     );
   }
   else if(s==='tooFast'){
@@ -252,9 +254,16 @@ function render(){
   else if(s==='done'){
     ensurePosted();
     container.append(
-      h('h2',{},'All done!'),
+      h('h2',{},'All done!')
     );
   }
+}
+
+function arrowCell(dir){
+  // Simple inline SVG arrow so we don’t need extra assets
+  const svgLeft = `<svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>`;
+  const svgRight = `<svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>`;
+  return h('div', {style:'width:100px;height:100px;display:grid;place-items:center'}, h('div',{html: dir==='left' ? svgLeft : svgRight}));
 }
 
 function progressBar(){
@@ -265,18 +274,12 @@ function progressBar(){
   outer.append(h('div',{style:`width:${pct}%;`}));
   return outer;
 }
-
-function currentTrial(){
-  return state.inPractice ? state.practice[state.idx] : state.block[state.idx];
-}
+function currentTrial(){ return state.inPractice ? state.practice[state.idx] : state.block[state.idx]; }
 
 /*******************
  * FLOW
  *******************/
-function go(next){
-  state.screen = next;
-  render();
-}
+function go(next){ state.screen = next; render(); }
 
 async function runTrial(){
   if(state._timeoutTimer){ clearTimeout(state._timeoutTimer); state._timeoutTimer = null; }
@@ -302,7 +305,7 @@ function recordResponse(key){
     rt: Math.round(rt),
     correct: key ? (key===t.correct) : false,
     congruency: t.congruency,
-    faces: t.faces,
+    faces: t.faces,          // kept for compatibility with your file
     target: t.images[2],
     pid: state.pid,
     flag,
@@ -322,7 +325,6 @@ function requeueCurrentTrial(){
     if(curr) list.push(curr);
   }
 }
-
 function handleTooSlow(){
   if(state.awaiting !== 'resp') return;
   state.awaiting = 'space';
@@ -344,28 +346,19 @@ function handleTooSlow(){
   state._needsRequeue = true;
   go('tooSlow');
 }
-
 function nextTrial(){
   state.idx++;
   const total = state.inPractice ? state.practice.length : state.block.length;
-
-  // Breaks (main block only)
   if(!state.inPractice && CONFIG.breakEvery>0 && state.idx>0 && state.idx%CONFIG.breakEvery===0 && state.idx<total){
-    startBreak();
-    return;
+    startBreak(); return;
   }
-
   if(state.idx>=total){
-    if(state.inPractice){
-      state.inPractice=false; state.idx=0; go('practiceBreak');
-    }else{
-      go('done');
-    }
+    if(state.inPractice){ state.inPractice=false; state.idx=0; go('practiceBreak'); }
+    else { go('done'); }
   }else{
     runTrial();
   }
 }
-
 function startBreak(){
   state._breakRemaining = CONFIG.breakSeconds;
   go('break');
@@ -375,24 +368,12 @@ function startBreak(){
     if(state._breakRemaining<=0){ clearInterval(state._breakTimer); runTrial(); }
   }, 1000);
 }
-
-function restartPractice(){
-  state.inPractice = true; state.idx=0; go('practiceIntro');
-}
-
-function startMain(){
-  state.inPractice = false; state.idx=0; runTrial();
-}
+function restartPractice(){ state.inPractice = true; state.idx=0; go('practiceIntro'); }
+function startMain(){ state.inPractice = false; state.idx=0; runTrial(); }
 
 /*******************
- * DATA IO
+ * QUALTRICS POST
  *******************/
-function exportData(){
-  const filename = `${state.pid}_flanker.json`;
-  download(filename, JSON.stringify(state.responses, null, 2));
-}
-
-// ---------------- END: send to Qualtrics ----------------
 let __RG_DONE_SENT__ = false;
 function sendRGDoneOnce(payload) {
   if (__RG_DONE_SENT__) return;
@@ -413,7 +394,7 @@ function endGame() {
   const nAttention = 0;
   const nAttentionPassed = 0;
   const payload = {
-    task: 'flanker_faces',
+    task: 'flanker_arrows',
     participantID: state.pid,
     results,
     summary: { nTrials, nLapses, meanRT, nAttention, nAttentionPassed }
@@ -421,8 +402,9 @@ function endGame() {
   sendRGDoneOnce(payload);
 }
 function ensurePosted(){ if(!state._posted){ endGame(); state._posted = true; } }
+
 /*******************
- * INPUT HANDLERS
+ * INPUT
  *******************/
 window.addEventListener('keydown', (e)=>{
   const k = e.key.toUpperCase();
@@ -435,7 +417,7 @@ window.addEventListener('keydown', (e)=>{
 });
 
 /*******************
- * BOOT: LOAD SCHEDULE & PRELOAD
+ * BOOT
  *******************/
 async function boot(){
   render();
@@ -445,18 +427,21 @@ async function boot(){
     const text = await res.text();
     const allTrials = parseCSV(text);
     if (!allTrials || allTrials.length === 0) throw new Error('No trials parsed');
-    state.trials = allTrials;
+    // Use "type" column to split practice vs main
     const prac = allTrials.filter(t => t.type === 'prac');
-    const exp  = allTrials.filter(t => t.type !== 'prac');  // treats missing as exp
+    const exp  = allTrials.filter(t => t.type !== 'prac');
+    state.trials = allTrials;
     state.practice = CONFIG.practiceTrials ? prac.slice(0, CONFIG.practiceTrials) : prac;
     state.block = exp;
+
     const imgs = allTrials.flatMap(t => t.images);
     await preload(imgs);
   } catch (err) {
     console.warn('CSV/preload issue, using tiny demo set. Details:', (err && err.message) ? err.message : err);
+    // fallback demo uses images still, but your arrow CSV should override this
     state.trials = [
-      {images:['/RADIATE_BMP/.../WF01_NC.jpg','/RADIATE_BMP/.../WF01_NC.jpg','/RADIATE_BMP/.../WF01_NC.jpg','/RADIATE_BMP/.../WF01_NC.jpg','/RADIATE_BMP/.../WF01_NC.jpg'], correct:'Q', congruency:'congruent', faces:'neutral'},
-      {images:['/RADIATE_BMP/.../WF01_NC.jpg','/RADIATE_BMP/.../WF01_NC.jpg','/RADIATE_BMP/.../WF01_AC.jpg','/RADIATE_BMP/.../WF01_NC.jpg','/RADIATE_BMP/.../WF01_NC.jpg'], correct:'P', congruency:'incongruent', faces:'angry'}
+      {images:['/arrows/left.png','/arrows/left.png','/arrows/left.png','/arrows/left.png','/arrows/left.png'], correct:'Q', congruency:'congruent', faces:'left', type:'prac'},
+      {images:['/arrows/left.png','/arrows/left.png','/arrows/right.png','/arrows/left.png','/arrows/left.png'], correct:'P', congruency:'incongruent', faces:'right', type:'exp'}
     ];
     state.practice = state.trials.slice(0,1);
     state.block = state.trials.slice(1);
