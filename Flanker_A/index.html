@@ -3,12 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>FlankerGame</title>
+  <title>FlankerGame (Arrows Only)</title>
   <style>
-    :root{
-      --bg:#000;--fg:#fff;--muted:#bbb;--accent:#888;--warn:#e74c3c;--ok:#2ecc71;
-      --maxw:1000px;
-    }
+    :root{ --bg:#000; --fg:#fff; --muted:#bbb; --warn:#e74c3c; --maxw:1000px; }
     html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif}
     #app{min-height:100%;display:grid;place-items:center}
     .screen{width:100%;max-width:var(--maxw);padding:24px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;gap:24px;text-align:center}
@@ -16,7 +13,6 @@
     .btn:hover{background:#666}
     .row{display:flex;gap:16px;align-items:center;justify-content:center}
     .stimulus{display:grid;grid-template-columns:repeat(5, minmax(60px, 120px));gap:16px;align-items:center;justify-items:center}
-    .stimulus img{height:100px;width:100px;object-fit:contain;image-rendering:auto;}
     .fix{font-size:120px;line-height:1;}
     .kbdhelp{position:fixed;top:16px;left:16px;display:flex;align-items:center;gap:8px;border:2px solid #fff;padding:8px 12px;border-radius:12px;pointer-events:none;z-index:1}
     .kbdhelp.right{left:auto;right:16px}
@@ -24,12 +20,8 @@
     .kbdarrow{font-size:22px}
     .subtle{color:var(--muted);font-size:14px}
     .warn{color:var(--warn);font-weight:700}
-    .hidden{display:none !important}
-    .progress{height:6px;background:#222;border-radius:8px;overflow:hidden;width:min(760px,90vw)}
-    .progress > div{height:100%;background:#999;width:0%}
     .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace}
     .count{font-size:56px}
-    .small{font-size:0.95rem}
     .foot{opacity:.8}
     .hide-cursor { cursor: none; }
   </style>
@@ -42,18 +34,15 @@
  * CONFIG
  *******************/
 const CONFIG = {
-  // Point this at your arrow schedule (e.g., 'flanker_schedule_a1.csv')
-  scheduleCSV: 'flanker_schedule_a1.csv',
-  preloadParam: '',               // keep empty if your arrow files are exact-size
+  scheduleCSV: 'flanker_schedule_mini.csv', // your attached schedule
   practiceTrials: 8,
   fixationMs: 500,
   blankMs: 500,
   timeoutMs: 2000,
   tooFastMs: 150,
-  breakEvery: 50,
+  breakEvery: 1,
   breakSeconds: 10,
-  showKeyCues: true,
-  showProgress: false
+  showKeyCues: true
 };
 
 /*******************
@@ -81,12 +70,26 @@ const state = {
 const $ = sel => document.querySelector(sel);
 const app = $('#app');
 
+function clean(v){
+  return String(v ?? '')
+    .replace(/^\uFEFF/, '')   // strip BOM if present
+    .trim()
+    .replace(/^"(.*)"$/,'$1')
+    .replace(/^'(.*)'$/,'$1');
+}
+function tokenToDir(src){
+  const s = clean(src).toLowerCase();
+  if (['l','left','←','<'].includes(s)) return 'left';
+  if (['r','right','→','>'].includes(s)) return 'right';
+  return null; // unknown token
+}
+
 function h(tag, attrs={}, ...kids){
   const el = document.createElement(tag);
   Object.entries(attrs).forEach(([k,v])=>{
      if(k==='class') el.className = v;
      else if(k==='html') el.innerHTML = v;
-     else if(/^on/.test(k) && typeof v === 'function') el[k] = v; // event
+     else if(/^on/.test(k) && typeof v === 'function') el[k] = v;
      else el.setAttribute(k,v);
   });
   kids.flat().forEach(k=>{
@@ -102,39 +105,50 @@ function download(filename, text){
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a'); a.href = url; a.download = filename; a.click(); URL.revokeObjectURL(url);
 }
+
 function parseCSV(text){
   const rows = text.trim().split(/\r?\n/);
-  const header = rows.shift().split(',').map(s=>s.trim());
+  if (!rows.length) return [];
+
+  const header = rows.shift().split(',').map(s=>s.trim().toLowerCase());
   const idx = (name)=> header.indexOf(name);
+
+  const iFlanker = idx('flanker');
+  const iTarget  = idx('target');
+  const iCorrect = idx('correct');
+  const iCong    = idx('congruency');
+  const iType    = idx('type');
+
   const out = [];
   for(const line of rows){
     if(!line.trim()) continue;
-    const cols = line.split(',');
-    const flk = (cols[idx('flanker')]||'').split(';').map(s=>s.trim());
-    if(flk.length<4) continue;
+    const cols = line.split(',').map(s=>String(s).trim());
+
+    const flk = (iFlanker>=0 ? cols[iFlanker] : '').trim();
+    const tgt = (iTarget >=0 ? cols[iTarget]  : '').trim();
+    if (!(flk === '<' || flk === '>')) continue;
+    if (!(tgt === '<' || tgt === '>')) continue;
+
+    // Build the 5-arrow display: flanker, flanker, target, flanker, flanker
+    const images = [flk, flk, tgt, flk, flk];
+
+    // Use provided correct if present; otherwise derive (Q for <, P for >)
+    let corr = iCorrect>=0 ? String(cols[iCorrect]||'').trim().toUpperCase() : '';
+    if (!corr) corr = (tgt === '<') ? 'Q' : 'P';
+
     out.push({
-      images: [flk[0], flk[1], (cols[idx('target')]||'').trim(), flk[2], flk[3]],
-      correct: (cols[idx('correct')]||'').trim().toUpperCase(),
-      congruency: (cols[idx('congruency')]||'').trim(),
-      faces: (cols[idx('faces')]||'').trim(), // kept for compatibility
-      type: (cols[idx('type')]||'exp').trim().toLowerCase()
+      images,
+      correct: corr,
+      congruency: iCong>=0 ? String(cols[iCong]||'').trim() : '',
+      type: iType>=0 ? String(cols[iType]||'exp').trim().toLowerCase() : 'exp'
     });
   }
+
+  console.log('Parsed trials:', out.length);
   return out;
 }
-async function preload(srcs){
-  const uniq = Array.from(new Set(srcs));
-  const loadOne = (src)=> new Promise(res=>{
-    const img=new Image();
-    img.onload=()=>res({src,ok:true});
-    img.onerror=()=>res({src,ok:false});
-    img.src = src + (CONFIG.preloadParam||'');
-  });
-  const results = await Promise.all(uniq.map(loadOne));
-  const failed = results.filter(r=>!r.ok);
-  if(failed.length){ console.warn('Failed to preload:', failed.map(f=>f.src)); }
-  return results;
-}
+
+
 
 /*******************
  * RENDERERS
@@ -144,18 +158,13 @@ function render(){
   document.body.classList.toggle('hide-cursor', ['fix','blank','stim'].includes(s));
   app.innerHTML = '';
 
-  // Q/P helper cards: LEFT vs RIGHT arrows
   if(CONFIG.showKeyCues && (['practice','main','fix','blank','stim','tooFast','tooSlow','inst1','inst2','inst3','practiceIntro'].includes(s))){
     app.append(
       h('div',{class:'kbdhelp'},
-        h('span',{class:'kbdkey'},'Q'),
-        ' = LEFT ',
-        h('span',{class:'kbdarrow'},'←')
+        h('span',{class:'kbdkey'},'Q'),' = LEFT ', h('span',{class:'kbdarrow'},'←')
       ),
       h('div',{class:'kbdhelp right'},
-        h('span',{class:'kbdkey'},'P'),
-        ' = RIGHT ',
-        h('span',{class:'kbdarrow'},'→')
+        h('span',{class:'kbdkey'},'P'),' = RIGHT ', h('span',{class:'kbdarrow'},'→')
       )
     );
   }
@@ -171,23 +180,19 @@ function render(){
     );
   }
   else if(s==='inst1'){
-    // Congruent example (all left)
     container.append(
       h('div',{class:'stimulus'}, ...[0,1,2,3,4].map(()=> arrowCell('left'))),
       h('h2',{style:'margin:1px 0'},'Task Instructions'),
       h('div',{},
-        h('p',{style:'margin:1px 0'},'You will see five arrows in a row. Your job is to judge the direction of the ', h('b',{},'MIDDLE'), ' arrow only.'),
+        h('p',{style:'margin:1px 0'},'You will see five arrows in a row. Your job is to judge the direction of the ', h('b',{},'MIDDLE'),' arrow only.'),
         h('p',{style:'margin:1px 0'}, h('span',{class:'mono'},'Q'),' = LEFT. ', h('span',{class:'mono'},'P'),' = RIGHT.')
       ),
       h('button',{class:'btn',onclick:()=>go('inst2')},'Continue')
     );
   }
   else if(s==='inst2'){
-    // Incongruent example (flankers left, middle right)
     container.append(
-      h('div',{class:'stimulus'},
-        arrowCell('left'), arrowCell('left'), arrowCell('right'), arrowCell('left'), arrowCell('left')
-      ),
+      h('div',{class:'stimulus'}, arrowCell('left'),arrowCell('left'),arrowCell('right'),arrowCell('left'),arrowCell('left')),
       h('h2',{style:'margin:1px 0'},'Important'),
       h('p',{style:'margin:1px 0'},'Sometimes the surrounding arrows will point in a different direction than the arrow in the middle.'),
       h('p',{style:'margin:1px 0'},'Only pay attention to the MIDDLE arrow!'),
@@ -202,7 +207,7 @@ function render(){
       h('div',{class:'stimulus'}, ...[0,1,2,3,4].map(()=> arrowCell('left'))),
       h('p',{style:'margin:1px 0'},'since the middle arrow points left.'),
       h('p',{style:'margin:1px 0'},'In the example below, the right [P]-key is correct:'),
-      h('div',{class:'stimulus'}, arrowCell('left'), arrowCell('left'), arrowCell('right'), arrowCell('left'), arrowCell('left')),
+      h('div',{class:'stimulus'}, arrowCell('left'),arrowCell('left'),arrowCell('right'),arrowCell('left'),arrowCell('left')),
       h('p',{style:'margin:1px 0'},'since the middle arrow points right.'),
       h('p',{style:'margin:1px 0'},'Press Continue for further instruction.'),
       h('button',{class:'btn',onclick:()=>go('practiceIntro')},'Continue')
@@ -224,9 +229,11 @@ function render(){
   else if(s==='stim'){
     const trial = currentTrial();
     container.append(
-      ...(CONFIG.showProgress ? [progressBar()] : []),
       h('div',{class:'stimulus'},
-        ...trial.images.map((src, i)=> h('img',{src: src + (CONFIG.preloadParam||''), alt: i===2?'target':'flanker'}))
+        ...trial.images.map((tok, i)=>{
+          const dir = tokenToDir(tok);
+          return arrowCell(dir || 'left'); // fallback to left if token is bad
+        })
       )
     );
   }
@@ -253,26 +260,15 @@ function render(){
   }
   else if(s==='done'){
     ensurePosted();
-    container.append(
-      h('h2',{},'All done!')
-    );
+    container.append(h('h2',{},'All done!'));
   }
 }
 
 function arrowCell(dir){
-  // Simple inline SVG arrow so we don’t need extra assets
-  const svgLeft = `<svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>`;
+  const svgLeft  = `<svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>`;
   const svgRight = `<svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>`;
-  return h('div', {style:'width:100px;height:100px;display:grid;place-items:center'}, h('div',{html: dir==='left' ? svgLeft : svgRight}));
-}
-
-function progressBar(){
-  const total = state.inPractice ? state.practice.length : state.block.length;
-  const idx = state.idx;
-  const pct = Math.max(0, Math.min(100, Math.round((idx/Math.max(1,total))*100)));
-  const outer = h('div',{class:'progress'});
-  outer.append(h('div',{style:`width:${pct}%;`}));
-  return outer;
+  const svg = dir==='right' ? svgRight : svgLeft;
+  return h('div', {style:'width:100px;height:100px;display:grid;place-items:center'}, h('div',{html: svg}));
 }
 function currentTrial(){ return state.inPractice ? state.practice[state.idx] : state.block[state.idx]; }
 
@@ -305,7 +301,6 @@ function recordResponse(key){
     rt: Math.round(rt),
     correct: key ? (key===t.correct) : false,
     congruency: t.congruency,
-    faces: t.faces,          // kept for compatibility with your file
     target: t.images[2],
     pid: state.pid,
     flag,
@@ -335,7 +330,6 @@ function handleTooSlow(){
     rt: CONFIG.timeoutMs,
     correct: false,
     congruency: t && t.congruency,
-    faces: t && t.faces,
     target: t && t.images ? t.images[2] : null,
     pid: state.pid,
     flag: 'tooSlow',
@@ -426,22 +420,26 @@ async function boot(){
     if (!res.ok) throw new Error('CSV not found');
     const text = await res.text();
     const allTrials = parseCSV(text);
+    console.log('Loaded trials:', allTrials.length);
     if (!allTrials || allTrials.length === 0) throw new Error('No trials parsed');
-    // Use "type" column to split practice vs main
-    const prac = allTrials.filter(t => t.type === 'prac');
-    const exp  = allTrials.filter(t => t.type !== 'prac');
-    state.trials = allTrials;
-    state.practice = CONFIG.practiceTrials ? prac.slice(0, CONFIG.practiceTrials) : prac;
-    state.block = exp;
 
-    const imgs = allTrials.flatMap(t => t.images);
-    await preload(imgs);
+    // Split by type; fallback if no practice rows
+    const prac = allTrials.filter(t => (t.type||'').toLowerCase().startsWith('p'));
+    const exp  = allTrials.filter(t => !(t.type||'').toLowerCase().startsWith('p'));
+    state.trials = allTrials;
+
+    if (prac.length === 0){
+      state.practice = CONFIG.practiceTrials ? allTrials.slice(0, CONFIG.practiceTrials) : [];
+      state.block    = CONFIG.practiceTrials ? allTrials.slice(CONFIG.practiceTrials) : allTrials;
+    } else {
+      state.practice = CONFIG.practiceTrials ? prac.slice(0, CONFIG.practiceTrials) : prac;
+      state.block    = exp;
+    }
   } catch (err) {
-    console.warn('CSV/preload issue, using tiny demo set. Details:', (err && err.message) ? err.message : err);
-    // fallback demo uses images still, but your arrow CSV should override this
+    console.warn('CSV issue, using tiny token demo. Details:', (err && err.message) ? err.message : err);
     state.trials = [
-      {images:['/arrows/left.png','/arrows/left.png','/arrows/left.png','/arrows/left.png','/arrows/left.png'], correct:'Q', congruency:'congruent', faces:'left', type:'prac'},
-      {images:['/arrows/left.png','/arrows/left.png','/arrows/right.png','/arrows/left.png','/arrows/left.png'], correct:'P', congruency:'incongruent', faces:'right', type:'exp'}
+      {images:['L','L','L','L','L'], correct:'Q', congruency:'congruent', type:'prac'},
+      {images:['L','L','R','L','L'], correct:'P', congruency:'incongruent', type:'exp'}
     ];
     state.practice = state.trials.slice(0,1);
     state.block = state.trials.slice(1);
