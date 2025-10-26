@@ -373,7 +373,7 @@ function sendRGDoneOnce(payload) {
   if (__RG_DONE_SENT__) return;
   __RG_DONE_SENT__ = true;
   try {
-    window.parent.postMessage({ type: 'RG_DONE', payload }, '*');
+    window.parent.postMessage({ type: 'RG_DONE_Arrows', payload }, '*');
     console.log('postMessage sent:', payload);
   } catch (e) {
     console.error('postMessage failed:', e);
