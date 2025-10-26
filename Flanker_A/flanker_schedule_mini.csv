@@ -1,0 +1,12 @@
+trials,target,flanker,type,correct,congruency
+1,>,>,prac,p,c
+2,<,<,prac,q,c
+3,>,<,prac,p,i
+4,>,>,prac,p,c
+5,<,>,prac,q,i
+6,>,<,prac,p,i
+7,<,<,prac,q,c
+8,<,>,prac,q,i
+1,>,>,exp,p,c
+2,>,<,exp,p,i
+3,<,<,exp,q,c
