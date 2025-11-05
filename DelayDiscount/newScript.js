@@ -1,5 +1,6 @@
-// Family Decision Game — Qualtrics-integrated (no survey popups, no REDCap)
+// Inheritance Decision Game — Qualtrics-integrated (two-block version)
 
+// ---------------- STATE ----------------
 let trials = [];
 let practiceTrials = [];
 let mainTrials = [];
@@ -12,6 +13,10 @@ let trialTimeout;
 let inPractice = true;
 let popupActive = true;
 let trialActive = false;
+
+let blockIndex = 0; // start with self
+const BLOCK_SELF = 0;
+const BLOCK_PARTNER = 1;
 
 // --- Input mode detection (robust in iframes) ---
 const isTouch =
@@ -31,18 +36,31 @@ const optionB = document.getElementById("optionB");
 const statusText = document.getElementById("status");
 const orLabel = document.getElementById("orLabel");
 
-// --- intro (no PID prompt; no questionnaires) ---
-const introMessages = [
-  "Welcome to the Household Decision Game!",
-  "Imagine you and your partner are planning for big life goals like making a down payment on a home, where amounts can reach tens of thousands and the timeline can span years.",
-  "You will now be asked to choose between receiving a smaller amount now and a larger amount after a longer delay, much like deciding between keeping cash on hand or letting it grow for long-term savings.",
-  "IMPORTANT: Please make decisions for your PARTNER.",
+// --- intros ---
+// Kept your tone, added minimal scenario framing per block
+const introSelf = [
+  "Welcome to the Inheritance Decision Game!",
+  "Scenario: You have been offered an inheritance. You can take a smaller amount right now, or let a financial advisor invest it and receive a larger amount later.",
+  "In this first block, please make decisions for YOURSELF.",
   isMobile
-    ? "You must respond within 20 seconds on each trial. On a mobile device, tap the option you prefer. Please choose as quickly and as accurately as possible."
-    : "You must respond within 20 seconds on each trial. On a computer, press the A key for LEFT and the L key for RIGHT. Please choose as quickly and as accurately as possible.",
+    ? "You must respond within 20 seconds on each trial. On a mobile device, tap the option you prefer. Choose as quickly and accurately as possible."
+    : "You must respond within 20 seconds on each trial. On a computer, press A for LEFT and L for RIGHT. Choose as quickly and accurately as possible.",
   "Press Start to complete a short practice before the main task."
 ];
+
+const introPartner = [
+  "Next: Partner Scenario",
+  "Imagine you live with an imaginary domestic partner. They have received an inheritance and are deciding whether to take a smaller amount now or let a financial advisor invest it for a larger amount later.",
+  "You are unsure about the relationship and have no solid, shared future plans with this partner. Please advise as best you can given this uncertainty.",
+  "In this block, please make decisions for YOUR PARTNER.",
+  isMobile
+    ? "You must respond within 20 seconds on each trial. On a mobile device, tap the option you prefer. Choose as quickly and accurately as possible."
+    : "You must respond within 20 seconds on each trial. On a computer, press A for LEFT and L for RIGHT. Choose as quickly and accurately as possible.",
+  "Press Start when you are ready to begin."
+];
+
 let introStep = 0;
+let currentIntro = introSelf;
 
 // --- util ---
 function getParam(name) {
@@ -60,9 +78,13 @@ document.addEventListener("DOMContentLoaded", function () {
   const pidFromURL = getParam("pid") || getParam("PROLIFIC_PID") || getParam("workerId");
   participantID = (pidFromURL || "").trim();
 
-  // Intro
-  document.getElementById("introText").textContent = introMessages[introStep];
-  document.getElementById("startButton").addEventListener("click", handleIntroSteps);
+  // Intro (SELF block first)
+  setInstructionOverlayVisible(true);
+  introStep = 0;
+  currentIntro = introSelf;
+  document.getElementById("introText").textContent = currentIntro[introStep];
+  document.getElementById("startButton").textContent = "Next";
+  document.getElementById("startButton").onclick = handleIntroSteps;
 
   // Space-to-continue only when a popup/overlay is visible
   document.addEventListener("keydown", (e) => {
@@ -106,8 +128,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
       shuffleArray(realTrials);
 
+      // same as before; re-used in both blocks (reshuffled each time)
       mainTrials = realTrials.slice(0, 65).concat(attentionTrials); // change to 108 for full
-      
       shuffleArray(mainTrials);
 
       trials = practiceTrials; // start with practice
@@ -132,22 +154,32 @@ function adjustForMobile() {
   }
 }
 
-/** ---------------- INTRO STEPS (no PID prompt) ---------------- */
+function setInstructionOverlayVisible(visible) {
+  const instr = document.getElementById("instructionOverlay");
+  if (!instr) return;
+  instr.style.display = visible ? "flex" : "none";
+  popupActive = visible;
+}
+
+/** ---------------- INTRO STEPS ---------------- */
 function handleIntroSteps() {
-  if (introStep < introMessages.length - 1) {
+  if (introStep < currentIntro.length - 1) {
     introStep++;
-    document.getElementById("introText").textContent = introMessages[introStep];
-    if (introStep === introMessages.length - 1) {
+    document.getElementById("introText").textContent = currentIntro[introStep];
+    if (introStep === currentIntro.length - 1) {
       document.getElementById("startButton").textContent = "Start";
     }
     return;
   }
-  // Hide instructions and begin practice
-  const instr = document.getElementById("instructionOverlay");
-  if (instr) instr.style.display = "none";
-  popupActive = false;
+  // Hide instructions and begin practice (for Block 1 only)
+  setInstructionOverlayVisible(false);
   startPractice();
 }
+
+// helper: block label + verb
+function targetNoun() { return blockIndex === BLOCK_SELF ? "You" : "Your partner"; }
+function receiveVerb() { return blockIndex === BLOCK_SELF ? "receive" : "receives"; }
+function decisionTargetTag() { return blockIndex === BLOCK_SELF ? "self" : "partner"; }
 
 /* ------------------------ TRIAL FLOW ------------------------ */
 
@@ -160,7 +192,9 @@ function startPractice() {
 
 function startMainGame() {
   inPractice = false;
-  trials = mainTrials;
+  // reshuffle full main trials fresh for each block
+  trials = [...mainTrials];
+  shuffleArray(trials);
   currentTrialIndex = 0;
   showFixationCross();
 }
@@ -201,10 +235,13 @@ function startTrial() {
   if (currentTrialIndex >= trials.length) {
     if (inPractice) {
       popupActive = true;
-      showPopup("Practice complete! Press SPACE or tap Continue to start the real game. You will now make 33 decisions for your household.\nRemember: Please make decisions for your PARTNER.", () => {
-        popupActive = false;
-        startMainGame();
-      });
+      showPopup(
+        "Practice complete! Press SPACE or tap Continue to start the real game.\nYou will now make decisions for YOURSELF.",
+        () => {
+          popupActive = false;
+          startMainGame();
+        }
+      );
       return;
     }
     if (requeueTrials.length > 0) {
@@ -215,36 +252,67 @@ function startTrial() {
       showFixationCross();
       return;
     } else {
+      // If we just finished Block 1 main trials, prepare Block 2 intro
+      if (blockIndex === BLOCK_SELF) {
+        blockIndex = BLOCK_PARTNER;
+        // show intro for partner, then start partner block
+        setInstructionOverlayVisible(true);
+        introStep = 0;
+        currentIntro = introPartner;
+        document.getElementById("introText").textContent = currentIntro[introStep];
+        document.getElementById("startButton").textContent = "Next";
+        document.getElementById("startButton").onclick = function partnerIntroStepper() {
+          if (introStep < currentIntro.length - 1) {
+            introStep++;
+            document.getElementById("introText").textContent = currentIntro[introStep];
+            if (introStep === currentIntro.length - 1) {
+              document.getElementById("startButton").textContent = "Start";
+            }
+            return;
+          }
+          // start partner block main trials
+          setInstructionOverlayVisible(false);
+          inPractice = false; // no practice again
+          requeueTrials = [];
+          currentTrialIndex = 0;
+          trials = [...mainTrials];
+          shuffleArray(trials);
+          showFixationCross();
+        };
+        return;
+      }
+      // else finished Block 2 → end
       endGame();
       return;
     }
   }
 
   const trial = trials[currentTrialIndex];
+
   const immText = trial.ImmediateDelay == 0 ? "right now" : `in ${trial.ImmediateDelay} ${trial.ImmediateDelay === 1 ? "day" : "days"}`;
   const delText = (() => {
     const y = Number(trial?.DelayedDelay ?? 0);
     const m = Number(trial?.DelayedDelay_Month ?? 0);
     const yrs = Math.round((y + m / 12) * 10) / 10; // one decimal
-
     if (yrs === 0) return "right now";
     const label = yrs === 1 ? "year" : "years";
     return `in ${yrs.toFixed(1)} ${label}`;
   })();
-  // const delText = (()=>{const y=Number(trial?.DelayedDelay ?? 0), m=Number(trial?.DelayedDelay_Month ?? trial?.DelayedDelay_Month ?? 0); return (y===0&&m===0)?"right now":`in ${[y>0?`${y} ${y===1?"year":"years"}`:null, m>0?`${m} ${m===1?"month":"months"}`:null].filter(Boolean).join(" and ")}`;})();
-  // const delText = trial.DelayedDelay == 0 ? "right now" : `in ${trial.DelayedDelay} ${trial.DelayedDelay === 1 ? "year" : "years"}`;
 
   optionA.style.border = "2px solid #000";
   optionB.style.border = "2px solid #000";
 
+  // minimal change: swap only the subject line based on block
+  const subj = `${targetNoun()} ${receiveVerb()}`;
+
   if (trial.NowOnLeft == "1") {
-    optionA.textContent = `Your partner receives $${Number(trial.ImmediateAmount).toLocaleString('en-US')} ${immText}`;
-    optionB.textContent = `Your partner receives $${Number(trial.DelayedAmount).toLocaleString('en-US')} ${delText}`;
+    optionA.textContent = `${subj} $${Number(trial.ImmediateAmount).toLocaleString('en-US')} ${immText}`;
+    optionB.textContent = `${subj} $${Number(trial.DelayedAmount).toLocaleString('en-US')} ${delText}`;
     optionA.dataset.choice = "A";
     optionB.dataset.choice = "B";
   } else {
-    optionA.textContent = `Your partner receives $${Number(trial.DelayedAmount).toLocaleString('en-US')} ${delText}`;
-    optionB.textContent = `Your partner receives $${Number(trial.ImmediateAmount).toLocaleString('en-US')} ${immText}`;
+    optionA.textContent = `${subj} $${Number(trial.DelayedAmount).toLocaleString('en-US')} ${delText}`;
+    optionB.textContent = `${subj} $${Number(trial.ImmediateAmount).toLocaleString('en-US')} ${immText}`;
     optionA.dataset.choice = "B";
     optionB.dataset.choice = "A";
   }
@@ -295,6 +363,7 @@ function handleChoice(choice) {
       rt,
       lapse: false,
       false_start: false,
+      decisionTarget: decisionTargetTag(), // NEW: "self" or "partner"
       ImmediateAmount: trial.ImmediateAmount,
       ImmediateDelay: trial.ImmediateDelay,
       DelayedAmount: trial.DelayedAmount,
@@ -376,9 +445,9 @@ function endGame() {
   const nAttentionPassed = results.filter(r => String(r.AttentionCheck) === "1" && r.PassedAttention === 1).length;
 
   const payload = {
-    task: "family_delay_discounting",
+    task: "family_delay_discounting_two_blocks",
     participantID,
-    results, // full per-trial rows
+    results, // full per-trial rows (now includes decisionTarget)
     summary: {
       nTrials, nLapses, nAttention, nAttentionPassed
     }
