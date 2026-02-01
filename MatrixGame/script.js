@@ -679,26 +679,28 @@ function decideComputerMove(quadruplet, player2Type) {
 }
 
 function showNextTrialButton() {
-  hideButtons();
+  const controls = document.getElementById("controls");
+  controls.classList.remove("controls-hidden");
+  controls.style.visibility = "visible";
+  controls.style.pointerEvents = "auto";
+
+  // Clear controls and add the Next Trial button
+  controls.innerHTML = "";
 
   const nextButton = document.createElement("button");
   nextButton.textContent = "Next Trial";
   nextButton.id = "nextTrialButton";
+  controls.appendChild(nextButton);
 
   nextButton.addEventListener("click", () => {
-    const controls = document.getElementById("controls");
     controls.innerHTML = '<button id="moveButton">Move</button><button id="stayButton">Stay</button>';
 
-    // IMPORTANT: use setStatus("") to preserve height and prevent jump
     setStatus("");
-
-    nextButton.remove();
     currentGameIndex++;
 
     if (currentGameIndex < gameData.length) {
       setupGame();
     } else {
-      // End: show user instruction input overlay
       document.getElementById("gameBoard").style.display = "none";
       document.getElementById("controls").style.display = "none";
       setStatus("");
@@ -718,11 +720,6 @@ function showNextTrialButton() {
       });
     }
   });
-
-  const controls = document.getElementById("controls");
-  controls.innerHTML = "";
-  controls.appendChild(nextButton);
-  controls.style.display = "block";
 }
 
 function hideButtons() {
