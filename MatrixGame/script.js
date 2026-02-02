@@ -167,13 +167,13 @@ function resetForNewSection(sectionName) {
  * LLM instructions
  ***********************/
 function sampleIntensities() {
-  // 1 = none, 10 = moderately present (per your spec)
+  // 1 = very false, 5 = absent, 9 = very true
   return {
-    loaded_language: randInt(1, 10),
-    absolutist: randInt(1, 10),
-    threat_panic: randInt(1, 10),
-    us_vs_them: randInt(1, 10),
-    engagement_bait: randInt(1, 10)
+    loaded_language: randInt(1, 9),
+    absolutist: randInt(1, 9),
+    threat_panic: randInt(1, 9),
+    us_vs_them: randInt(1, 9),
+    engagement_bait: randInt(1, 9)
   };
 }
 
