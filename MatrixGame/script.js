@@ -45,32 +45,41 @@ function fallbackInstructionText(phase) {
   );
 }
 
+function zeroIntensities() {
+  return {
+    loaded_language: 0,
+    absolutist: 0,
+    threat_panic: 0,
+    us_vs_them: 0,
+    engagement_bait: 0
+  };
+}
+
+function fallbackInstructionText() {
+  return (
+    "Welcome to the Matrix Game!\n\n" +
+    "Your goal is to maximize the number of points you earn over the course of the following trials.\n\n" +
+    "Your payoff at the end of each round will be the left number shown in the cell that the game ends on.\n" +
+    "You will begin in cell A and can decide to Stay (end the game in the current cell) or Move (to the next cell).\n\n" +
+    "You will be playing against another player who receives the right number as payoff and is also trying to maximize their total points over the rounds."
+  );
+}
+
 async function preloadLLMInstructions() {
   const phases = ["Test1", "Test2"];
 
   const reqs = phases.map(async (phase) => {
+    // sample intensities up front so (a) LLM sees them and (b) fallback logs them as 0s
+    const sampled = sampleIntensities();
+
     try {
-      const intensities = sampleIntensities();
+      // DIRECT OpenAI call (browser -> api.openai.com)
+      const obj = await fetchLLMInstructionsDirect(phase, sampled);
 
-      const res = await fetch("/api/llm-instructions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phase, intensities })
-      });
-
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-      const obj = await res.json();
-
-      // Minimal validation so any weird output triggers fallback
-      if (!obj || typeof obj.text !== "string" || !obj.text.trim()) {
-        throw new Error("Bad LLM payload: missing text");
-      }
-
-      // Cache
+      // Cache the successful result
       llmCache[phase] = obj;
 
-      // Save exactly what was generated + requested intensities into outbound data
+      // Save into outbound data for REDCap
       player1Data.push({
         meta_type: "llm_instructions",
         phase,
@@ -83,16 +92,16 @@ async function preloadLLMInstructions() {
       console.warn(`LLM generation failed for ${phase}. Using fallback.`, err);
 
       const fallback = {
-        text: fallbackInstructionText(phase),
-        intensities: zeroIntensities(),
         phase,
-        model: "fallback"
+        model: "fallback",
+        text: fallbackInstructionText(),
+        intensities: zeroIntensities()
       };
 
-      // Cache fallback so game flow continues
+      // Cache fallback so later screens always have something
       llmCache[phase] = fallback;
 
-      // Log failure + fallback details for REDCap
+      // Log fallback + error so you can diagnose later
       player1Data.push({
         meta_type: "llm_instructions_fallback",
         phase,
