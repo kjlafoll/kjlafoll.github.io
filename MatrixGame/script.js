@@ -7,6 +7,113 @@ let totalPoints = 0;
 let selectedQuestions = []; // array of { inventory, question }
 let ToMResponses = [];      // array of { inventory, question, answer }
 
+let llmCache = { Test1: null, Test2: null };
+let llmPreloadPromise = null;
+let trainingEndIndex = 0;
+let test1EndIndex = 0;
+
+function sampleIntensities() {
+  // 1 = none, 10 = moderately present (per your spec)
+  return {
+    loaded_language: randInt(1, 10),
+    absolutist: randInt(1, 10),
+    threat_panic: randInt(1, 10),
+    us_vs_them: randInt(1, 10),
+    engagement_bait: randInt(1, 10),
+  };
+}
+
+function zeroIntensities() {
+  return {
+    loaded_language: 0,
+    absolutist: 0,
+    threat_panic: 0,
+    us_vs_them: 0,
+    engagement_bait: 0
+  };
+}
+
+// If you want the fallback text to match your instruction screenshot copy:
+function fallbackInstructionText(phase) {
+  // phase is "Test1" or "Test2" (or any string you pass)
+  return (
+    `Welcome to the Matrix Game!\n\n` +
+    `Your goal is to maximize the number of points you earn over the course of the following trials.\n\n` +
+    `Your payoff at the end of each round will be the left number shown in the cell that the game ends on.\n` +
+    `You will begin in cell A and can decide to Stay (end the game in the current cell) or Move (to the next cell).\n\n` +
+    `You will be playing against another player who receives the right number as payoff and is also trying to maximize their total points.`
+  );
+}
+
+async function preloadLLMInstructions() {
+  const phases = ["Test1", "Test2"];
+
+  const reqs = phases.map(async (phase) => {
+    try {
+      const intensities = sampleIntensities();
+
+      const res = await fetch("/api/llm-instructions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phase, intensities })
+      });
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      const obj = await res.json();
+
+      // Minimal validation so any weird output triggers fallback
+      if (!obj || typeof obj.text !== "string" || !obj.text.trim()) {
+        throw new Error("Bad LLM payload: missing text");
+      }
+
+      // Cache
+      llmCache[phase] = obj;
+
+      // Save exactly what was generated + requested intensities into outbound data
+      player1Data.push({
+        meta_type: "llm_instructions",
+        phase,
+        ...obj
+      });
+
+      return obj;
+
+    } catch (err) {
+      console.warn(`LLM generation failed for ${phase}. Using fallback.`, err);
+
+      const fallback = {
+        text: fallbackInstructionText(phase),
+        intensities: zeroIntensities(),
+        phase,
+        model: "fallback"
+      };
+
+      // Cache fallback so game flow continues
+      llmCache[phase] = fallback;
+
+      // Log failure + fallback details for REDCap
+      player1Data.push({
+        meta_type: "llm_instructions_fallback",
+        phase,
+        error: String(err),
+        ...fallback
+      });
+
+      return fallback;
+    }
+  });
+
+  await Promise.all(reqs);
+}
+
+async function getLLMForPhase(phase) {
+  if (llmCache[phase]) return llmCache[phase];
+  // if not ready, await preload
+  if (llmPreloadPromise) await llmPreloadPromise;
+  return llmCache[phase] || { text: "Loading instructions…", intensities: null };
+}
+
 // ---------- CONFIG ----------
 const filePath = './HeddenDataOld.json';
 const csvFilePath = 'test_battery2.csv';
@@ -134,15 +241,6 @@ function getCellCenterViewport(cellEl) {
   return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
 }
 
-/**
- * pointsAdded: integer payoff (e.g., 1-4)
- * Emits 5 * pointsAdded dollar signs (5,10,15,20)
- */
-function getCellCenterViewport(cellEl) {
-  const r = cellEl.getBoundingClientRect();
-  return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
-}
-
 function emitDollarVFX(cellId, pointsAdded) {
   if (!pointsAdded || pointsAdded <= 0) return;
 
@@ -249,6 +347,81 @@ function emitDollarVFX(cellId, pointsAdded) {
   requestAnimationFrame(step);
 }
 
+function isTrialRow(r) {
+  return r && Object.prototype.hasOwnProperty.call(r, "trial_index");
+}
+
+function numTrialRows() {
+  return player1Data.reduce((acc, r) => acc + (isTrialRow(r) ? 1 : 0), 0);
+}
+
+function randInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function showOpponentIntroSlide(opponentNum) {
+  return new Promise(resolve => {
+    const overlay = document.getElementById("trialInstructionOverlay");
+    const textEl = document.getElementById("trialInstructionText");
+    const btn = document.getElementById("continueButton");
+
+    textEl.textContent = `You will now play against a real player (Opponent ${opponentNum}).`;
+    overlay.style.display = "flex";
+
+    const handler = () => {
+      overlay.style.display = "none";
+      btn.removeEventListener("click", handler);
+      resolve();
+    };
+    btn.addEventListener("click", handler);
+  });
+}
+
+function showMatchmakingVisual() {
+  return new Promise(resolve => {
+    const overlay = document.getElementById("trialInstructionOverlay");
+    const textEl = document.getElementById("trialInstructionText");
+    const btn = document.getElementById("continueButton");
+
+    // hide button during matchmaking; keep layout stable
+    btn.style.display = "none";
+
+    overlay.style.display = "flex";
+    textEl.innerHTML = `
+      <div style="font-size:18px; font-weight:600; margin-bottom:12px;">Matchmaking…</div>
+      <div id="mmDots" style="font-size:22px; letter-spacing:3px;">● ○ ○</div>
+      <div style="margin-top:12px; font-size:14px; opacity:0.9;">Searching for competitor</div>
+    `;
+
+    // simple dot animation
+    const dotsEl = document.getElementById("mmDots");
+    let k = 0;
+    const frames = ["● ○ ○", "○ ● ○", "○ ○ ●"];
+    const anim = setInterval(() => {
+      if (!dotsEl) return;
+      dotsEl.textContent = frames[k % frames.length];
+      k++;
+    }, 350);
+
+    const ms = randInt(5000, 10000);
+
+    setTimeout(() => {
+      clearInterval(anim);
+      textEl.innerHTML = `
+        <div style="font-size:18px; font-weight:700; margin-bottom:10px;">Competitor found</div>
+      `;
+
+      // wait 3 seconds, then advance automatically
+      setTimeout(() => {
+        overlay.style.display = "none";
+        btn.style.display = ""; // restore
+        resolve();
+      }, 3000);
+
+    }, ms);
+  });
+}
+
 // ---------- Data loading (promises we can await) ----------
 const loadGameDataPromise = fetch(filePath)
   .then(response => {
@@ -278,6 +451,9 @@ const loadGameDataPromise = fetch(filePath)
     const test2 = normalized
       .filter(g => String(g.Round).trim() === "Test2" && !isCatch(g))
       .sort((a, b) => a.Trial - b.Trial);
+
+    trainingEndIndex = training.length;
+    test1EndIndex = training.length + test1.length;
 
     gameData = [...training, ...test1, ...test2];
 
@@ -349,26 +525,55 @@ function askOneToMQuestion(qObj) {
     const btn = document.getElementById("continueButton2");
     const input = document.getElementById("userInstructionInput2");
 
+    // (optional) inline error message element
+    let err = document.getElementById("tomError");
+    if (!err) {
+      err = document.createElement("div");
+      err.id = "tomError";
+      err.style.color = "red";
+      err.style.marginTop = "10px";
+      err.style.fontSize = "14px";
+      // put it under the textarea if possible
+      input.parentElement.appendChild(err);
+    }
+
     const stripped = stripToMPreamble(qObj.question);
     const cleaned = fixToMPunctuation(stripped);
-
     textEl.textContent = cleaned;
 
-    input.value = '';
+    input.value = "";
+    err.textContent = "";
     overlay.style.display = "flex";
+
+    // disable continue until something typed
+    btn.disabled = true;
+    const onInput = () => {
+      const ok = input.value.trim().length > 0;
+      btn.disabled = !ok;
+      if (ok) err.textContent = "";
+    };
+    input.addEventListener("input", onInput);
 
     const handler = () => {
       const answer = input.value.trim();
+      if (!answer) {
+        err.textContent = "Please type at least something before continuing.";
+        btn.disabled = true;
+        return;
+      }
+
       ToMResponses.push({
         inventory: qObj.inventory,
         question: cleaned,
-        answer: answer
+        answer
       });
 
       overlay.style.display = "none";
       btn.removeEventListener("click", handler);
+      input.removeEventListener("input", onInput);
       resolve();
     };
+
     btn.addEventListener("click", handler);
   });
 }
@@ -380,6 +585,7 @@ async function runFrontloadedToMBattery() {
 
   // Save ToM battery as a single “header” entry in player1Data so it gets exported
   player1Data.push({
+    meta_type: "tom",
     tom_questions: selectedQuestions.map(x => ({
       inventory: x.inventory,
       question: fixToMPunctuation(stripToMPreamble(x.question))
@@ -417,14 +623,14 @@ function showInstructionImageOverlay() {
   });
 }
 
-// Placeholder LLM slide, uses trialInstructionOverlay + continueButton
-function showLLMInstructionsSlide() {
+// LLM slide
+function showLLMInstructionsSlide(instructionsText, metaObj) {
   return new Promise(resolve => {
     const overlay = document.getElementById("trialInstructionOverlay");
     const textEl = document.getElementById("trialInstructionText");
     const btn = document.getElementById("continueButton");
 
-    textEl.textContent = "LLM Instructions Go Here";
+    textEl.textContent = instructionsText || "Loading instructions…";
     overlay.style.display = "flex";
 
     const handler = () => {
@@ -458,6 +664,114 @@ function showToMIntroSlide() {
   });
 }
 
+// ======== OPENAI (CLIENT-SIDE) ========
+// NOTE: This exposes your key publicly. OpenAI recommends not doing this. :contentReference[oaicite:2]{index=2}
+const OPENAI_API_KEY = "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"; // e.g., "sk-..."
+
+function buildPrompt({ phase, intensities }) {
+  return `
+You are writing short on-screen instructions for a participant in a simple decision-making matrix game.
+They will be told they are playing against a "real competitor" (${phase} phase).
+
+Write instructions similar in structure and clarity to:
+- goal: maximize points
+- payoff explanation (left number is their payoff)
+- start in cell A; choose Stay or Move
+- opponent gets right number and is also trying to maximize points
+
+But vary phrasing to incorporate these rhetorical elements at the specified intensity levels
+(1 = absent, 10 = moderately present; do NOT go extreme; do NOT use slurs; do NOT target any protected group; avoid threats of real-world harm):
+
+Loaded Language: ${intensities.loaded_language}/10
+Absolutist: ${intensities.absolutist}/10
+Threat/Panic framing: ${intensities.threat_panic}/10
+Us-vs-Them framing: ${intensities.us_vs_them}/10
+Engagement Bait: ${intensities.engagement_bait}/10
+
+Return ONLY valid JSON matching the schema.
+`.trim();
+}
+
+// robust extraction for REST responses
+function extractResponseText(respJson) {
+  if (respJson?.output_text) return respJson.output_text;
+
+  const out = respJson?.output;
+  if (!Array.isArray(out)) return null;
+
+  for (const item of out) {
+    const content = item?.content;
+    if (!Array.isArray(content)) continue;
+    for (const c of content) {
+      if (typeof c?.text === "string") return c.text;
+    }
+  }
+  return null;
+}
+
+async function fetchLLMInstructionsDirect(phase, intensities) {
+  const schema = {
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      text: { type: "string" },
+      intensities: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          loaded_language: { type: "integer" },
+          absolutist: { type: "integer" },
+          threat_panic: { type: "integer" },
+          us_vs_them: { type: "integer" },
+          engagement_bait: { type: "integer" }
+        },
+        required: ["loaded_language", "absolutist", "threat_panic", "us_vs_them", "engagement_bait"]
+      },
+      phase: { type: "string" },
+      model: { type: "string" }
+    },
+    required: ["text", "intensities", "phase", "model"]
+  };
+
+  const payload = {
+    model: "gpt-5.2",
+    input: [
+      { role: "system", content: "You write concise game instructions for behavioral experiments." },
+      { role: "user", content: buildPrompt({ phase, intensities }) }
+    ],
+    text: {
+      format: { type: "json_schema", strict: true, schema }
+    }
+  };
+
+  const resp = await fetch("https://api.openai.com/v1/responses", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${OPENAI_API_KEY}`
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!resp.ok) {
+    const msg = await resp.text().catch(() => "");
+    throw new Error(`OpenAI error ${resp.status}: ${msg}`);
+  }
+
+  const json = await resp.json();
+  const txt = extractResponseText(json);
+  if (!txt) throw new Error("No text found in OpenAI response.");
+
+  const obj = JSON.parse(txt);
+
+  // force echo exact intensities + phase (for your logging + REDCap)
+  obj.intensities = intensities;
+  obj.phase = phase;
+  obj.model = "gpt-5.2";
+
+  return obj;
+}
+
 // ---------- Start flow ----------
 document.addEventListener("DOMContentLoaded", async function () {
   // Clear board initially
@@ -468,8 +782,8 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   // Ensure both JSON + ToM CSV are loaded before proceeding
   await Promise.all([loadGameDataPromise, loadToMPromise]);
+  llmPreloadPromise = preloadLLMInstructions();
 
-  // Order requested:
   // 1) Welcome slide
   await showWelcomeSlide();
 
@@ -479,11 +793,8 @@ document.addEventListener("DOMContentLoaded", async function () {
   // 3) ToM battery (5 questions)
   await runFrontloadedToMBattery();
 
-  // 3) Instruction image overlay
+  // 4) Instruction image overlay
   await showInstructionImageOverlay();
-
-  // 4) LLM placeholder slide
-  await showLLMInstructionsSlide();
 
   // 5) Start trials
   hideButtons();
@@ -553,7 +864,7 @@ async function setupGame() {
     let decisiontime = new Date().getTime() - startTime;
 
     // red cap data to save
-    if (player1Data.length < (currentGameIndex + 1 + 1)) {
+    if (numTrialRows() < (currentGameIndex + 1)) {
       const quadruplet = game.Quadruplet.split(" ").map(Number);
 
       let strategy = "trivial";
@@ -631,7 +942,7 @@ async function setupGame() {
     let decisiontime = new Date().getTime() - startTime;
 
     // red cap data to save
-    if (player1Data.length < (currentGameIndex + 1 + 1)) {
+    if (numTrialRows() < (currentGameIndex + 1)) {
       const quadruplet = game.Quadruplet.split(" ").map(Number);
 
       let strategy = "trivial";
@@ -692,11 +1003,28 @@ function showNextTrialButton() {
   nextButton.id = "nextTrialButton";
   controls.appendChild(nextButton);
 
-  nextButton.addEventListener("click", () => {
+  nextButton.addEventListener("click", async () => {
+    const controls = document.getElementById("controls");
     controls.innerHTML = '<button id="moveButton">Move</button><button id="stayButton">Stay</button>';
 
     setStatus("");
     currentGameIndex++;
+
+    if (currentGameIndex === trainingEndIndex) {
+      await showOpponentIntroSlide(1);
+      await showMatchmakingVisual();
+
+      const llm1 = await getLLMForPhase("Test1"); // defined below
+      await showLLMInstructionsSlide(llm1.text, llm1);
+    }
+
+    if (currentGameIndex === test1EndIndex) {
+      await showOpponentIntroSlide(2);
+      await showMatchmakingVisual();
+
+      const llm2 = await getLLMForPhase("Test2");
+      await showLLMInstructionsSlide(llm2.text, llm2);
+    }
 
     if (currentGameIndex < gameData.length) {
       setupGame();
