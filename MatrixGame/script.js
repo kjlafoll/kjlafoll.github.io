@@ -13,6 +13,85 @@ let llmCache = { Test1: null, Test2: null };
 let llmPreloadPromise = null;
 let trainingEndIndex = 0;
 let test1EndIndex = 0;
+let sectionInfo = {
+  Training: { start: 0, len: 0 },
+  Test1: { start: 0, len: 0 },
+  Test2: { start: 0, len: 0 }
+};
+
+let player1Username = "";  // participant-chosen username
+let opponentUsernames = { Test1: "", Test2: "" };
+
+function sanitizeUsername(raw) {
+  if (!raw) return "";
+  // keep it simple & safe for UI/logs
+  return String(raw)
+    .trim()
+    .slice(0, 24)
+    .replace(/[^\w\- ]/g, ""); // allow letters/numbers/_ plus - and space
+}
+
+function getSectionForIndex(globalIndex) {
+  if (globalIndex < sectionInfo.Test1.start) return { name: "Training", ...sectionInfo.Training };
+  if (globalIndex < sectionInfo.Test2.start) return { name: "Test1", ...sectionInfo.Test1 };
+  return { name: "Test2", ...sectionInfo.Test2 };
+}
+
+function showUsernameEntrySlide() {
+  return new Promise(resolve => {
+    let overlay = document.getElementById("usernameOverlay");
+    if (!overlay) {
+      overlay = document.createElement("div");
+      overlay.id = "usernameOverlay";
+      overlay.style.position = "fixed";
+      overlay.style.inset = "0";
+      overlay.style.background = "rgba(0,0,0,0.85)";
+      overlay.style.display = "flex";
+      overlay.style.alignItems = "center";
+      overlay.style.justifyContent = "center";
+      overlay.style.zIndex = "1000000";
+      overlay.innerHTML = `
+        <div style="width:min(560px, 92vw); background:#111; color:#fff; padding:22px; border-radius:14px; box-shadow:0 10px 40px rgba(0,0,0,0.5);">
+          <div style="font-size:18px; font-weight:800; margin-bottom:10px;">Choose a username</div>
+          <div style="font-size:14px; opacity:0.9; margin-bottom:12px;">
+            This will be shown as <b>Player 1</b>. You can leave it blank.
+          </div>
+          <input id="usernameInput" type="text" placeholder="e.g., BlueTiger_7"
+                 style="width:100%; padding:10px 12px; border-radius:10px; border:1px solid #333; background:#0b0b0b; color:#fff; font-size:15px;" />
+          <div style="display:flex; gap:10px; margin-top:14px; justify-content:flex-end;">
+            <button id="usernameContinue" style="padding:10px 14px; border-radius:10px; border:none; background:#2d6cdf; color:#fff; font-weight:700; cursor:pointer;">
+              Continue
+            </button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+    }
+
+    overlay.style.display = "flex";
+    const input = document.getElementById("usernameInput");
+    const btn = document.getElementById("usernameContinue");
+
+    input.value = player1Username || "";
+
+    const handler = () => {
+      player1Username = sanitizeUsername(input.value);
+
+      // log it once
+      player1Data.push({
+        meta_type: "player1_username",
+        player1_username: player1Username
+      });
+
+      overlay.style.display = "none";
+      btn.removeEventListener("click", handler);
+      resolve();
+    };
+
+    btn.addEventListener("click", handler);
+    input.focus();
+  });
+}
 
 function sampleIntensities() {
   // 1 = none, 10 = moderately present (per your spec)
@@ -76,6 +155,7 @@ async function preloadLLMInstructions() {
         text: typeof obj?.text === "string" && obj.text.trim()
           ? obj.text
           : fallbackInstructionText(phase),
+        opponent_username: typeof obj?.opponent_username === "string" ? obj.opponent_username : "",
         intensities: obj?.intensities && typeof obj.intensities === "object"
           ? obj.intensities
           : zeroIntensities()
@@ -124,6 +204,7 @@ async function preloadLLMInstructions() {
   });
 
   await Promise.all(reqs);
+  logAllUsernamesSnapshot();
 }
 
 async function getLLMForPhase(phase) {
@@ -396,23 +477,21 @@ function showOpponentIntroSlide(opponentNum) {
   });
 }
 
-function showMatchmakingVisual() {
+function showMatchmakingVisual(opponentUsername = "") {
   return new Promise(resolve => {
     const overlay = document.getElementById("trialInstructionOverlay");
     const textEl = document.getElementById("trialInstructionText");
     const btn = document.getElementById("continueButton");
 
-    // hide button during matchmaking; keep layout stable
     btn.style.display = "none";
-
     overlay.style.display = "flex";
+
     textEl.innerHTML = `
       <div style="font-size:18px; font-weight:600; margin-bottom:12px;">Matchmaking…</div>
       <div id="mmDots" style="font-size:22px; letter-spacing:3px;">● ○ ○</div>
       <div style="margin-top:12px; font-size:14px; opacity:0.9;">Searching for competitor</div>
     `;
 
-    // simple dot animation
     const dotsEl = document.getElementById("mmDots");
     let k = 0;
     const frames = ["● ○ ○", "○ ● ○", "○ ○ ●"];
@@ -426,18 +505,32 @@ function showMatchmakingVisual() {
 
     setTimeout(() => {
       clearInterval(anim);
+
+      const nameLine = opponentUsername ? `<div style="font-size:16px; margin-top:6px; opacity:0.95;">Opponent: <b>${opponentUsername}</b></div>` : "";
+
       textEl.innerHTML = `
-        <div style="font-size:18px; font-weight:700; margin-bottom:10px;">Competitor found</div>
+        <div style="font-size:18px; font-weight:800; margin-bottom:6px;">Competitor found</div>
+        ${nameLine}
       `;
 
-      // wait 3 seconds, then advance automatically
       setTimeout(() => {
         overlay.style.display = "none";
-        btn.style.display = ""; // restore
+        btn.style.display = "";
         resolve();
       }, 3000);
 
     }, ms);
+  });
+}
+
+function resetForNewSection(sectionName) {
+  totalPoints = 0;
+  document.getElementById("totalPoints").textContent = totalPoints;
+
+  player1Data.push({
+    meta_type: "section_reset",
+    section: sectionName,
+    at_global_index: currentGameIndex
   });
 }
 
@@ -473,6 +566,9 @@ const loadGameDataPromise = fetch(filePath)
 
     trainingEndIndex = training.length;
     test1EndIndex = training.length + test1.length;
+    sectionInfo.Training = { start: 0, len: training.length };
+    sectionInfo.Test1 = { start: training.length, len: test1.length };
+    sectionInfo.Test2 = { start: training.length + test1.length, len: test2.length };
 
     gameData = [...training, ...test1, ...test2];
 
@@ -704,6 +800,8 @@ document.addEventListener("DOMContentLoaded", async function () {
   // 3) ToM battery (5 questions)
   await runFrontloadedToMBattery();
 
+  await showUsernameEntrySlide();
+
   // 4) Instruction image overlay
   await showInstructionImageOverlay();
 
@@ -723,12 +821,20 @@ async function setupGame() {
   }
 
   const game = gameData[currentGameIndex];
+  const sec = getSectionForIndex(currentGameIndex);
+  const sectionTrialNum = (currentGameIndex - sec.start) + 1;
 
   // Top corner updates
-  document.getElementById("trialType").textContent = game.Round;
+  if (sec.name === "Training") {
+    document.getElementById("trialType").textContent = "None (Training)";
+  } else {
+    // you should have these from earlier: opponentUsernames.Test1 / opponentUsernames.Test2
+    const opp = (opponentUsernames?.[sec.name] || "").trim();
+    document.getElementById("trialType").textContent = opp || sec.name; // fallback: "Test1"/"Test2"
+  }
 
   // Index-based progress since Trial numbers may not be contiguous after filtering
-  document.getElementById("trialNumber").textContent = `${currentGameIndex + 1} / ${gameData.length}`;
+  document.getElementById("trialNumber").textContent = `${sectionTrialNum} / ${sec.len}`;
 
   // Clear board and highlights
   document.querySelectorAll("#gameBoard span").forEach(span => span.textContent = "");
@@ -757,7 +863,8 @@ async function setupGame() {
   let currentCell = "A";
   highlightCell(currentCell);
 
-  setStatus(`Trial ${currentGameIndex + 1}: Player 1, make your move!`);
+  const p1Label = (player1Username && player1Username.trim()) ? player1Username.trim() : "Player 1";
+  setStatus(`${p1Label}, make your move!`);
 
   // Remove & replace buttons to fix duplicate listeners
   const moveButton = document.getElementById("moveButton");
@@ -842,7 +949,7 @@ async function setupGame() {
         } else {
           currentCell = "C";
           highlightCell(currentCell);
-          setStatus("Player 2 moved. Player 1, make your move!");
+          setStatus(`Player 2 moved. ${p1Label}, make your move!`);
           showButtons();
         }
       }, delayMs);
@@ -877,7 +984,7 @@ async function setupGame() {
       });
     }
 
-    setStatus(`Player 1 stayed at Cell ${currentCell}. Game end.`);
+    setStatus(`${p1Label} stayed at Cell ${currentCell}. Game end.`);
 
     const cellIndexMap = { A: 0, B: 1, C: 2, D: 3 };
     const cellIndex = cellIndexMap[currentCell];
@@ -898,6 +1005,15 @@ function highlightCell(cellId) {
 function decideComputerMove(quadruplet, player2Type) {
   const decisionIndex = player2Type === "Myopic" ? 0 : 1;
   return quadruplet[decisionIndex] === 1 ? "move" : "stay";
+}
+
+function logAllUsernamesSnapshot() {
+  player1Data.push({
+    meta_type: "usernames_snapshot",
+    player1_username: player1Username || "",
+    opponent_test1_username: opponentUsernames.Test1 || "",
+    opponent_test2_username: opponentUsernames.Test2 || ""
+  });
 }
 
 function showNextTrialButton() {
@@ -922,18 +1038,20 @@ function showNextTrialButton() {
     currentGameIndex++;
 
     if (currentGameIndex === trainingEndIndex) {
-      await showOpponentIntroSlide(1);
-      await showMatchmakingVisual();
+      resetForNewSection("Test1"); // added below
 
-      const llm1 = await getLLMForPhase("Test1"); // defined below
+      const llm1 = await getLLMForPhase("Test1");
+      await showOpponentIntroSlide(1);
+      await showMatchmakingVisual(llm1.opponent_username || "");
       await showLLMInstructionsSlide(llm1.text, llm1);
     }
 
     if (currentGameIndex === test1EndIndex) {
-      await showOpponentIntroSlide(2);
-      await showMatchmakingVisual();
+      resetForNewSection("Test2"); // added below
 
       const llm2 = await getLLMForPhase("Test2");
+      await showOpponentIntroSlide(2);
+      await showMatchmakingVisual(llm2.opponent_username || "");
       await showLLMInstructionsSlide(llm2.text, llm2);
     }
 
