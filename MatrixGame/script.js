@@ -1,3 +1,5 @@
+const LLM_ENDPOINT = "https://solitary-sea-dff4.kylelafollette.workers.dev";
+
 let gameData;
 let currentGameIndex = 0;
 let player1Data = [];
@@ -45,63 +47,71 @@ function fallbackInstructionText(phase) {
   );
 }
 
-function zeroIntensities() {
-  return {
-    loaded_language: 0,
-    absolutist: 0,
-    threat_panic: 0,
-    us_vs_them: 0,
-    engagement_bait: 0
-  };
-}
-
-function fallbackInstructionText() {
-  return (
-    "Welcome to the Matrix Game!\n\n" +
-    "Your goal is to maximize the number of points you earn over the course of the following trials.\n\n" +
-    "Your payoff at the end of each round will be the left number shown in the cell that the game ends on.\n" +
-    "You will begin in cell A and can decide to Stay (end the game in the current cell) or Move (to the next cell).\n\n" +
-    "You will be playing against another player who receives the right number as payoff and is also trying to maximize their total points over the rounds."
-  );
-}
-
 async function preloadLLMInstructions() {
   const phases = ["Test1", "Test2"];
 
   const reqs = phases.map(async (phase) => {
-    // sample intensities up front so (a) LLM sees them and (b) fallback logs them as 0s
     const sampled = sampleIntensities();
 
     try {
-      // DIRECT OpenAI call (browser -> api.openai.com)
-      const obj = await fetchLLMInstructionsDirect(phase, sampled);
-
-      // Cache the successful result
-      llmCache[phase] = obj;
-
-      // Save into outbound data for REDCap
-      player1Data.push({
-        meta_type: "llm_instructions",
-        phase,
-        ...obj
+      // Call YOUR Worker (NOT api.openai.com)
+      const res = await fetch(LLM_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phase, intensities: sampled })
       });
 
-      return obj;
+      // If worker is down / returns non-200, fall back
+      if (!res.ok) {
+        throw new Error(`LLM proxy HTTP ${res.status}`);
+      }
+
+      const obj = await res.json();
+
+      // If the worker returned a fallback, it will already have intensities=0.
+      // But we still handle any weird/missing payload safely:
+      const safeObj = {
+        phase,
+        model: obj?.model || "proxy",
+        text: typeof obj?.text === "string" && obj.text.trim()
+          ? obj.text
+          : fallbackInstructionText(phase),
+        intensities: obj?.intensities && typeof obj.intensities === "object"
+          ? obj.intensities
+          : zeroIntensities()
+      };
+
+      llmCache[phase] = safeObj;
+
+      player1Data.push({
+        meta_type: safeObj.model === "fallback" ? "llm_instructions_fallback" : "llm_instructions",
+        phase,
+        ...safeObj
+      });
+
+      // If worker included an error field, keep it
+      if (obj?.error) {
+        player1Data.push({
+          meta_type: "llm_proxy_error_detail",
+          phase,
+          error: obj.error
+        });
+      }
+
+      return safeObj;
 
     } catch (err) {
-      console.warn(`LLM generation failed for ${phase}. Using fallback.`, err);
+      console.warn(`LLM proxy failed for ${phase}. Using fallback.`, err);
 
       const fallback = {
         phase,
         model: "fallback",
-        text: fallbackInstructionText(),
+        text: fallbackInstructionText(phase),
         intensities: zeroIntensities()
       };
 
-      // Cache fallback so later screens always have something
       llmCache[phase] = fallback;
 
-      // Log fallback + error so you can diagnose later
       player1Data.push({
         meta_type: "llm_instructions_fallback",
         phase,
@@ -671,114 +681,6 @@ function showToMIntroSlide() {
     };
     btn.addEventListener("click", handler);
   });
-}
-
-// ======== OPENAI (CLIENT-SIDE) ========
-// NOTE: This exposes your key publicly. OpenAI recommends not doing this. :contentReference[oaicite:2]{index=2}
-const OPENAI_API_KEY = "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"; // e.g., "sk-..."
-
-function buildPrompt({ phase, intensities }) {
-  return `
-You are writing short on-screen instructions for a participant in a simple decision-making matrix game.
-They will be told they are playing against a "real competitor" (${phase} phase).
-
-Write instructions similar in structure and clarity to:
-- goal: maximize points
-- payoff explanation (left number is their payoff)
-- start in cell A; choose Stay or Move
-- opponent gets right number and is also trying to maximize points
-
-But vary phrasing to incorporate these rhetorical elements at the specified intensity levels
-(1 = absent, 10 = moderately present; do NOT go extreme; do NOT use slurs; do NOT target any protected group; avoid threats of real-world harm):
-
-Loaded Language: ${intensities.loaded_language}/10
-Absolutist: ${intensities.absolutist}/10
-Threat/Panic framing: ${intensities.threat_panic}/10
-Us-vs-Them framing: ${intensities.us_vs_them}/10
-Engagement Bait: ${intensities.engagement_bait}/10
-
-Return ONLY valid JSON matching the schema.
-`.trim();
-}
-
-// robust extraction for REST responses
-function extractResponseText(respJson) {
-  if (respJson?.output_text) return respJson.output_text;
-
-  const out = respJson?.output;
-  if (!Array.isArray(out)) return null;
-
-  for (const item of out) {
-    const content = item?.content;
-    if (!Array.isArray(content)) continue;
-    for (const c of content) {
-      if (typeof c?.text === "string") return c.text;
-    }
-  }
-  return null;
-}
-
-async function fetchLLMInstructionsDirect(phase, intensities) {
-  const schema = {
-    type: "object",
-    additionalProperties: false,
-    properties: {
-      text: { type: "string" },
-      intensities: {
-        type: "object",
-        additionalProperties: false,
-        properties: {
-          loaded_language: { type: "integer" },
-          absolutist: { type: "integer" },
-          threat_panic: { type: "integer" },
-          us_vs_them: { type: "integer" },
-          engagement_bait: { type: "integer" }
-        },
-        required: ["loaded_language", "absolutist", "threat_panic", "us_vs_them", "engagement_bait"]
-      },
-      phase: { type: "string" },
-      model: { type: "string" }
-    },
-    required: ["text", "intensities", "phase", "model"]
-  };
-
-  const payload = {
-    model: "gpt-5.2",
-    input: [
-      { role: "system", content: "You write concise game instructions for behavioral experiments." },
-      { role: "user", content: buildPrompt({ phase, intensities }) }
-    ],
-    text: {
-      format: { type: "json_schema", strict: true, schema }
-    }
-  };
-
-  const resp = await fetch("https://api.openai.com/v1/responses", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${OPENAI_API_KEY}`
-    },
-    body: JSON.stringify(payload)
-  });
-
-  if (!resp.ok) {
-    const msg = await resp.text().catch(() => "");
-    throw new Error(`OpenAI error ${resp.status}: ${msg}`);
-  }
-
-  const json = await resp.json();
-  const txt = extractResponseText(json);
-  if (!txt) throw new Error("No text found in OpenAI response.");
-
-  const obj = JSON.parse(txt);
-
-  // force echo exact intensities + phase (for your logging + REDCap)
-  obj.intensities = intensities;
-  obj.phase = phase;
-  obj.model = "gpt-5.2";
-
-  return obj;
 }
 
 // ---------- Start flow ----------
