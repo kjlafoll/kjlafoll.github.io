@@ -825,7 +825,13 @@ async function setupGame() {
   const sectionTrialNum = (currentGameIndex - sec.start) + 1;
 
   // Top corner updates
-  document.getElementById("trialType").textContent = `${player1Username || ""}`;
+  if (sec.name === "Training") {
+    document.getElementById("trialType").textContent = "None (Training)";
+  } else {
+    // you should have these from earlier: opponentUsernames.Test1 / opponentUsernames.Test2
+    const opp = (opponentUsernames?.[sec.name] || "").trim();
+    document.getElementById("trialType").textContent = opp || sec.name; // fallback: "Test1"/"Test2"
+  }
 
   // Index-based progress since Trial numbers may not be contiguous after filtering
   document.getElementById("trialNumber").textContent = `${sectionTrialNum} / ${sec.len}`;
@@ -857,7 +863,8 @@ async function setupGame() {
   let currentCell = "A";
   highlightCell(currentCell);
 
-  setStatus(`Trial ${sectionTrialNum}: Player 1, make your move!`);
+  const p1Label = (player1Username && player1Username.trim()) ? player1Username.trim() : "Player 1";
+  setStatus(`${p1Label}, make your move!`);
 
   // Remove & replace buttons to fix duplicate listeners
   const moveButton = document.getElementById("moveButton");
@@ -942,7 +949,7 @@ async function setupGame() {
         } else {
           currentCell = "C";
           highlightCell(currentCell);
-          setStatus("Player 2 moved. Player 1, make your move!");
+          setStatus(`Player 2 moved. ${p1Label}, make your move!`);
           showButtons();
         }
       }, delayMs);
@@ -977,7 +984,7 @@ async function setupGame() {
       });
     }
 
-    setStatus(`Player 1 stayed at Cell ${currentCell}. Game end.`);
+    setStatus(`${p1Label} stayed at Cell ${currentCell}. Game end.`);
 
     const cellIndexMap = { A: 0, B: 1, C: 2, D: 3 };
     const cellIndex = cellIndexMap[currentCell];
