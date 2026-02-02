@@ -1,98 +1,171 @@
-const LLM_ENDPOINT = "https://solitary-sea-dff4.kylelafollette.workers.dev";
+/***********************
+ * Adjustable values
+ ***********************/
+const CONFIG = {
+  // LLM proxy (Cloudflare worker)
+  LLM_ENDPOINT: "https://solitary-sea-dff4.kylelafollette.workers.dev",
 
+  // Data files
+  GAME_JSON_PATH: "./HeddenDataOld.json",
+  TOM_CSV_PATH: "test_battery2.csv",
+
+  // Training slice
+  TRAINING_TRIALS_TO_KEEP: 8,
+
+  // Username constraints
+  USERNAME_MAX_LEN: 24,
+  USERNAME_ALLOWED_RE: /[^\w\- ]/g, // remove anything not letter/number/_/-/space
+
+  // Matchmaking animation timing
+  MATCHMAKING_MS_MIN: 5000,
+  MATCHMAKING_MS_MAX: 10000,
+
+  // Opponent "thinking" delay
+  OPPONENT_DELAY_MS_MIN: 1000,
+  OPPONENT_DELAY_MS_MAX: 3000,
+
+  // UI layout stability
+  STATUS_PLACEHOLDER: "\u00A0", // non-breaking space
+
+  // VFX physics
+  VFX: {
+    BASE_PARTICLES: 5,
+    PARTICLES_PER_POINT: 5,
+    GRAVITY: 2200,
+    DRAG: 0.985,
+    LIFE_MS_MIN: 1800,
+    LIFE_MS_MAX: 2800,
+    FONT_SIZE_MIN: 70,
+    FONT_SIZE_JITTER: 28,
+    SPEED_MIN: 900,
+    SPEED_JITTER: 700,
+    ANGLE_SPREAD: 1.35,
+    ANGLE_CENTER: -Math.PI / 2,
+    SPIN_DEG_JITTER: 900
+  },
+
+  // ToM inventories (one question sampled from each)
+  TOM_COLUMNS: [
+    "FalseBeliefQuestions",
+    "IronyQuestions",
+    "StrangeStoriesQuestions",
+    "HintingQuestions",
+    "FauxPasQuestions"
+  ]
+};
+
+/***********************
+ * State
+ ***********************/
 let gameData;
 let currentGameIndex = 0;
+
 let player1Data = [];
 let totalPoints = 0;
 
-// --- ToM battery (frontloaded) ---
-let selectedQuestions = []; // array of { inventory, question }
-let ToMResponses = [];      // array of { inventory, question, answer }
+let selectedQuestions = []; // [{ inventory, question }]
+let ToMResponses = [];      // [{ inventory, question, answer }]
 
 let llmCache = { Test1: null, Test2: null };
 let llmPreloadPromise = null;
+
 let trainingEndIndex = 0;
 let test1EndIndex = 0;
+
 let sectionInfo = {
   Training: { start: 0, len: 0 },
   Test1: { start: 0, len: 0 },
   Test2: { start: 0, len: 0 }
 };
 
-let player1Username = "";  // participant-chosen username
+let player1Username = "";
 let opponentUsernames = { Test1: "", Test2: "" };
 
-function sanitizeUsername(raw) {
-  if (!raw) return "";
-  // keep it simple & safe for UI/logs
-  return String(raw)
-    .trim()
-    .slice(0, 24)
-    .replace(/[^\w\- ]/g, ""); // allow letters/numbers/_ plus - and space
+/***********************
+ * Small helpers
+ ***********************/
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+function randInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+// Keep layout stable: never truly empty the status line
+function setStatus(text) {
+  const el = document.getElementById("status");
+  const t = (text ?? "").trim();
+  el.textContent = t === "" ? CONFIG.STATUS_PLACEHOLDER : t;
+}
+
+function isTrialRow(row) {
+  return row && Object.prototype.hasOwnProperty.call(row, "trial_index");
+}
+
+function numTrialRows() {
+  return player1Data.reduce((acc, r) => acc + (isTrialRow(r) ? 1 : 0), 0);
+}
+
+/***********************
+ * Usernames
+ ***********************/
+function sanitizeUsername(raw) {
+  if (!raw) return "";
+  return String(raw)
+    .trim()
+    .slice(0, CONFIG.USERNAME_MAX_LEN)
+    .replace(CONFIG.USERNAME_ALLOWED_RE, "");
+}
+
+function commitOpponentUsername(phase, rawName) {
+  if (phase !== "Test1" && phase !== "Test2") return;
+
+  const clean = sanitizeUsername(rawName);
+  if (!clean) return;
+
+  opponentUsernames[phase] = clean;
+
+  // log once when we first learn it
+  player1Data.push({
+    meta_type: "opponent_username",
+    phase,
+    opponent_username: clean
+  });
+}
+
+function logAllUsernamesSnapshot() {
+  player1Data.push({
+    meta_type: "usernames_snapshot",
+    player1_username: player1Username || "",
+    opponent_test1_username: opponentUsernames.Test1 || "",
+    opponent_test2_username: opponentUsernames.Test2 || ""
+  });
+}
+
+/***********************
+ * Sections
+ ***********************/
 function getSectionForIndex(globalIndex) {
   if (globalIndex < sectionInfo.Test1.start) return { name: "Training", ...sectionInfo.Training };
   if (globalIndex < sectionInfo.Test2.start) return { name: "Test1", ...sectionInfo.Test1 };
   return { name: "Test2", ...sectionInfo.Test2 };
 }
 
-function showUsernameEntrySlide() {
-  return new Promise(resolve => {
-    let overlay = document.getElementById("usernameOverlay");
-    if (!overlay) {
-      overlay = document.createElement("div");
-      overlay.id = "usernameOverlay";
-      overlay.style.position = "fixed";
-      overlay.style.inset = "0";
-      overlay.style.background = "rgba(0,0,0,0.85)";
-      overlay.style.display = "flex";
-      overlay.style.alignItems = "center";
-      overlay.style.justifyContent = "center";
-      overlay.style.zIndex = "1000000";
-      overlay.innerHTML = `
-        <div style="width:min(560px, 92vw); background:#111; color:#fff; padding:22px; border-radius:14px; box-shadow:0 10px 40px rgba(0,0,0,0.5);">
-          <div style="font-size:18px; font-weight:800; margin-bottom:10px;">Choose a username</div>
-          <div style="font-size:14px; opacity:0.9; margin-bottom:12px;">
-            This will be shown as <b>Player 1</b>. You can leave it blank.
-          </div>
-          <input id="usernameInput" type="text" placeholder="e.g., BlueTiger_7"
-                 style="width:100%; padding:10px 12px; border-radius:10px; border:1px solid #333; background:#0b0b0b; color:#fff; font-size:15px;" />
-          <div style="display:flex; gap:10px; margin-top:14px; justify-content:flex-end;">
-            <button id="usernameContinue" style="padding:10px 14px; border-radius:10px; border:none; background:#2d6cdf; color:#fff; font-weight:700; cursor:pointer;">
-              Continue
-            </button>
-          </div>
-        </div>
-      `;
-      document.body.appendChild(overlay);
-    }
+function resetForNewSection(sectionName) {
+  totalPoints = 0;
+  document.getElementById("totalPoints").textContent = totalPoints;
 
-    overlay.style.display = "flex";
-    const input = document.getElementById("usernameInput");
-    const btn = document.getElementById("usernameContinue");
-
-    input.value = player1Username || "";
-
-    const handler = () => {
-      player1Username = sanitizeUsername(input.value);
-
-      // log it once
-      player1Data.push({
-        meta_type: "player1_username",
-        player1_username: player1Username
-      });
-
-      overlay.style.display = "none";
-      btn.removeEventListener("click", handler);
-      resolve();
-    };
-
-    btn.addEventListener("click", handler);
-    input.focus();
+  player1Data.push({
+    meta_type: "section_reset",
+    section: sectionName,
+    at_global_index: currentGameIndex
   });
 }
 
+/***********************
+ * LLM instructions
+ ***********************/
 function sampleIntensities() {
   // 1 = none, 10 = moderately present (per your spec)
   return {
@@ -100,7 +173,7 @@ function sampleIntensities() {
     absolutist: randInt(1, 10),
     threat_panic: randInt(1, 10),
     us_vs_them: randInt(1, 10),
-    engagement_bait: randInt(1, 10),
+    engagement_bait: randInt(1, 10)
   };
 }
 
@@ -114,7 +187,6 @@ function zeroIntensities() {
   };
 }
 
-// If you want the fallback text to match your instruction screenshot copy:
 function fallbackInstructionText(phase) {
   // phase is "Test1" or "Test2" (or any string you pass)
   return (
@@ -133,22 +205,16 @@ async function preloadLLMInstructions() {
     const sampled = sampleIntensities();
 
     try {
-      // Call YOUR Worker (NOT api.openai.com)
-      const res = await fetch(LLM_ENDPOINT, {
+      const res = await fetch(CONFIG.LLM_ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phase, intensities: sampled })
       });
 
-      // If worker is down / returns non-200, fall back
-      if (!res.ok) {
-        throw new Error(`LLM proxy HTTP ${res.status}`);
-      }
+      if (!res.ok) throw new Error(`LLM proxy HTTP ${res.status}`);
 
       const obj = await res.json();
 
-      // If the worker returned a fallback, it will already have intensities=0.
-      // But we still handle any weird/missing payload safely:
       const safeObj = {
         phase,
         model: obj?.model || "proxy",
@@ -162,6 +228,7 @@ async function preloadLLMInstructions() {
       };
 
       llmCache[phase] = safeObj;
+      commitOpponentUsername(phase, safeObj.opponent_username);
 
       player1Data.push({
         meta_type: safeObj.model === "fallback" ? "llm_instructions_fallback" : "llm_instructions",
@@ -169,7 +236,6 @@ async function preloadLLMInstructions() {
         ...safeObj
       });
 
-      // If worker included an error field, keep it
       if (obj?.error) {
         player1Data.push({
           meta_type: "llm_proxy_error_detail",
@@ -209,70 +275,77 @@ async function preloadLLMInstructions() {
 
 async function getLLMForPhase(phase) {
   if (llmCache[phase]) return llmCache[phase];
-  // if not ready, await preload
   if (llmPreloadPromise) await llmPreloadPromise;
   return llmCache[phase] || { text: "Loading instructions…", intensities: null };
 }
 
-// ---------- CONFIG ----------
-const filePath = './HeddenDataOld.json';
-const csvFilePath = 'test_battery2.csv';
+/***********************
+ * Username entry UI
+ ***********************/
+function showUsernameEntrySlide() {
+  return new Promise(resolve => {
+    let overlay = document.getElementById("usernameOverlay");
 
-// ToM inventories (one question sampled from each)
-const columnNames = [
-  'FalseBeliefQuestions',
-  'IronyQuestions',
-  'StrangeStoriesQuestions',
-  'HintingQuestions',
-  'FauxPasQuestions'
-];
+    if (!overlay) {
+      overlay = document.createElement("div");
+      overlay.id = "usernameOverlay";
 
-// ---------- Utilities ----------
-function delay(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+      Object.assign(overlay.style, {
+        position: "fixed",
+        inset: "0",
+        background: "rgba(0,0,0,0.85)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: "1000000"
+      });
+
+      overlay.innerHTML = `
+        <div style="width:min(560px, 92vw); background:#111; color:#fff; padding:22px; border-radius:14px; box-shadow:0 10px 40px rgba(0,0,0,0.5);">
+          <div style="font-size:18px; font-weight:800; margin-bottom:10px;">Choose a username</div>
+          <div style="font-size:14px; opacity:0.9; margin-bottom:12px;">
+            This will be shown as <b>Player 1</b>. You can leave it blank.
+          </div>
+          <input id="usernameInput" type="text" placeholder="e.g., BlueTiger_7"
+                 style="width:100%; padding:10px 12px; border-radius:10px; border:1px solid #333; background:#0b0b0b; color:#fff; font-size:15px;" />
+          <div style="display:flex; gap:10px; margin-top:14px; justify-content:flex-end;">
+            <button id="usernameContinue" style="padding:10px 14px; border-radius:10px; border:none; background:#2d6cdf; color:#fff; font-weight:700; cursor:pointer;">
+              Continue
+            </button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+    }
+
+    overlay.style.display = "flex";
+
+    const input = document.getElementById("usernameInput");
+    const btn = document.getElementById("usernameContinue");
+
+    input.value = player1Username || "";
+
+    const onContinue = () => {
+      player1Username = sanitizeUsername(input.value);
+
+      player1Data.push({
+        meta_type: "player1_username",
+        player1_username: player1Username
+      });
+
+      overlay.style.display = "none";
+      btn.removeEventListener("click", onContinue);
+      resolve();
+    };
+
+    btn.addEventListener("click", onContinue);
+    input.focus();
+  });
 }
 
-// Keep layout stable: never truly empty the status line
-function setStatus(text) {
-  const el = document.getElementById("status");
-  const t = (text ?? "").trim();
-  el.textContent = t === "" ? "\u00A0" : t; // non-breaking space preserves height
-}
-
-// Heuristic punctuation restoration for ToM prompts
-function fixToMPunctuation(raw) {
-  if (!raw) return raw;
-
-  // Normalize newlines/tabs to spaces but keep intentional double-spaces as boundaries
-  let t = String(raw)
-    .replace(/[\r\n\t]+/g, " ")
-    .trim();
-
-  // Split on 2+ spaces (your sentence boundaries)
-  const parts = t
-    .split(/ {2,}/)
-    .map(s => s.trim())
-    .filter(Boolean);
-
-  if (parts.length <= 1) {
-    // If there are no double-spaces, just normalize single spacing and ensure end punctuation
-    t = t.replace(/\s+/g, " ").trim();
-    if (!/[.!?]$/.test(t)) t += ".";
-    return t;
-  }
-
-  // Re-join with proper punctuation between segments.
-  // If a segment already ends with punctuation, keep it; otherwise add a period.
-  const joined = parts
-    .map(seg => {
-      const s = seg.replace(/\s+/g, " ").trim();
-      return /[.!?]$/.test(s) ? s : (s + ".");
-    })
-    .join(" ");
-
-  return joined;
-}
-
+/***********************
+ * ToM text cleaning
+ ***********************/
 const TOM_PREAMBLE_RE = new RegExp(
   '^\\s*' +
   'I\\s*(?:am|[’\']m)\\s+going\\s+to\\s+tell\\s+you\\s+a\\s+short\\s+story\\s+about\\s+some\\s+people\\.?\\s+' +
@@ -294,7 +367,32 @@ function stripToMPreamble(raw) {
   return t.replace(/^\s+/, "");
 }
 
-// Make this synchronous
+function fixToMPunctuation(raw) {
+  if (!raw) return raw;
+
+  // Normalize newlines/tabs to spaces but keep intentional double-spaces as boundaries
+  let t = String(raw).replace(/[\r\n\t]+/g, " ").trim();
+
+  // Split on 2+ spaces (your sentence boundaries)
+  const parts = t.split(/ {2,}/).map(s => s.trim()).filter(Boolean);
+
+  if (parts.length <= 1) {
+    t = t.replace(/\s+/g, " ").trim();
+    if (!/[.!?]$/.test(t)) t += ".";
+    return t;
+  }
+
+  return parts
+    .map(seg => {
+      const s = seg.replace(/\s+/g, " ").trim();
+      return /[.!?]$/.test(s) ? s : (s + ".");
+    })
+    .join(" ");
+}
+
+/***********************
+ * Mobile detection
+ ***********************/
 function mobileAndTabletCheck() {
   let check = false;
   (function (a) {
@@ -308,7 +406,9 @@ function mobileAndTabletCheck() {
 const isMobile = mobileAndTabletCheck();
 console.log("isMobile:", isMobile);
 
-// ---------- VFX: dollar sign burst (overlay-only, physics, fade) ----------
+/***********************
+ * VFX (dollar burst)
+ ***********************/
 function ensureVfxLayer() {
   let layer = document.getElementById("vfxLayer");
   if (!layer) {
@@ -317,25 +417,24 @@ function ensureVfxLayer() {
     document.body.appendChild(layer);
   }
 
-  // FORCE overlay styling in JS so CSS parse issues can't break it
-  const s = layer.style;
-  s.position = "fixed";
-  s.left = "0";
-  s.top = "0";
-  s.right = "0";
-  s.bottom = "0";
-  s.width = "100vw";
-  s.height = "100vh";
-  s.pointerEvents = "none";
-  s.zIndex = "999999";
-  s.overflow = "hidden";
-  s.margin = "0";
-  s.padding = "0";
+  Object.assign(layer.style, {
+    position: "fixed",
+    left: "0",
+    top: "0",
+    right: "0",
+    bottom: "0",
+    width: "100vw",
+    height: "100vh",
+    pointerEvents: "none",
+    zIndex: "999999",
+    overflow: "hidden",
+    margin: "0",
+    padding: "0"
+  });
 
   return layer;
 }
 
-// Get center of a cell in viewport coords (works great with fixed overlay)
 function getCellCenterViewport(cellEl) {
   const r = cellEl.getBoundingClientRect();
   return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
@@ -357,15 +456,18 @@ function emitDollarVFX(cellId, pointsAdded) {
   const born = performance.now();
 
   // Physics tuning
-  const gravity = 2200;     // px/s^2 (stronger so you SEE falling)
+  const gravity = 2200;     // px/s^2
   const drag = 0.985;       // air resistance
   const lifeMin = 1800;     // ms
   const lifeMax = 2800;     // ms
 
+  // Show the earned value as the particle text
+  const particleText = `${pointsAdded}`;
+
   for (let i = 0; i < count; i++) {
     const el = document.createElement("span");
     el.className = "dollar-particle";
-    el.textContent = "$";
+    el.textContent = particleText;
 
     // FORCE particle styling in JS too (robust to CSS parse issues)
     const st = el.style;
@@ -373,7 +475,7 @@ function emitDollarVFX(cellId, pointsAdded) {
     st.left = `${origin.x}px`;
     st.top = `${origin.y}px`;
     st.transform = "translate3d(-50%, -50%, 0)";
-    st.fontSize = `${70 + Math.floor(Math.random() * 28)}px`; // BIGGER
+    st.fontSize = `${70 + Math.floor(Math.random() * 28)}px`;
     st.fontWeight = "900";
     st.color = "#18ff5b";
     st.textShadow =
@@ -387,13 +489,13 @@ function emitDollarVFX(cellId, pointsAdded) {
     layer.appendChild(el);
 
     // Upward burst with random angle spread
-    const angle = (-Math.PI / 2) + (Math.random() * 1.35 - 0.675); // upward ± ~39°
-    const speed = 900 + Math.random() * 700; // px/s (strong burst)
+    const angle = (-Math.PI / 2) + (Math.random() * 1.35 - 0.675);
+    const speed = 900 + Math.random() * 700;
 
     const vx = Math.cos(angle) * speed;
     const vy = Math.sin(angle) * speed;
 
-    const spin = (Math.random() * 900 - 450); // deg over lifetime
+    const spin = (Math.random() * 900 - 450);
     const life = lifeMin + Math.random() * (lifeMax - lifeMin);
 
     particles.push({
@@ -427,10 +529,8 @@ function emitDollarVFX(cellId, pointsAdded) {
 
       // Fade near end
       const alpha = Math.max(0, 1 - age / p.life);
-
       const rot = (1 - alpha) * p.spin;
 
-      // IMPORTANT: movement is in transform so it never affects layout
       p.el.style.transform =
         `translate3d(calc(-50% + ${p.x - origin.x}px), calc(-50% + ${p.y - origin.y}px), 0) rotate(${rot}deg)`;
       p.el.style.opacity = alpha.toFixed(3);
@@ -447,16 +547,50 @@ function emitDollarVFX(cellId, pointsAdded) {
   requestAnimationFrame(step);
 }
 
-function isTrialRow(r) {
-  return r && Object.prototype.hasOwnProperty.call(r, "trial_index");
+/***********************
+ * Slides / overlays
+ ***********************/
+function showWelcomeSlide() {
+  return new Promise(resolve => {
+    const overlay = document.getElementById("trialInstructionOverlay");
+    const textEl = document.getElementById("trialInstructionText");
+    const btn = document.getElementById("continueButton");
+
+    textEl.textContent =
+      "Welcome! First we'll ask you to answer 5 questions. After, we'll ask you to play a decision-making game. All together, this should take about 5 minutes.";
+    overlay.style.display = "flex";
+
+    const onContinue = () => {
+      overlay.style.display = "none";
+      btn.removeEventListener("click", onContinue);
+      resolve();
+    };
+
+    btn.addEventListener("click", onContinue);
+  });
 }
 
-function numTrialRows() {
-  return player1Data.reduce((acc, r) => acc + (isTrialRow(r) ? 1 : 0), 0);
-}
+function showToMIntroSlide() {
+  return new Promise(resolve => {
+    const overlay = document.getElementById("trialInstructionOverlay");
+    const textEl = document.getElementById("trialInstructionText");
+    const btn = document.getElementById("continueButton");
 
-function randInt(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+    textEl.textContent =
+      "I am going to tell you some short stories about some people. " +
+      "At the end of each of these stories a person will say or do something. " +
+      "When I’ve finished telling each story, I will ask you a question about what happened in the story.";
+
+    overlay.style.display = "flex";
+
+    const onContinue = () => {
+      overlay.style.display = "none";
+      btn.removeEventListener("click", onContinue);
+      resolve();
+    };
+
+    btn.addEventListener("click", onContinue);
+  });
 }
 
 function showOpponentIntroSlide(opponentNum) {
@@ -468,12 +602,13 @@ function showOpponentIntroSlide(opponentNum) {
     textEl.textContent = `You will now play against a real player (Opponent ${opponentNum}).`;
     overlay.style.display = "flex";
 
-    const handler = () => {
+    const onContinue = () => {
       overlay.style.display = "none";
-      btn.removeEventListener("click", handler);
+      btn.removeEventListener("click", onContinue);
       resolve();
     };
-    btn.addEventListener("click", handler);
+
+    btn.addEventListener("click", onContinue);
   });
 }
 
@@ -495,18 +630,21 @@ function showMatchmakingVisual(opponentUsername = "") {
     const dotsEl = document.getElementById("mmDots");
     let k = 0;
     const frames = ["● ○ ○", "○ ● ○", "○ ○ ●"];
+
     const anim = setInterval(() => {
       if (!dotsEl) return;
       dotsEl.textContent = frames[k % frames.length];
       k++;
     }, 350);
 
-    const ms = randInt(5000, 10000);
+    const ms = randInt(CONFIG.MATCHMAKING_MS_MIN, CONFIG.MATCHMAKING_MS_MAX);
 
     setTimeout(() => {
       clearInterval(anim);
 
-      const nameLine = opponentUsername ? `<div style="font-size:16px; margin-top:6px; opacity:0.95;">Opponent: <b>${opponentUsername}</b></div>` : "";
+      const nameLine = opponentUsername
+        ? `<div style="font-size:16px; margin-top:6px; opacity:0.95;">Opponent: <b>${opponentUsername}</b></div>`
+        : "";
 
       textEl.innerHTML = `
         <div style="font-size:18px; font-weight:800; margin-bottom:6px;">Competitor found</div>
@@ -518,199 +656,30 @@ function showMatchmakingVisual(opponentUsername = "") {
         btn.style.display = "";
         resolve();
       }, 3000);
-
     }, ms);
   });
 }
 
-function resetForNewSection(sectionName) {
-  totalPoints = 0;
-  document.getElementById("totalPoints").textContent = totalPoints;
-
-  player1Data.push({
-    meta_type: "section_reset",
-    section: sectionName,
-    at_global_index: currentGameIndex
-  });
-}
-
-// ---------- Data loading (promises we can await) ----------
-const loadGameDataPromise = fetch(filePath)
-  .then(response => {
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    return response.json();
-  })
-  .then(data => {
-    // Normalize Trial to number
-    const normalized = data.map(g => ({
-      ...g,
-      Trial: Number(g.Trial),
-    }));
-
-    // Keep ONLY first 12 Training trials (by Trial order)
-    const training = normalized
-      .filter(g => String(g.Round).trim() === "Training")
-      .sort((a, b) => a.Trial - b.Trial)
-      .slice(0, 12);
-
-    // Keep Test1/Test2, remove catch
-    const isCatch = (g) => String(g.GameType || "").trim() === "Catch";
-
-    const test1 = normalized
-      .filter(g => String(g.Round).trim() === "Test1" && !isCatch(g))
-      .sort((a, b) => a.Trial - b.Trial);
-
-    const test2 = normalized
-      .filter(g => String(g.Round).trim() === "Test2" && !isCatch(g))
-      .sort((a, b) => a.Trial - b.Trial);
-
-    trainingEndIndex = training.length;
-    test1EndIndex = training.length + test1.length;
-    sectionInfo.Training = { start: 0, len: training.length };
-    sectionInfo.Test1 = { start: training.length, len: test1.length };
-    sectionInfo.Test2 = { start: training.length + test1.length, len: test2.length };
-
-    gameData = [...training, ...test1, ...test2];
-
-    console.log("Filtered gameData length:", gameData.length);
-    console.log("Round counts:", {
-      Training: training.length,
-      Test1: test1.length,
-      Test2: test2.length
-    });
-  })
-  .catch(error => console.error('Error loading HeddenDataOld.json:', error));
-
-const loadToMPromise = fetch(csvFilePath)
-  .then(response => response.text())
-  .then(csvText => {
-    const results = Papa.parse(csvText, {
-      header: true,
-      skipEmptyLines: true
-    }).data;
-
-    // For each inventory column, pick ONE random valid question
-    selectedQuestions = columnNames.map(col => {
-      const valid = results
-        .map(row => row[col])
-        .filter(q => q && q.trim() !== '' && q.trim().toUpperCase() !== 'NA');
-
-      if (!valid.length) {
-        console.warn(`No valid ToM questions found for column: ${col}`);
-        return { inventory: col, question: "[MISSING QUESTION]" };
-      }
-
-      const randIndex = Math.floor(Math.random() * valid.length);
-      return { inventory: col, question: valid[randIndex] };
-    });
-
-    console.log("Selected ToM questions (1 per inventory):", selectedQuestions);
-  })
-  .catch(error => {
-    console.error('Error loading or parsing ToM CSV:', error);
-  });
-
-// ---------- Instructions ----------
-
-// Welcome slide
-function showWelcomeSlide() {
+function showLLMInstructionsSlide(instructionsText, metaObj) {
   return new Promise(resolve => {
     const overlay = document.getElementById("trialInstructionOverlay");
     const textEl = document.getElementById("trialInstructionText");
     const btn = document.getElementById("continueButton");
 
-    textEl.textContent =
-      "Welcome! First we'll ask you to answer 5 questions. After, we'll ask you to play a decision-making game. All together, this should take about 5 minutes.";
+    textEl.textContent = instructionsText || "Loading instructions…";
     overlay.style.display = "flex";
 
-    const handler = () => {
+    const onContinue = () => {
       overlay.style.display = "none";
-      btn.removeEventListener("click", handler);
-      resolve();
-    };
-    btn.addEventListener("click", handler);
-  });
-}
-
-// ToM question overlay
-function askOneToMQuestion(qObj) {
-  return new Promise(resolve => {
-    const overlay = document.getElementById("tomBatteryOverlay");
-    const textEl = document.getElementById("ToMText");
-    const btn = document.getElementById("continueButton2");
-    const input = document.getElementById("userInstructionInput2");
-
-    // (optional) inline error message element
-    let err = document.getElementById("tomError");
-    if (!err) {
-      err = document.createElement("div");
-      err.id = "tomError";
-      err.style.color = "red";
-      err.style.marginTop = "10px";
-      err.style.fontSize = "14px";
-      // put it under the textarea if possible
-      input.parentElement.appendChild(err);
-    }
-
-    const stripped = stripToMPreamble(qObj.question);
-    const cleaned = fixToMPunctuation(stripped);
-    textEl.textContent = cleaned;
-
-    input.value = "";
-    err.textContent = "";
-    overlay.style.display = "flex";
-
-    // disable continue until something typed
-    btn.disabled = true;
-    const onInput = () => {
-      const ok = input.value.trim().length > 0;
-      btn.disabled = !ok;
-      if (ok) err.textContent = "";
-    };
-    input.addEventListener("input", onInput);
-
-    const handler = () => {
-      const answer = input.value.trim();
-      if (!answer) {
-        err.textContent = "Please type at least something before continuing.";
-        btn.disabled = true;
-        return;
-      }
-
-      ToMResponses.push({
-        inventory: qObj.inventory,
-        question: cleaned,
-        answer
-      });
-
-      overlay.style.display = "none";
-      btn.removeEventListener("click", handler);
-      input.removeEventListener("input", onInput);
+      btn.removeEventListener("click", onContinue);
       resolve();
     };
 
-    btn.addEventListener("click", handler);
+    btn.addEventListener("click", onContinue);
   });
 }
 
-async function runFrontloadedToMBattery() {
-  for (const qObj of selectedQuestions) {
-    await askOneToMQuestion(qObj);
-  }
-
-  // Save ToM battery as a single “header” entry in player1Data so it gets exported
-  player1Data.push({
-    meta_type: "tom",
-    tom_questions: selectedQuestions.map(x => ({
-      inventory: x.inventory,
-      question: fixToMPunctuation(stripToMPreamble(x.question))
-    })),
-    tom_responses: ToMResponses
-  });
-}
-
-
-// Show instruction image overlay (your existing instructionOverlay), uses startButton to advance
+// Uses your existing instructionOverlay, advances via startButton
 function showInstructionImageOverlay() {
   return new Promise(resolve => {
     const instructionOverlay = document.getElementById("instructionOverlay");
@@ -728,89 +697,170 @@ function showInstructionImageOverlay() {
 
     instructionOverlay.style.display = "flex";
 
-    // one-time click handler
-    const handler = () => {
+    const onStart = () => {
       instructionOverlay.style.display = "none";
-      startButton.removeEventListener("click", handler);
+      startButton.removeEventListener("click", onStart);
       resolve();
     };
-    startButton.addEventListener("click", handler);
+
+    startButton.addEventListener("click", onStart);
   });
 }
 
-// LLM slide
-function showLLMInstructionsSlide(instructionsText, metaObj) {
+/***********************
+ * ToM battery UI
+ ***********************/
+function askOneToMQuestion(qObj) {
   return new Promise(resolve => {
-    const overlay = document.getElementById("trialInstructionOverlay");
-    const textEl = document.getElementById("trialInstructionText");
-    const btn = document.getElementById("continueButton");
+    const overlay = document.getElementById("tomBatteryOverlay");
+    const textEl = document.getElementById("ToMText");
+    const btn = document.getElementById("continueButton2");
+    const input = document.getElementById("userInstructionInput2");
 
-    textEl.textContent = instructionsText || "Loading instructions…";
+    let err = document.getElementById("tomError");
+    if (!err) {
+      err = document.createElement("div");
+      err.id = "tomError";
+      err.style.color = "red";
+      err.style.marginTop = "10px";
+      err.style.fontSize = "14px";
+      input.parentElement.appendChild(err);
+    }
+
+    const cleaned = fixToMPunctuation(stripToMPreamble(qObj.question));
+    textEl.textContent = cleaned;
+
+    input.value = "";
+    err.textContent = "";
     overlay.style.display = "flex";
 
-    const handler = () => {
+    btn.disabled = true;
+    const onInput = () => {
+      const ok = input.value.trim().length > 0;
+      btn.disabled = !ok;
+      if (ok) err.textContent = "";
+    };
+    input.addEventListener("input", onInput);
+
+    const onContinue = () => {
+      const answer = input.value.trim();
+      if (!answer) {
+        err.textContent = "Please type at least something before continuing.";
+        btn.disabled = true;
+        return;
+      }
+
+      ToMResponses.push({ inventory: qObj.inventory, question: cleaned, answer });
+
       overlay.style.display = "none";
-      btn.removeEventListener("click", handler);
+      btn.removeEventListener("click", onContinue);
+      input.removeEventListener("input", onInput);
       resolve();
     };
-    btn.addEventListener("click", handler);
+
+    btn.addEventListener("click", onContinue);
   });
 }
 
-function showToMIntroSlide() {
-  return new Promise(resolve => {
-    const overlay = document.getElementById("trialInstructionOverlay");
-    const textEl = document.getElementById("trialInstructionText");
-    const btn = document.getElementById("continueButton");
+async function runFrontloadedToMBattery() {
+  for (const qObj of selectedQuestions) {
+    await askOneToMQuestion(qObj);
+  }
 
-    textEl.textContent =
-      "I am going to tell you some short stories about some people. " +
-      "At the end of each of these stories a person will say or do something. " +
-      "When I’ve finished telling each story, I will ask you a question about what happened in the story.";
-
-    overlay.style.display = "flex";
-
-    const handler = () => {
-      overlay.style.display = "none";
-      btn.removeEventListener("click", handler);
-      resolve();
-    };
-    btn.addEventListener("click", handler);
+  player1Data.push({
+    meta_type: "tom",
+    tom_questions: selectedQuestions.map(x => ({
+      inventory: x.inventory,
+      question: fixToMPunctuation(stripToMPreamble(x.question))
+    })),
+    tom_responses: ToMResponses
   });
 }
 
-// ---------- Start flow ----------
-document.addEventListener("DOMContentLoaded", async function () {
-  // Clear board initially
-  document.querySelectorAll("#gameBoard span").forEach(span => span.textContent = "");
+/***********************
+ * Data loading
+ ***********************/
+const loadGameDataPromise = fetch(CONFIG.GAME_JSON_PATH)
+  .then(response => {
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    return response.json();
+  })
+  .then(data => {
+    const normalized = data.map(g => ({ ...g, Trial: Number(g.Trial) }));
 
-  // Keep status occupying space from the start
-  setStatus("");
+    const training = normalized
+      .filter(g => String(g.Round).trim() === "Training")
+      .sort((a, b) => a.Trial - b.Trial)
+      .slice(0, CONFIG.TRAINING_TRIALS_TO_KEEP);
 
-  // Ensure both JSON + ToM CSV are loaded before proceeding
-  await Promise.all([loadGameDataPromise, loadToMPromise]);
-  llmPreloadPromise = preloadLLMInstructions();
+    const isCatch = (g) => String(g.GameType || "").trim() === "Catch";
 
-  // 1) Welcome slide
-  await showWelcomeSlide();
+    const test1 = normalized
+      .filter(g => String(g.Round).trim() === "Test1" && !isCatch(g))
+      .sort((a, b) => a.Trial - b.Trial);
 
-  // 2) ToM intro slide
-  await showToMIntroSlide();
+    const test2 = normalized
+      .filter(g => String(g.Round).trim() === "Test2" && !isCatch(g))
+      .sort((a, b) => a.Trial - b.Trial);
 
-  // 3) ToM battery (5 questions)
-  await runFrontloadedToMBattery();
+    trainingEndIndex = training.length;
+    test1EndIndex = training.length + test1.length;
 
-  await showUsernameEntrySlide();
+    sectionInfo.Training = { start: 0, len: training.length };
+    sectionInfo.Test1 = { start: training.length, len: test1.length };
+    sectionInfo.Test2 = { start: training.length + test1.length, len: test2.length };
 
-  // 4) Instruction image overlay
-  await showInstructionImageOverlay();
+    gameData = [...training, ...test1, ...test2];
 
-  // 5) Start trials
-  hideButtons();
-  setupGame();
-});
+    console.log("Filtered gameData length:", gameData.length);
+    console.log("Round counts:", { Training: training.length, Test1: test1.length, Test2: test2.length });
+  })
+  .catch(error => console.error("Error loading HeddenDataOld.json:", error));
 
-//// GAME SETUP
+const loadToMPromise = fetch(CONFIG.TOM_CSV_PATH)
+  .then(response => response.text())
+  .then(csvText => {
+    const results = Papa.parse(csvText, { header: true, skipEmptyLines: true }).data;
+
+    selectedQuestions = CONFIG.TOM_COLUMNS.map(col => {
+      const valid = results
+        .map(row => row[col])
+        .filter(q => q && q.trim() !== "" && q.trim().toUpperCase() !== "NA");
+
+      if (!valid.length) {
+        console.warn(`No valid ToM questions found for column: ${col}`);
+        return { inventory: col, question: "[MISSING QUESTION]" };
+      }
+
+      const randIndex = Math.floor(Math.random() * valid.length);
+      return { inventory: col, question: valid[randIndex] };
+    });
+
+    console.log("Selected ToM questions (1 per inventory):", selectedQuestions);
+  })
+  .catch(error => console.error("Error loading or parsing ToM CSV:", error));
+
+/***********************
+ * Game logic
+ ***********************/
+function highlightCell(cellId) {
+  document.querySelectorAll("#gameBoard td").forEach(cell => cell.classList.remove("highlight"));
+  document.getElementById(cellId).classList.add("highlight");
+}
+
+function decideComputerMove(quadruplet, player2Type) {
+  const decisionIndex = player2Type === "Myopic" ? 0 : 1;
+  return quadruplet[decisionIndex] === 1 ? "move" : "stay";
+}
+
+function hideButtons() {
+  document.getElementById("controls").classList.add("controls-hidden");
+}
+
+function showButtons() {
+  document.getElementById("controls").classList.remove("controls-hidden");
+}
+
 async function setupGame() {
   const controls = document.getElementById("controls");
   controls.innerHTML = '<button id="moveButton">Move</button><button id="stayButton">Stay</button>';
@@ -824,25 +874,22 @@ async function setupGame() {
   const sec = getSectionForIndex(currentGameIndex);
   const sectionTrialNum = (currentGameIndex - sec.start) + 1;
 
-  // Top corner updates
+  // Top corner UI
   if (sec.name === "Training") {
     document.getElementById("trialType").textContent = "None (Training)";
   } else {
-    // you should have these from earlier: opponentUsernames.Test1 / opponentUsernames.Test2
     const opp = (opponentUsernames?.[sec.name] || "").trim();
-    document.getElementById("trialType").textContent = opp || sec.name; // fallback: "Test1"/"Test2"
+    document.getElementById("trialType").textContent = opp || sec.name;
   }
 
-  // Index-based progress since Trial numbers may not be contiguous after filtering
   document.getElementById("trialNumber").textContent = `${sectionTrialNum} / ${sec.len}`;
 
-  // Clear board and highlights
-  document.querySelectorAll("#gameBoard span").forEach(span => span.textContent = "");
+  // Reset board
+  document.querySelectorAll("#gameBoard span").forEach(span => (span.textContent = ""));
   document.querySelectorAll("#gameBoard td").forEach(cell => cell.classList.remove("highlight"));
 
   await delay(700);
 
-  // Parse payoffs
   const p1Payoff = game.P1Payoff.split(" ").map(Number);
   const p2Payoff = game.P2Payoff.split(" ").map(Number);
   const computerDecisionQuadruplet = game.Quadruplet.split(" ").map(Number);
@@ -859,14 +906,13 @@ async function setupGame() {
 
   showButtons();
 
-  // Start in A
   let currentCell = "A";
   highlightCell(currentCell);
 
   const p1Label = (player1Username && player1Username.trim()) ? player1Username.trim() : "Player 1";
   setStatus(`${p1Label}, make your move!`);
 
-  // Remove & replace buttons to fix duplicate listeners
+  // Replace buttons to avoid duplicate listeners
   const moveButton = document.getElementById("moveButton");
   const stayButton = document.getElementById("stayButton");
   moveButton.replaceWith(moveButton.cloneNode(true));
@@ -875,13 +921,11 @@ async function setupGame() {
   const updatedMoveButton = document.getElementById("moveButton");
   const updatedStayButton = document.getElementById("stayButton");
 
-  // Start time
-  let startTime = new Date().getTime();
+  const startTime = Date.now();
 
   updatedMoveButton.addEventListener("click", () => {
-    let decisiontime = new Date().getTime() - startTime;
+    const decisiontime = Date.now() - startTime;
 
-    // red cap data to save
     if (numTrialRows() < (currentGameIndex + 1)) {
       const quadruplet = game.Quadruplet.split(" ").map(Number);
 
@@ -897,7 +941,7 @@ async function setupGame() {
         trial_index: currentGameIndex + 1,
         round: game.Round,
         first_move: "move",
-        strategy: strategy,
+        strategy,
         decisionTime: decisiontime,
         P1Payoff: game.P1Payoff,
         P2Payoff: game.P2Payoff,
@@ -925,41 +969,53 @@ async function setupGame() {
 
       emitDollarVFX(currentCell, pointsAdded);
       showNextTrialButton();
-
       return;
-    } else {
-      setStatus("Player 2 is making their move...");
-      hideButtons();
-
-      const delayMs = Math.floor(Math.random() * 2000) + 1000;
-
-      setTimeout(() => {
-        const computerAction = decideComputerMove(computerDecisionQuadruplet, game.Type);
-
-        if (computerAction === "stay") {
-          setStatus(`Player 2 stayed. Game end at Cell ${currentCell}.`);
-
-          // NOTE: left as your original behavior (adds p1Payoff[1])
-          const pointsAdded = p1Payoff[1];  // keeping your existing behavior
-          totalPoints += pointsAdded;
-          document.getElementById("totalPoints").textContent = totalPoints;
-          emitDollarVFX(currentCell, pointsAdded);
-          showNextTrialButton();
-          return;
-        } else {
-          currentCell = "C";
-          highlightCell(currentCell);
-          setStatus(`Player 2 moved. ${p1Label}, make your move!`);
-          showButtons();
-        }
-      }, delayMs);
     }
+
+    const oppLabel = (sec.name === "Training")
+      ? "Player 2"
+      : ((opponentUsernames?.[sec.name] || "").trim() || "Player 2");
+
+    setStatus(`${oppLabel} is making their move...`);
+    hideButtons();
+
+    const delayMs = randInt(CONFIG.OPPONENT_DELAY_MS_MIN, CONFIG.OPPONENT_DELAY_MS_MAX);
+
+    setTimeout(() => {
+      const computerAction = decideComputerMove(computerDecisionQuadruplet, game.Type);
+
+      if (computerAction === "stay") {
+        const oppLabel2 = (sec.name === "Training")
+          ? "Player 2"
+          : ((opponentUsernames?.[sec.name] || "").trim() || "Player 2");
+
+        setStatus(`${oppLabel2} stayed. Game end at Cell ${currentCell}.`);
+
+        // NOTE: left as your original behavior (adds p1Payoff[1])
+        const pointsAdded = p1Payoff[1];
+        totalPoints += pointsAdded;
+        document.getElementById("totalPoints").textContent = totalPoints;
+
+        emitDollarVFX(currentCell, pointsAdded);
+        showNextTrialButton();
+        return;
+      }
+
+      currentCell = "C";
+      highlightCell(currentCell);
+
+      const oppLabel3 = (sec.name === "Training")
+        ? "Player 2"
+        : ((opponentUsernames?.[sec.name] || "").trim() || "Player 2");
+
+      setStatus(`${oppLabel3} moved. ${p1Label}, make your move!`);
+      showButtons();
+    }, delayMs);
   });
 
   updatedStayButton.addEventListener("click", () => {
-    let decisiontime = new Date().getTime() - startTime;
+    const decisiontime = Date.now() - startTime;
 
-    // red cap data to save
     if (numTrialRows() < (currentGameIndex + 1)) {
       const quadruplet = game.Quadruplet.split(" ").map(Number);
 
@@ -975,7 +1031,7 @@ async function setupGame() {
         trial_index: currentGameIndex + 1,
         round: game.Round,
         first_move: "stay",
-        strategy: strategy,
+        strategy,
         decisionTime: decisiontime,
         P1Payoff: game.P1Payoff,
         P2Payoff: game.P2Payoff,
@@ -987,32 +1043,13 @@ async function setupGame() {
     setStatus(`${p1Label} stayed at Cell ${currentCell}. Game end.`);
 
     const cellIndexMap = { A: 0, B: 1, C: 2, D: 3 };
-    const cellIndex = cellIndexMap[currentCell];
-    const pointsAdded = p1Payoff[cellIndex];
+    const pointsAdded = p1Payoff[cellIndexMap[currentCell]];
+
     totalPoints += pointsAdded;
     document.getElementById("totalPoints").textContent = totalPoints;
 
     emitDollarVFX(currentCell, pointsAdded);
     showNextTrialButton();
-  });
-}
-
-function highlightCell(cellId) {
-  document.querySelectorAll("#gameBoard td").forEach(cell => cell.classList.remove("highlight"));
-  document.getElementById(cellId).classList.add("highlight");
-}
-
-function decideComputerMove(quadruplet, player2Type) {
-  const decisionIndex = player2Type === "Myopic" ? 0 : 1;
-  return quadruplet[decisionIndex] === 1 ? "move" : "stay";
-}
-
-function logAllUsernamesSnapshot() {
-  player1Data.push({
-    meta_type: "usernames_snapshot",
-    player1_username: player1Username || "",
-    opponent_test1_username: opponentUsernames.Test1 || "",
-    opponent_test2_username: opponentUsernames.Test2 || ""
   });
 }
 
@@ -1022,7 +1059,6 @@ function showNextTrialButton() {
   controls.style.visibility = "visible";
   controls.style.pointerEvents = "auto";
 
-  // Clear controls and add the Next Trial button
   controls.innerHTML = "";
 
   const nextButton = document.createElement("button");
@@ -1031,25 +1067,28 @@ function showNextTrialButton() {
   controls.appendChild(nextButton);
 
   nextButton.addEventListener("click", async () => {
-    const controls = document.getElementById("controls");
     controls.innerHTML = '<button id="moveButton">Move</button><button id="stayButton">Stay</button>';
 
     setStatus("");
     currentGameIndex++;
 
     if (currentGameIndex === trainingEndIndex) {
-      resetForNewSection("Test1"); // added below
+      resetForNewSection("Test1");
 
       const llm1 = await getLLMForPhase("Test1");
+      commitOpponentUsername("Test1", llm1.opponent_username);
+
       await showOpponentIntroSlide(1);
       await showMatchmakingVisual(llm1.opponent_username || "");
       await showLLMInstructionsSlide(llm1.text, llm1);
     }
 
     if (currentGameIndex === test1EndIndex) {
-      resetForNewSection("Test2"); // added below
+      resetForNewSection("Test2");
 
       const llm2 = await getLLMForPhase("Test2");
+      commitOpponentUsername("Test2", llm2.opponent_username);
+
       await showOpponentIntroSlide(2);
       await showMatchmakingVisual(llm2.opponent_username || "");
       await showLLMInstructionsSlide(llm2.text, llm2);
@@ -1057,39 +1096,53 @@ function showNextTrialButton() {
 
     if (currentGameIndex < gameData.length) {
       setupGame();
-    } else {
-      document.getElementById("gameBoard").style.display = "none";
-      document.getElementById("controls").style.display = "none";
-      setStatus("");
-
-      document.getElementById("userInstructionOverlay").style.display = "flex";
-
-      document.getElementById("submitUserInstructions").addEventListener("click", function () {
-        const instructions = document.getElementById("userInstructionInput").value.trim();
-        if (instructions) {
-          player1Data.push({ instructions });
-          document.getElementById("userInstructionOverlay").style.display = "none";
-          setStatus("All trials completed! Sending data...");
-          sendToRedCap();
-        } else {
-          alert("Please enter instructions before submitting.");
-        }
-      });
+      return;
     }
+
+    document.getElementById("gameBoard").style.display = "none";
+    document.getElementById("controls").style.display = "none";
+    setStatus("");
+
+    document.getElementById("userInstructionOverlay").style.display = "flex";
+
+    document.getElementById("submitUserInstructions").addEventListener("click", function () {
+      const instructions = document.getElementById("userInstructionInput").value.trim();
+      if (instructions) {
+        player1Data.push({ instructions });
+        document.getElementById("userInstructionOverlay").style.display = "none";
+        setStatus("All trials completed! Sending data...");
+        sendToRedCap();
+      } else {
+        alert("Please enter instructions before submitting.");
+      }
+    });
   });
 }
 
-function hideButtons() {
-  const controls = document.getElementById("controls");
-  controls.classList.add("controls-hidden");
-}
+/***********************
+ * Start flow
+ ***********************/
+document.addEventListener("DOMContentLoaded", async () => {
+  document.querySelectorAll("#gameBoard span").forEach(span => (span.textContent = ""));
+  setStatus("");
 
-function showButtons() {
-  const controls = document.getElementById("controls");
-  controls.classList.remove("controls-hidden");
-}
+  await Promise.all([loadGameDataPromise, loadToMPromise]);
+  llmPreloadPromise = preloadLLMInstructions();
 
-// ---------- sendToRedCap unchanged ----------
+  await showWelcomeSlide();
+  await showToMIntroSlide();
+  await runFrontloadedToMBattery();
+
+  await showUsernameEntrySlide();
+  await showInstructionImageOverlay();
+
+  hideButtons();
+  setupGame();
+});
+
+/***********************
+ * sendToRedCap unchanged
+ ***********************/
 async function sendToRedCap() {
   console.log("Saving data locally before sending to REDCap...");
   const filename = `player_data.json`;
@@ -1107,7 +1160,7 @@ async function sendToRedCap() {
   console.log("Local JSON file saved:", filename);
 
   console.log("Preparing to send responses to REDCap");
-  const url = 'https://redcap.case.edu/api/';
+  const url = "https://redcap.case.edu/api/";
   const time = Date.now();
   const timestamp = time.toString();
   const fileContent = JSON.stringify(player1Data);
@@ -1115,50 +1168,50 @@ async function sendToRedCap() {
   const file = new File([fileContent], filename, { type: "application/json" });
   const formData = new FormData();
 
-  const dataDict = { "record_id": timestamp };
+  const dataDict = { record_id: timestamp };
 
   const body = {
-    method: 'POST',
-    token: '2C941E2CCA757DF649E150366AD3904E',
-    content: 'record',
-    format: 'json',
-    type: 'flat',
-    overwriteBehavior: 'normal',
-    forceAutoNumber: 'false',
+    method: "POST",
+    token: "2C941E2CCA757DF649E150366AD3904E",
+    content: "record",
+    format: "json",
+    type: "flat",
+    overwriteBehavior: "normal",
+    forceAutoNumber: "false",
     data: JSON.stringify([dataDict]),
-    returnContent: 'count',
-    returnFormat: 'json'
+    returnContent: "count",
+    returnFormat: "json"
   };
 
   $.post(url, body)
     .done(function (response) {
-      console.log('Creating record to REDCap. Response:', response);
+      console.log("Creating record to REDCap. Response:", response);
     })
     .fail(function (error) {
-      console.error('Failed to create record to REDCap:', error);
+      console.error("Failed to create record to REDCap:", error);
     });
 
   await delay(700);
 
-  formData.append('token', '2C941E2CCA757DF649E150366AD3904E');
-  formData.append('content', 'file');
-  formData.append('action', 'import');
-  formData.append('field', `prt_data_json`);
+  formData.append("token", "2C941E2CCA757DF649E150366AD3904E");
+  formData.append("content", "file");
+  formData.append("action", "import");
+  formData.append("field", `prt_data_json`);
   formData.append("overwriteBehavior", "normal");
-  formData.append('record', timestamp);
-  formData.append('file', file);
+  formData.append("record", timestamp);
+  formData.append("file", file);
 
   $.ajax({
     url: url,
-    type: 'POST',
+    type: "POST",
     data: formData,
     contentType: false,
     processData: false,
     success: function (response) {
-      console.log('Data sent to REDCap. Response:', response);
+      console.log("Data sent to REDCap. Response:", response);
     },
     error: function (error) {
-      console.error('Failed to send data to REDCap:', error);
+      console.error("Failed to send data to REDCap:", error);
     }
   });
 }
