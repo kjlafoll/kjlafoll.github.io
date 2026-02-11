@@ -43,13 +43,13 @@
 const qp = new URLSearchParams(location.search);
 const sched = (qp.get('sched') || qp.get('condition') || '').toLowerCase();
 if (sched === 's4') {
-  const instface = 'WF';
-  const filetype = 'webp';
-  const mysched = 'flanker_schedule_s4.csv';
+  instface = 'WF';
+  filetype = 'webp';
+  mysched = 'flanker_schedule_s4.csv';
 } else {
-  const instface = 'WM';
-  const filetype = 'bmp';
-  const mysched = 'flanker_schedule_s3.csv';
+  instface = 'WM';
+  filetype = 'bmp';
+  mysched = 'flanker_schedule_s3.csv';
 }
 
 const CONFIG = {
