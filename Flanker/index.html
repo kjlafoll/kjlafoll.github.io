@@ -43,7 +43,13 @@
 function getScheduleCSV(){
   const qp = new URLSearchParams(location.search);
   const sched = (qp.get('sched') || qp.get('condition') || '').toLowerCase();
-  if (sched === 's4') return 'flanker_schedule_s4.csv';
+  if (sched === 's4') {
+    const instface = 'WF';
+    const filetype = 'webp';
+    return 'flanker_schedule_s4.csv';
+  }
+  const instface = 'WM';
+  const filetype = 'bmp';
   return 'flanker_schedule_s3.csv';
 }
 
@@ -60,7 +66,6 @@ const CONFIG = {
   showKeyCues: true,
   showProgress: false
 };
-instface = 'WM'
 
 /*******************
  * STATE
@@ -170,7 +175,7 @@ function render(){
   else if(s==='inst1'){
     // Congruent example above text
     container.append(
-      h('div',{class:'stimulus'}, ...[0,1,2,3,4].map(()=> h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_NC.bmp`,alt:'not emotional face'}))),
+      h('div',{class:'stimulus'}, ...[0,1,2,3,4].map(()=> h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_NC.${filetype}`,alt:'not emotional face'}))),
       h('h2',{style:'margin:1px 0'},'Task Instructions'),
       h('div',{},
         h('p',{style:'margin:1px 0'},'You will see five faces in a row. Your job is to judge the emotion of the ', h('b',{},'MIDDLE'), ' face only.'),
@@ -183,11 +188,11 @@ function render(){
     // Incongruent example above text
     container.append(
       h('div',{class:'stimulus'},
-        h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_NC.bmp`,alt:'not emotional face'}),
-        h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_NC.bmp`,alt:'not emotional face'}),
-        h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_HC.bmp`,alt:'emotional face'}),
-        h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_NC.bmp`,alt:'not emotional face'}),
-        h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_NC.bmp`,alt:'not emotional face'})
+        h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_NC.${filetype}`,alt:'not emotional face'}),
+        h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_NC.${filetype}`,alt:'not emotional face'}),
+        h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_HC.${filetype}`,alt:'emotional face'}),
+        h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_NC.${filetype}`,alt:'not emotional face'}),
+        h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_NC.${filetype}`,alt:'not emotional face'})
       ),
       h('h2',{style:'margin:1px 0'},'Important'),
       h('p',{style:'margin:1px 0'},'Sometimes the surrounding faces will have different emotionality than the face in the middle.'),
@@ -200,15 +205,15 @@ function render(){
     container.append(
       h('h2',{style:'margin:1px 0'},'Examples'),
       h('p',{style:'margin:1px 0'},'In the example below, the left [Q]-key is correct:'),
-      h('div',{class:'stimulus'}, ...[0,1,2,3,4].map(()=> h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_NC.bmp`,alt:'not emotional face'}))),
+      h('div',{class:'stimulus'}, ...[0,1,2,3,4].map(()=> h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_NC.${filetype}`,alt:'not emotional face'}))),
       h('p',{style:'margin:1px 0'},'since the middle face is not emotional.'),
       h('p',{style:'margin:1px 0'},'In the example below, the right [P]-key is correct:'),
       h('div',{class:'stimulus'},
-        h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_NC.bmp`,alt:'not emotional face'}),
-        h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_NC.bmp`,alt:'not emotional face'}),
-        h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_HC.bmp`,alt:'emotional face'}),
-        h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_NC.bmp`,alt:'not emotional face'}),
-        h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_NC.bmp`,alt:'not emotional face'})
+        h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_NC.${filetype}`,alt:'not emotional face'}),
+        h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_NC.${filetype}`,alt:'not emotional face'}),
+        h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_HC.${filetype}`,alt:'emotional face'}),
+        h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_NC.${filetype}`,alt:'not emotional face'}),
+        h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_NC.${filetype}`,alt:'not emotional face'})
       ),
       h('p',{style:'margin:1px 0'},'since the middle face is emotional.'),
       h('p',{style:'margin:1px 0'},'Press Continue for further instruction.'),
