@@ -426,6 +426,7 @@ function endGame() {
   const payload = {
     task: 'flanker_faces',
     participantID: state.pid,
+    sched: sched,
     results,
     summary: { nTrials, nLapses, meanRT, nAttention, nAttentionPassed }
   };
