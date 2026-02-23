@@ -34,7 +34,7 @@
  * CONFIG
  *******************/
 const CONFIG = {
-  scheduleCSV: 'flanker_schedule_a1.csv', // your attached schedule
+  scheduleCSV: new URLSearchParams(location.search).get('scheduleCSV') || 'flanker_schedule_a1.csv',
   practiceTrials: 8,
   fixationMs: 500,
   blankMs: 500,
@@ -44,6 +44,7 @@ const CONFIG = {
   breakSeconds: 30,
   showKeyCues: true
 };
+
 
 /*******************
  * STATE
@@ -133,8 +134,8 @@ function parseCSV(text){
     const images = [flk, flk, tgt, flk, flk];
 
     // Use provided correct if present; otherwise derive (Q for <, P for >)
-    let corr = iCorrect>=0 ? String(cols[iCorrect]||'').trim().toUpperCase() : '';
-    if (!corr) corr = (tgt === '<') ? 'Q' : 'P';
+    let corr = iCorrect>=0 ? String(cols[iCorrect]||'').trim() : '';
+    if (!corr) corr = (tgt === '<') ? 'ArrowLeft' : 'ArrowRight';
 
     out.push({
       images,
@@ -158,16 +159,16 @@ function render(){
   document.body.classList.toggle('hide-cursor', ['fix','blank','stim'].includes(s));
   app.innerHTML = '';
 
-  if(CONFIG.showKeyCues && (['practice','main','fix','blank','stim','tooFast','tooSlow','inst1','inst2','inst3','practiceIntro'].includes(s))){
-    app.append(
-      h('div',{class:'kbdhelp'},
-        h('span',{class:'kbdkey'},'Q'),' = LEFT ', h('span',{class:'kbdarrow'},'←')
-      ),
-      h('div',{class:'kbdhelp right'},
-        h('span',{class:'kbdkey'},'P'),' = RIGHT ', h('span',{class:'kbdarrow'},'→')
-      )
-    );
-  }
+  // if(CONFIG.showKeyCues && (['practice','main','fix','blank','stim','tooFast','tooSlow','inst1','inst2','inst3','practiceIntro'].includes(s))){
+  //   app.append(
+  //     h('div',{class:'kbdhelp'},
+  //       h('span',{class:'kbdkey'},'←'),' = LEFT ', h('span',{class:'kbdarrow'},'←')
+  //     ),
+  //     h('div',{class:'kbdhelp right'},
+  //       h('span',{class:'kbdkey'},'→'),' = RIGHT ', h('span',{class:'kbdarrow'},'→')
+  //     )
+  //   );
+  // }
 
   const container = h('div',{class:'screen'});
   app.append(container);
@@ -185,7 +186,7 @@ function render(){
       h('h2',{style:'margin:1px 0'},'Task Instructions'),
       h('div',{},
         h('p',{style:'margin:1px 0'},'You will see five arrows in a row. Your job is to judge the direction of the ', h('b',{},'MIDDLE'),' arrow only.'),
-        h('p',{style:'margin:1px 0'}, h('span',{class:'mono'},'Q'),' = LEFT. ', h('span',{class:'mono'},'P'),' = RIGHT.')
+        // h('p',{style:'margin:1px 0'}, h('span',{class:'mono'},'←'),' = LEFT. ', h('span',{class:'mono'},'→'),' = RIGHT.')
       ),
       h('button',{class:'btn',onclick:()=>go('inst2')},'Continue')
     );
@@ -203,10 +204,10 @@ function render(){
   else if(s==='inst3'){
     container.append(
       h('h2',{style:'margin:1px 0'},'Examples'),
-      h('p',{style:'margin:1px 0'},'In the example below, the left [Q]-key is correct:'),
+      h('p',{style:'margin:1px 0'},'In the example below, the left [←]-key is correct:'),
       h('div',{class:'stimulus'}, ...[0,1,2,3,4].map(()=> arrowCell('left'))),
       h('p',{style:'margin:1px 0'},'since the middle arrow points left.'),
-      h('p',{style:'margin:1px 0'},'In the example below, the right [P]-key is correct:'),
+      h('p',{style:'margin:1px 0'},'In the example below, the right [→]-key is correct:'),
       h('div',{class:'stimulus'}, arrowCell('left'),arrowCell('left'),arrowCell('right'),arrowCell('left'),arrowCell('left')),
       h('p',{style:'margin:1px 0'},'since the middle arrow points right.'),
       h('p',{style:'margin:1px 0'},'Press Continue for further instruction.'),
@@ -216,7 +217,7 @@ function render(){
   else if(s==='practiceIntro'){
     container.append(
       h('h2',{},'Practice'),
-      h('p',{},'Place your index fingers on ', h('b',{},'Q'),' and ', h('b',{},'P'),'. Respond as quickly and accurately as possible.'),
+      h('p',{},'Place your index and middle fingers on the ', h('b',{},'←'),' and ', h('b',{},'→'),' arrow keys. Respond as quickly and accurately as possible.'),
       h('p',{class:'subtle'},'Press Space to begin the practice block.')
     );
   }
@@ -246,10 +247,9 @@ function render(){
   else if(s==='practiceBreak'){
     container.append(
       h('h2',{},'Experiment'),
-      h('p',{},'Practice complete. Start the main block or practice more.'),
+      h('p',{},'Practice complete. Press Start to begin the main block.'),
       h('div',{class:'row'},
-        h('button',{class:'btn',onclick:startMain},'Start'),
-        h('button',{class:'btn',onclick:restartPractice},'Practice More')
+        h('button',{class:'btn',onclick:startMain},'Start')
       )
     );
   }
@@ -368,46 +368,112 @@ function startMain(){ state.inPractice = false; state.idx=0; runTrial(); }
 /*******************
  * QUALTRICS POST
  *******************/
-let __RG_DONE_SENT__ = false;
-function sendRGDoneOnce(payload) {
-  if (__RG_DONE_SENT__) return;
-  __RG_DONE_SENT__ = true;
-  try {
-    window.parent.postMessage({ type: 'RG_DONE_Arrows', payload }, '*');
-    console.log('postMessage sent:', payload);
-  } catch (e) {
-    console.error('postMessage failed:', e);
-  }
-}
+// let __RG_DONE_SENT__ = false;
+// function sendRGDoneOnce(payload) {
+//   if (__RG_DONE_SENT__) return;
+//   __RG_DONE_SENT__ = true;
+//   try {
+//     window.parent.postMessage({ type: 'RG_DONE_Arrows', payload }, '*');
+//     console.log('postMessage sent:', payload);
+//   } catch (e) {
+//     console.error('postMessage failed:', e);
+//   }
+// }
+// function endGame() {
+//   const results = state.responses.slice();
+//   const nTrials = results.length;
+//   const nLapses = results.filter(r => r.lapse).length;
+//   const rts = results.filter(r => !r.lapse && typeof r.rt === 'number').map(r => r.rt);
+//   const meanRT = rts.length ? Math.round(rts.reduce((a,b)=>a+b,0)/rts.length) : null;
+//   const nAttention = 0;
+//   const nAttentionPassed = 0;
+//   const payload = {
+//     task: 'flanker_arrows',
+//     participantID: state.pid,
+//     results,
+//     summary: { nTrials, nLapses, meanRT, nAttention, nAttentionPassed }
+//   };
+//   sendRGDoneOnce(payload);
+// }
 function endGame() {
-  const results = state.responses.slice();
-  const nTrials = results.length;
-  const nLapses = results.filter(r => r.lapse).length;
-  const rts = results.filter(r => !r.lapse && typeof r.rt === 'number').map(r => r.rt);
-  const meanRT = rts.length ? Math.round(rts.reduce((a,b)=>a+b,0)/rts.length) : null;
-  const nAttention = 0;
-  const nAttentionPassed = 0;
-  const payload = {
-    task: 'flanker_arrows',
-    participantID: state.pid,
-    results,
-    summary: { nTrials, nLapses, meanRT, nAttention, nAttentionPassed }
-  };
-  sendRGDoneOnce(payload);
+  sendToRedCap();
 }
 function ensurePosted(){ if(!state._posted){ endGame(); state._posted = true; } }
+
+/***********************
+ * sendToRedCap
+ ***********************/
+async function sendToRedCap() {
+  console.log("Saving data locally before sending to REDCap...");
+
+  // Decide schedule tag + REDCap field from schedule filename
+  const sched = String(CONFIG.scheduleCSV || "").toLowerCase();
+  const scheduleTag = sched.includes("a2") ? "a2" : "a1";
+  const redcapField = scheduleTag === "a2" ? "flanker_data_json_2" : "flanker_data_json";
+
+  // Modular filename so a1 and a2 don't overwrite each other locally
+  const filename = `flanker_state_${state.pid || "TEST"}_${scheduleTag}.json`;
+
+  // Upload the whole state object
+  const dataStr = JSON.stringify(state, null, 2);
+  const blob = new Blob([dataStr], { type: "application/json" });
+  const url_local = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url_local;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url_local);
+
+  console.log("Local JSON file saved:", filename);
+
+  console.log("Preparing to send responses to REDCap");
+  const url = "https://redcap.uits.iu.edu/api/";
+  const time = Date.now();
+  const timestamp = time.toString();
+
+  // Use participant ID if available; otherwise fallback to timestamp
+  const recordId = (state.pid && String(state.pid).trim()) ? String(state.pid).trim() : timestamp;
+
+  const fileContent = JSON.stringify(state);
+  const file = new File([fileContent], filename, { type: "application/json" });
+
+  const formData = new FormData();
+  formData.append("token", "331D2D5EB640CD1DB90D074BD4CCEEB8"); // <-- add REDCap API token
+  formData.append("content", "file");
+  formData.append("action", "import");
+  formData.append("field", redcapField);
+  formData.append("overwriteBehavior", "normal");
+  formData.append("record", recordId);
+  formData.append("file", file);
+
+  $.ajax({
+    url: url,
+    type: "POST",
+    data: formData,
+    contentType: false,
+    processData: false,
+    success: function (response) {
+      console.log("Data sent to REDCap. Field:", redcapField, "Response:", response);
+    },
+    error: function (error) {
+      console.error("Failed to send data to REDCap:", error);
+    }
+  });
+}
 
 /*******************
  * INPUT
  *******************/
 window.addEventListener('keydown', (e)=>{
-  const k = e.key.toUpperCase();
+  const k = e.key;
   if(state.screen==='practiceIntro' && k===' '){ state.idx=0; runTrial(); }
   else if((state.screen==='tooFast'||state.screen==='tooSlow') && k===' ' && state.awaiting==='space'){
     if(state._needsRequeue){ requeueCurrentTrial(); state._needsRequeue=false; }
     state.awaiting=null; nextTrial();
   }
-  else if((state.screen==='stim') && state.awaiting==='resp' && (k==='Q'||k==='P')){ recordResponse(k); }
+  else if((state.screen==='stim') && state.awaiting==='resp' && (k==='ArrowLeft'||k==='ArrowRight')){ recordResponse(k); }
 });
 
 /*******************
@@ -438,8 +504,8 @@ async function boot(){
   } catch (err) {
     console.warn('CSV issue, using tiny token demo. Details:', (err && err.message) ? err.message : err);
     state.trials = [
-      {images:['L','L','L','L','L'], correct:'Q', congruency:'congruent', type:'prac'},
-      {images:['L','L','R','L','L'], correct:'P', congruency:'incongruent', type:'exp'}
+      {images:['L','L','L','L','L'], correct:'ArrowLeft', congruency:'congruent', type:'prac'},
+      {images:['L','L','R','L','L'], correct:'ArrowRight', congruency:'incongruent', type:'exp'}
     ];
     state.practice = state.trials.slice(0,1);
     state.block = state.trials.slice(1);
