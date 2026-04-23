@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EMA Admin</title>
+<style>
+  body { font-family: sans-serif; max-width: 480px; margin: 40px auto; padding: 0 16px; }
+  input { display: block; width: 100%; padding: 10px; margin: 8px 0 16px; font-size: 16px;
+          border: 1.5px solid #ccc; border-radius: 8px; box-sizing: border-box; }
+  button { padding: 12px 24px; font-size: 16px; background: #4a6fa5; color: #fff;
+           border: none; border-radius: 8px; cursor: pointer; width: 100%; }
+  #result { margin-top: 16px; padding: 12px; border-radius: 8px; display: none; font-size: 15px; }
+  .ok  { background: #e6f4ea; color: #1a6632; }
+  .err { background: #fce8e6; color: #8b1a1a; }
+</style>
+</head>
+<body>
+<h2>Enroll participant</h2>
+
+<label>Participant ID (e.g. p001)</label>
+<input type="text" id="pid" placeholder="p001">
+
+<label>Phone number (e.g. +13125550001)</label>
+<input type="tel" id="phone" placeholder="+13125550001">
+
+<button onclick="enroll()">Enroll</button>
+<div id="result"></div>
+
+<script>
+const WORKER_URL = "https://ema-worker.YOUR_SUBDOMAIN.workers.dev"; // ← same URL as index.html
+
+async function enroll() {
+  const pid   = document.getElementById("pid").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const result = document.getElementById("result");
+
+  if (!pid || !phone) {
+    result.className = "err"; result.style.display = "block";
+    result.textContent = "Please fill in both fields."; return;
+  }
+
+  try {
+    const res  = await fetch(WORKER_URL + "/enroll", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: pid, phone }),
+    });
+    const data = await res.json();
+    result.style.display = "block";
+    if (res.ok) {
+      result.className = "ok";
+      result.textContent = "✓ Enrolled " + data.id;
+    } else {
+      result.className = "err";
+      result.textContent = "Error: " + (data.error || "unknown");
+    }
+  } catch (e) {
+    result.className = "err"; result.style.display = "block";
+    result.textContent = "Network error: " + e.message;
+  }
+}
+</script>
+</body>
+</html>
