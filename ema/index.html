@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Emotion Check-In</title>
+<style>
+  /* ── Reset & base ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #f8f7f4;
+    --surface:  #ffffff;
+    --border:   #e0ddd8;
+    --text:     #1a1916;
+    --muted:    #6b6a65;
+    --accent:   #4a6fa5;
+    --accent2:  #2d8f6f;
+    --danger:   #c0392b;
+    --radius:   12px;
+    --shadow:   0 2px 12px rgba(0,0,0,0.08);
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 16px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  #app {
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 20px 16px 60px;
+  }
+
+  /* ── Progress bar ── */
+  #progress-bar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: var(--border);
+    z-index: 100;
+  }
+  #progress-fill {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.3s ease;
+    border-radius: 0 2px 2px 0;
+  }
+
+  /* ── Section cards ── */
+  .section {
+    display: none;
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 24px 20px;
+    margin-bottom: 16px;
+  }
+  .section.active { display: block; }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    line-height: 1.3;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+
+  /* ── Affect grid ── */
+  #affect-grid-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    max-width: 320px;
+    margin: 0 auto 12px;
+    touch-action: none;
+  }
+
+  #affect-grid-canvas {
+    width: 100%;
+    height: 100%;
+    cursor: crosshair;
+    border-radius: 8px;
+    display: block;
+  }
+
+  .grid-axis-label {
+    position: absolute;
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  /* ── Yes/No toggle ── */
+  .yn-group {
+    display: flex;
+    gap: 10px;
+    margin: 12px 0;
+  }
+
+  .yn-btn {
+    flex: 1;
+    padding: 14px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--text);
+    text-align: center;
+  }
+  .yn-btn.selected {
+    border-color: var(--accent);
+    background: #eef2f9;
+    color: var(--accent);
+  }
+
+  /* ── Duration input ── */
+  .duration-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 12px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .duration-row.visible {
+    opacity: 1;
+    pointer-events: all;
+  }
+  .duration-row label { font-size: 14px; color: var(--muted); white-space: nowrap; }
+  .duration-row input {
+    width: 80px;
+    padding: 8px 10px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-size: 15px;
+    color: var(--text);
+    background: var(--bg);
+    text-align: center;
+  }
+  .duration-row input:focus { outline: none; border-color: var(--accent); }
+
+  /* ── Trace canvas ── */
+  .trace-wrap {
+    position: relative;
+    margin: 16px auto 8px;
+    border-radius: 8px;
+    overflow: hidden;
+    touch-action: none;
+    user-select: none;
+  }
+
+  .trace-canvas {
+    display: block;
+    width: 100%;
+    background: #fafaf8;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    cursor: crosshair;
+  }
+
+  .trace-instructions {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  .trace-clear-btn {
+    font-size: 12px;
+    color: var(--muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 0;
+    margin-top: 4px;
+    text-decoration: underline;
+    display: block;
+  }
+
+  /* ── Nav buttons ── */
+  .nav-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .btn {
+    padding: 14px 24px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    flex: 1;
+  }
+  .btn-secondary {
+    background: var(--border);
+    color: var(--text);
+    flex: 0 0 auto;
+  }
+  .btn:disabled { opacity: 0.45; cursor: default; }
+
+  /* ── Likert scale ── */
+  .likert-row {
+    display: flex;
+    gap: 6px;
+    margin: 10px 0;
+    flex-wrap: wrap;
+  }
+  .likert-btn {
+    flex: 1;
+    min-width: 36px;
+    padding: 10px 4px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--text);
+    text-align: center;
+  }
+  .likert-btn.selected {
+    border-color: var(--accent);
+    background: #eef2f9;
+    color: var(--accent);
+  }
+
+  /* ── Submitted screen ── */
+  #submitted {
+    text-align: center;
+    padding: 48px 20px;
+  }
+  #submitted .checkmark {
+    font-size: 56px;
+    margin-bottom: 16px;
+  }
+
+  /* ── Error screen ── */
+  #error-screen {
+    display: none;
+    text-align: center;
+    padding: 48px 20px;
+    color: var(--danger);
+  }
+</style>
+</head>
+<body>
+
+<div id="progress-bar"><div id="progress-fill" style="width:0%"></div></div>
+
+<div id="app">
+
+  <!-- ── Section 1: Affect Grid ───────────────────────────────────────── -->
+  <div class="section active" id="s-affect">
+    <div class="section-label">Right now</div>
+    <h2>How are you feeling at this moment?</h2>
+    <p class="subtitle">Tap the grid to place a dot where you are right now.</p>
+
+    <div id="affect-grid-wrap">
+      <canvas id="affect-grid-canvas"></canvas>
+      <!-- Axis labels injected by JS -->
+    </div>
+
+    <div class="nav-row">
+      <button class="btn btn-primary" id="affect-next" disabled onclick="goTo(1)">Next →</button>
+    </div>
+  </div>
+
+  <!-- ── Section 2: Social sharing ──────────────────────────────────── -->
+  <div class="section" id="s-social">
+    <div class="section-label">Since your last check-in</div>
+    <h2>Did you talk to anyone about your emotions or feelings?</h2>
+
+    <div class="yn-group">
+      <button class="yn-btn" id="yn-yes" onclick="setSocial(true)">Yes</button>
+      <button class="yn-btn" id="yn-no"  onclick="setSocial(false)">No</button>
+    </div>
+
+    <div class="duration-row" id="duration-row">
+      <label>Approximately how long? (minutes)</label>
+      <input type="number" id="convo-duration" min="1" max="480" placeholder="e.g. 20"
+             oninput="state.convoDuration = this.valueAsNumber">
+    </div>
+
+    <div class="nav-row">
+      <button class="btn btn-secondary" onclick="goTo(0)">← Back</button>
+      <button class="btn btn-primary" id="social-next" disabled onclick="goTo(2)">Next →</button>
+    </div>
+  </div>
+
+  <!-- ── Section 3: Valence trace ───────────────────────────────────── -->
+  <div class="section" id="s-trace-valence">
+    <div class="section-label">Emotional trace — valence</div>
+    <h2>Draw how your <em>positivity/negativity</em> changed over time.</h2>
+    <p class="subtitle" id="trace-valence-subtitle">Loading…</p>
+
+    <p class="trace-instructions">Draw a line from left (start of period) to right (now). Higher = more positive.</p>
+    <div class="trace-wrap">
+      <canvas class="trace-canvas" id="trace-valence-canvas"></canvas>
+    </div>
+    <button class="trace-clear-btn" onclick="clearTrace('valence')">Clear and redraw</button>
+
+    <div class="nav-row">
+      <button class="btn btn-secondary" onclick="goTo(1)">← Back</button>
+      <button class="btn btn-primary" id="trace-valence-next" disabled onclick="goTo(3)">Next →</button>
+    </div>
+  </div>
+
+  <!-- ── Section 4: Arousal trace ───────────────────────────────────── -->
+  <div class="section" id="s-trace-arousal">
+    <div class="section-label">Emotional trace — arousal</div>
+    <h2>Draw how your <em>energy / activation level</em> changed over time.</h2>
+    <p class="subtitle" id="trace-arousal-subtitle">Loading…</p>
+
+    <p class="trace-instructions">Draw a line from left (start of period) to right (now). Higher = more energized/activated.</p>
+    <div class="trace-wrap">
+      <canvas class="trace-canvas" id="trace-arousal-canvas"></canvas>
+    </div>
+    <button class="trace-clear-btn" onclick="clearTrace('arousal')">Clear and redraw</button>
+
+    <div class="nav-row">
+      <button class="btn btn-secondary" onclick="goTo(2)">← Back</button>
+      <button class="btn btn-primary" id="trace-arousal-next" disabled onclick="goTo(4)">Next →</button>
+    </div>
+  </div>
+
+  <!-- ── Section 5: Submit ──────────────────────────────────────────── -->
+  <div class="section" id="s-submit">
+    <div class="section-label">Almost done</div>
+    <h2>Anything else you'd like to note?</h2>
+    <p class="subtitle">Optional free-text.</p>
+    <textarea id="freetext" rows="4" placeholder="Optional…"
+              style="width:100%;border:1.5px solid var(--border);border-radius:8px;
+                     padding:10px;font-size:15px;resize:vertical;background:var(--bg);"
+              oninput="state.freetext = this.value"></textarea>
+
+    <div class="nav-row">
+      <button class="btn btn-secondary" onclick="goTo(3)">← Back</button>
+      <button class="btn btn-primary" id="submit-btn" onclick="submitSurvey()">Submit ✓</button>
+    </div>
+  </div>
+
+  <!-- ── Submitted ─────────────────────────────────────────────────── -->
+  <div id="submitted" style="display:none">
+    <div class="checkmark">✅</div>
+    <h2>All done — thank you!</h2>
+    <p style="color:var(--muted);margin-top:8px">Your response has been recorded. You can close this page.</p>
+  </div>
+
+  <!-- ── Error ─────────────────────────────────────────────────────── -->
+  <div id="error-screen">
+    <h2>⚠️ Something went wrong</h2>
+    <p id="error-msg" style="margin-top:8px;font-size:15px"></p>
+  </div>
+
+</div><!-- /#app -->
+
+<script>
+// ── CONFIGURE THIS ────────────────────────────────────────────────────────────
+const WORKER_URL = "https://ematwilio.kylelafollette.workers.dev"; // ← change me
+// ─────────────────────────────────────────────────────────────────────────────
+
+const SECTIONS = [
+  "s-affect",
+  "s-social",
+  "s-trace-valence",
+  "s-trace-arousal",
+  "s-submit",
+];
+
+// Parse URL params
+const params  = new URLSearchParams(location.search);
+const PID     = params.get("pid");
+const TS      = params.get("ts");
+const TOKEN   = params.get("token");
+
+if (!PID || !TS || !TOKEN) {
+  document.getElementById("error-screen").style.display = "block";
+  document.getElementById("error-msg").textContent =
+    "This link appears to be incomplete. Please use the link from your text message.";
+  document.getElementById("app").querySelectorAll(".section").forEach(s => s.style.display = "none");
+}
+
+// ── App state ─────────────────────────────────────────────────────────────────
+const state = {
+  currentSection: 0,
+  affectGrid:      null,   // { x: 0-1, y: 0-1 }
+  talkedToSomeone: null,
+  convoDuration:   null,
+  traces: {
+    valence: [],           // [{t: 0-1, y: 0-1}, ...]
+    arousal: [],
+  },
+  freetext: "",
+};
+
+// ── Navigation ────────────────────────────────────────────────────────────────
+function goTo(idx) {
+  document.getElementById(SECTIONS[state.currentSection]).classList.remove("active");
+  state.currentSection = idx;
+  document.getElementById(SECTIONS[idx]).classList.add("active");
+  const pct = ((idx) / (SECTIONS.length)) * 100;
+  document.getElementById("progress-fill").style.width = pct + "%";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  if (idx === 2 || idx === 3) renderTraceSubtitle(idx);
+}
+
+// ── Section 1: Affect Grid ────────────────────────────────────────────────────
+(function initAffectGrid() {
+  const canvas = document.getElementById("affect-grid-canvas");
+  const wrap   = document.getElementById("affect-grid-wrap");
+  const DPR    = window.devicePixelRatio || 1;
+
+  function resize() {
+    const sz = wrap.offsetWidth;
+    canvas.width  = sz * DPR;
+    canvas.height = sz * DPR;
+    drawGrid();
+  }
+
+  function drawGrid(dot) {
+    const ctx = canvas.getContext("2d");
+    const W   = canvas.width;
+    const H   = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+
+    // Background
+    ctx.fillStyle = "#fafaf8";
+    ctx.beginPath();
+    ctx.roundRect(0, 0, W, H, 10 * DPR);
+    ctx.fill();
+
+    // Border
+    ctx.strokeStyle = "#e0ddd8";
+    ctx.lineWidth   = 1.5 * DPR;
+    ctx.beginPath();
+    ctx.roundRect(0, 0, W, H, 10 * DPR);
+    ctx.stroke();
+
+    // Grid lines
+    ctx.strokeStyle = "#e8e6e0";
+    ctx.lineWidth   = 0.8 * DPR;
+    ctx.setLineDash([4 * DPR, 4 * DPR]);
+    [0.25, 0.5, 0.75].forEach(f => {
+      ctx.beginPath(); ctx.moveTo(f * W, 0); ctx.lineTo(f * W, H); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, f * H); ctx.lineTo(W, f * H); ctx.stroke();
+    });
+    ctx.setLineDash([]);
+
+    // Axes (bolder midlines)
+    ctx.strokeStyle = "#c8c5be";
+    ctx.lineWidth   = 1.2 * DPR;
+    ctx.beginPath(); ctx.moveTo(W / 2, 0); ctx.lineTo(W / 2, H); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, H / 2); ctx.lineTo(W, H / 2); ctx.stroke();
+
+    // Axis labels
+    ctx.font      = `${11 * DPR}px -apple-system, sans-serif`;
+    ctx.fillStyle = "#9b9890";
+    ctx.textAlign = "center";
+    ctx.fillText("Unpleasant", W * 0.18, H / 2 - 6 * DPR);
+    ctx.fillText("Pleasant",   W * 0.82, H / 2 - 6 * DPR);
+    ctx.fillText("High energy", W / 2, 14 * DPR);
+    ctx.fillText("Low energy",  W / 2, H - 4 * DPR);
+
+    // Corner labels
+    ctx.font      = `${10 * DPR}px -apple-system, sans-serif`;
+    ctx.fillStyle = "#b5b2ab";
+    ctx.textAlign = "start";
+    ctx.fillText("Distressed", 10 * DPR, 18 * DPR);
+    ctx.textAlign = "end";
+    ctx.fillText("Excited", W - 10 * DPR, 18 * DPR);
+    ctx.fillText("Relaxed", W - 10 * DPR, H - 8 * DPR);
+    ctx.textAlign = "start";
+    ctx.fillText("Bored", 10 * DPR, H - 8 * DPR);
+
+    // Dot
+    if (dot) {
+      const cx = dot.x * W;
+      const cy = (1 - dot.y) * H;
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, 18 * DPR, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(74,111,165,0.15)";
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, 10 * DPR, 0, Math.PI * 2);
+      ctx.fillStyle = "#4a6fa5";
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, 4 * DPR, 0, Math.PI * 2);
+      ctx.fillStyle = "#ffffff";
+      ctx.fill();
+    }
+  }
+
+  function handleInput(e) {
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const cx   = e.touches ? e.touches[0].clientX : e.clientX;
+    const cy   = e.touches ? e.touches[0].clientY : e.clientY;
+    const x    = Math.max(0, Math.min(1, (cx - rect.left)  / rect.width));
+    const y    = Math.max(0, Math.min(1, 1 - (cy - rect.top) / rect.height));
+    state.affectGrid = { x, y };
+    drawGrid({ x, y });
+    document.getElementById("affect-next").disabled = false;
+  }
+
+  canvas.addEventListener("click",      handleInput);
+  canvas.addEventListener("touchstart", handleInput, { passive: false });
+  canvas.addEventListener("touchmove",  handleInput, { passive: false });
+  window.addEventListener("resize", resize);
+  resize();
+})();
+
+// ── Section 2: Social sharing ─────────────────────────────────────────────────
+function setSocial(val) {
+  state.talkedToSomeone = val;
+  document.getElementById("yn-yes").classList.toggle("selected", val === true);
+  document.getElementById("yn-no").classList.toggle("selected",  val === false);
+  const row = document.getElementById("duration-row");
+  row.classList.toggle("visible", val === true);
+  document.getElementById("social-next").disabled = false;
+}
+
+// ── Sections 3–4: Temporal trace canvases ─────────────────────────────────────
+function renderTraceSubtitle(sectionIdx) {
+  const dim    = sectionIdx === 2 ? "valence" : "arousal";
+  const label  = dim === "valence" ? "positivity/negativity" : "energy/activation";
+  const hasTalk = state.talkedToSomeone;
+
+  const pingDate = new Date(Number(TS));
+  // We don't know previous ping time precisely; show a relative label
+  const subtitle = hasTalk
+    ? `Show the period since your last check-in. Mark approximately when the conversation happened.`
+    : `Show how your ${label} changed since your last check-in until right now.`;
+
+  const el = document.getElementById(`trace-${dim}-subtitle`);
+  if (el) el.textContent = subtitle;
+}
+
+(function initTraceCanvases() {
+  ["valence", "arousal"].forEach(dim => {
+    const canvas = document.getElementById(`trace-${dim}-canvas`);
+    const DPR    = window.devicePixelRatio || 1;
+    let drawing  = false;
+    let points   = [];
+
+    function resize() {
+      const W = canvas.parentElement.offsetWidth;
+      const H = Math.round(W * 0.5);
+      canvas.width  = W * DPR;
+      canvas.height = H * DPR;
+      canvas.style.height = H + "px";
+      drawTrace(canvas, dim, points, state.talkedToSomeone);
+    }
+
+    function getPos(e) {
+      const rect = canvas.getBoundingClientRect();
+      const src  = e.touches ? e.touches[0] : e;
+      return {
+        t: Math.max(0, Math.min(1, (src.clientX - rect.left)  / rect.width)),
+        y: Math.max(0, Math.min(1, 1 - (src.clientY - rect.top) / rect.height)),
+      };
+    }
+
+    canvas.addEventListener("mousedown",  e => { drawing = true; points = []; const p = getPos(e); points.push(p); });
+    canvas.addEventListener("mousemove",  e => { if (!drawing) return; points.push(getPos(e)); drawTrace(canvas, dim, points, state.talkedToSomeone); });
+    canvas.addEventListener("mouseup",    () => { if (!drawing) return; drawing = false; state.traces[dim] = downsample(points, 60); document.getElementById(`trace-${dim}-next`).disabled = state.traces[dim].length < 2; });
+
+    canvas.addEventListener("touchstart", e => { e.preventDefault(); drawing = true; points = []; const p = getPos(e); points.push(p); }, { passive: false });
+    canvas.addEventListener("touchmove",  e => { e.preventDefault(); if (!drawing) return; points.push(getPos(e)); drawTrace(canvas, dim, points, state.talkedToSomeone); }, { passive: false });
+    canvas.addEventListener("touchend",   () => { if (!drawing) return; drawing = false; state.traces[dim] = downsample(points, 60); document.getElementById(`trace-${dim}-next`).disabled = state.traces[dim].length < 2; });
+
+    window.addEventListener("resize", resize);
+    resize();
+  });
+})();
+
+function drawTrace(canvas, dim, points, hasTalk) {
+  const ctx = canvas.getContext("2d");
+  const W   = canvas.width;
+  const H   = canvas.height;
+  const DPR = window.devicePixelRatio || 1;
+  ctx.clearRect(0, 0, W, H);
+
+  // Background
+  ctx.fillStyle = "#fafaf8";
+  ctx.fillRect(0, 0, W, H);
+
+  // Shaded time zones when participant had a conversation
+  if (hasTalk) {
+    // Left zone: before conversation (~60% of span)
+    ctx.fillStyle = "rgba(74,111,165,0.05)";
+    ctx.fillRect(0, 0, W * 0.6, H);
+    ctx.fillStyle = "rgba(45,143,111,0.07)";
+    ctx.fillRect(W * 0.6, 0, W * 0.4, H);
+
+    // Zone divider + label
+    ctx.strokeStyle = "rgba(45,143,111,0.4)";
+    ctx.lineWidth   = 1.5 * DPR;
+    ctx.setLineDash([4 * DPR, 4 * DPR]);
+    ctx.beginPath(); ctx.moveTo(W * 0.6, 0); ctx.lineTo(W * 0.6, H); ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.font      = `${10 * DPR}px -apple-system, sans-serif`;
+    ctx.fillStyle = "rgba(45,143,111,0.7)";
+    ctx.textAlign = "center";
+    ctx.fillText("← before conversation",  W * 0.3,  14 * DPR);
+    ctx.fillText("during / after →",        W * 0.8,  14 * DPR);
+  }
+
+  // Grid lines (y)
+  ctx.strokeStyle = "#e8e6e0";
+  ctx.lineWidth   = 0.8 * DPR;
+  ctx.setLineDash([3 * DPR, 4 * DPR]);
+  [0.25, 0.5, 0.75].forEach(f => {
+    ctx.beginPath(); ctx.moveTo(0, f * H); ctx.lineTo(W, f * H); ctx.stroke();
+  });
+  ctx.setLineDash([]);
+
+  // Midline
+  ctx.strokeStyle = "#d0cdc6";
+  ctx.lineWidth   = 1 * DPR;
+  ctx.beginPath(); ctx.moveTo(0, H / 2); ctx.lineTo(W, H / 2); ctx.stroke();
+
+  // Border
+  ctx.strokeStyle = "#e0ddd8";
+  ctx.lineWidth   = 1.5 * DPR;
+  ctx.strokeRect(0, 0, W, H);
+
+  // Axis labels
+  ctx.font      = `${10 * DPR}px -apple-system, sans-serif`;
+  ctx.fillStyle = "#b5b2ab";
+  const dimLabel = dim === "valence" ? ["very negative", "very positive"] : ["very low energy", "very high energy"];
+  ctx.textAlign = "start";
+  ctx.fillText(dimLabel[1], 6 * DPR, 12 * DPR);
+  ctx.fillText(dimLabel[0], 6 * DPR, H - 4 * DPR);
+  ctx.textAlign = "start";
+  ctx.fillText("← past", 6 * DPR, H / 2 - 4 * DPR);
+  ctx.textAlign = "end";
+  ctx.fillText("now →", W - 6 * DPR, H / 2 - 4 * DPR);
+
+  // Trace line
+  if (points.length > 1) {
+    ctx.strokeStyle = dim === "valence" ? "#4a6fa5" : "#2d8f6f";
+    ctx.lineWidth   = 2.5 * DPR;
+    ctx.lineJoin    = "round";
+    ctx.lineCap     = "round";
+    ctx.beginPath();
+    points.forEach((p, i) => {
+      const px = p.t * W;
+      const py = (1 - p.y) * H;
+      i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+    });
+    ctx.stroke();
+
+    // Endpoint dot
+    const last = points[points.length - 1];
+    ctx.beginPath();
+    ctx.arc(last.t * W, (1 - last.y) * H, 5 * DPR, 0, Math.PI * 2);
+    ctx.fillStyle = dim === "valence" ? "#4a6fa5" : "#2d8f6f";
+    ctx.fill();
+  }
+}
+
+function clearTrace(dim) {
+  state.traces[dim] = [];
+  const canvas = document.getElementById(`trace-${dim}-canvas`);
+  drawTrace(canvas, dim, [], state.talkedToSomeone);
+  document.getElementById(`trace-${dim}-next`).disabled = true;
+}
+
+// ── Downsampler (keep N points, evenly spaced) ────────────────────────────────
+function downsample(pts, n) {
+  if (pts.length <= n) return pts;
+  const result = [];
+  const step   = (pts.length - 1) / (n - 1);
+  for (let i = 0; i < n; i++) {
+    result.push(pts[Math.round(i * step)]);
+  }
+  return result;
+}
+
+// ── Submit ────────────────────────────────────────────────────────────────────
+async function submitSurvey() {
+  const btn = document.getElementById("submit-btn");
+  btn.disabled = true;
+  btn.textContent = "Submitting…";
+
+  const payload = {
+    pid:      PID,
+    ts:       TS,
+    token:    TOKEN,
+    response: {
+      submittedAt:     Date.now(),
+      affectGrid:      state.affectGrid,
+      talkedToSomeone: state.talkedToSomeone,
+      convoDuration:   state.convoDuration,
+      traces:          state.traces,
+      freetext:        state.freetext,
+    },
+  };
+
+  try {
+    const res = await fetch(`${WORKER_URL}/submit`, {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Server error");
+
+    document.getElementById("app").querySelectorAll(".section").forEach(s => s.style.display = "none");
+    document.getElementById("submitted").style.display = "block";
+    document.getElementById("progress-fill").style.width = "100%";
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = "Submit ✓";
+    alert("Submission failed: " + err.message + "\n\nPlease try again or contact the research team.");
+  }
+}
+</script>
+</body>
+</html>
