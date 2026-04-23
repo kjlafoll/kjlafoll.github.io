@@ -432,7 +432,13 @@ function goTo(idx) {
   const pct = ((idx) / (SECTIONS.length)) * 100;
   document.getElementById("progress-fill").style.width = pct + "%";
   window.scrollTo({ top: 0, behavior: "smooth" });
-  if (idx === 2 || idx === 3) renderTraceSubtitle(idx);
+  if (idx === 2 || idx === 3) {
+    renderTraceSubtitle(idx);
+    // Resize the canvas now that its section is visible and has layout dimensions
+    const dim = idx === 2 ? "valence" : "arousal";
+    const c = document.getElementById(`trace-${dim}-canvas`);
+    if (c && c._resize) requestAnimationFrame(c._resize);
+  }
 }
 
 // ── Section 1: Affect Grid ────────────────────────────────────────────────────
@@ -576,15 +582,22 @@ function renderTraceSubtitle(sectionIdx) {
     const DPR    = window.devicePixelRatio || 1;
     let drawing  = false;
     let points   = [];
+    let sized    = false;
 
     function resize() {
+      // The section may be hidden (display:none) when this runs — skip if so
       const W = canvas.parentElement.offsetWidth;
+      if (!W) return;
+      sized = true;
       const H = Math.round(W * 0.5);
       canvas.width  = W * DPR;
       canvas.height = H * DPR;
       canvas.style.height = H + "px";
       drawTrace(canvas, dim, points, state.talkedToSomeone);
     }
+
+    // Expose so goTo() can trigger a resize when this section becomes visible
+    canvas._resize = resize;
 
     function getPos(e) {
       const rect = canvas.getBoundingClientRect();
@@ -603,8 +616,9 @@ function renderTraceSubtitle(sectionIdx) {
     canvas.addEventListener("touchmove",  e => { e.preventDefault(); if (!drawing) return; points.push(getPos(e)); drawTrace(canvas, dim, points, state.talkedToSomeone); }, { passive: false });
     canvas.addEventListener("touchend",   () => { if (!drawing) return; drawing = false; state.traces[dim] = downsample(points, 60); document.getElementById(`trace-${dim}-next`).disabled = state.traces[dim].length < 2; });
 
-    window.addEventListener("resize", resize);
-    resize();
+    // On window resize, only re-size if the canvas section is currently visible
+    window.addEventListener("resize", () => { if (canvas.parentElement.offsetWidth) resize(); });
+    // Do NOT call resize() here — canvas is hidden at init time and offsetWidth is 0
   });
 })();
 
