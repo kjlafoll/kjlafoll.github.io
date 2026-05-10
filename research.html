@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Research | Kyle LaFollette</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <style>
+    body { margin: 0; font-family: Arial, Helvetica, sans-serif; color: #202124; background: #fff; }
+    .wrap { max-width: 980px; margin: 0 auto; padding: 0 24px 56px; }
+    header { border-bottom: 1px solid #e6e6e6; padding: 22px 0 14px; margin-bottom: 28px; }
+    h1 { margin: 0 0 10px; font-size: 30px; font-weight: 500; }
+    nav { display: flex; gap: 16px; flex-wrap: wrap; font-size: 14px; }
+    nav a { color: #1f1f1f; text-decoration: none; }
+    nav a:hover { color: #1a73e8; }
+    h2 { margin: 24px 0 10px; font-size: 20px; }
+    h3 { margin: 16px 0 8px; font-size: 16px; }
+    p, li { line-height: 1.65; }
+    ul { margin: 0 0 14px 20px; padding: 0; }
+    a { color: #1a73e8; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .overview { margin-bottom: 18px; }
+
+    .research-card { border: 1px solid #dfe1e5; border-radius: 10px; margin: 0 0 14px; overflow: hidden; background: #fff; }
+    .research-card > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 1fr 300px; gap: 16px; align-items: center; padding: 16px; min-height: 170px; }
+    .research-card > summary::-webkit-details-marker { display: none; }
+    .summary-copy h2 { margin: 0 0 8px; font-size: 22px; }
+    .summary-copy p { margin: 0; color: #4f5257; }
+    .summary-image img { width: 100%; height: 160px; object-fit: cover; border: 1px solid #e5e5e5; border-radius: 8px; background: #f8f8f8; }
+    .img-cap { font-size: 11px; color: #6b6f75; margin-top: 6px; line-height: 1.35; }
+    .hint { font-size: 12px; color: #6b6f75; margin-top: 8px; }
+
+    .card-content {
+      display: block !important;
+      border-top: 1px solid #ececec;
+      background: #fcfcfc;
+      overflow: hidden;
+      max-height: 0;
+      opacity: 0;
+      padding: 0 16px;
+      transition: max-height 360ms ease, opacity 240ms ease, padding-top 360ms ease, padding-bottom 360ms ease;
+    }
+    .research-card.is-open .card-content {
+      opacity: 1;
+      padding-top: 14px;
+      padding-bottom: 16px;
+    }
+
+    @media (max-width: 840px) {
+      .research-card > summary { grid-template-columns: 1fr; }
+      .summary-image img { height: auto; max-height: 280px; object-fit: contain; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Kyle LaFollette</h1>
+            <nav>
+        <a href="index.html">Home</a>
+        <a href="research.html">Research</a>
+        <a href="teaching-service.html">Teaching & Service</a>
+        <a href="talks.html">Talks</a>
+        <a href="Kyle-LaFollette-CV.pdf" download>CV</a>
+        <a href="#" id="email-link" title="Email" aria-label="Email"><i class="fa-solid fa-envelope"></i></a>
+        <a href="https://github.com/kjlafoll" title="GitHub" aria-label="GitHub" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-github"></i></a>
+        <a href="https://scholar.google.com/citations?user=NUDFbQQAAAAJ&hl=en&oi=ao" title="Google Scholar" aria-label="Google Scholar" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-graduation-cap"></i></a>
+        <a href="https://www.linkedin.com/in/kylelafollette" title="LinkedIn" aria-label="LinkedIn" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-linkedin"></i></a>
+      </nav>
+    </header>
+
+    <main>
+      <div class="overview">
+        <p>Decision dynamics are organized around two linked levels of analysis: within decision dynamics and between decision dynamics. The within level isolates how emotion and cognition interact inside an individual over time to shape evidence accumulation, policy adjustment, and choice. The between level models how those dynamics propagate across contexts, tasks, and social environments through feedback, coupling, and adaptation. Together, these levels provide a unified framework for explaining how local decision processes scale into broader patterns of learning, judgment, and behavior.</p>
+      </div>
+
+      <details class="research-card" open>
+        <summary>
+          <div class="summary-copy">
+            <h2>Within Decision Dynamics</h2>
+            <p>This level isolates the dynamics that govern decisions within an individual over time, including evidence accumulation, policy adjustment, and latent attitude expression under uncertainty.</p>
+            <div class="hint">Click to expand/collapse publications.</div>
+          </div>
+          <div class="summary-image">
+            <img src="assets/nhb-fig2.png" alt="Figure 2 from Nature Human Behaviour paper on the implicit association test" />
+            <div class="img-cap">LaFollette, Rubez, Demaree, & Goldenberg, <em>Nature Human Behaviour</em> (2026), Fig. 2.</div>
+          </div>
+        </summary>
+        <div class="card-content">
+          <h3>Published</h3>
+          <ul>
+            <li>LaFollette, K. J., Rubez, D., Demaree, H. A., & Goldenberg, A. (2026). Challenging the mechanism for the implicit association test. <em>Nature Human Behaviour</em>. <a href="https://doi.org/10.1038/s41562-026-02439-y" target="_blank" rel="noopener noreferrer">https://doi.org/10.1038/s41562-026-02439-y</a></li>
+            <li>Goldenberg, A., LaFollette, K. J., Huang, Z., Weisz, E., & Cikara, M. (2025). Judgment of crowds as emotional increases with the proportion of Black faces. <em>Scientific Reports</em>. <a href="https://doi.org/10.1038/s41598-025-95029-3" target="_blank" rel="noopener noreferrer">https://doi.org/10.1038/s41598-025-95029-3</a></li>
+            <li>LaFollette, K. J., Fan, J., Puccio, A., & Demaree, H. A. (2024). FlexDDM: A flexible decision-diffusion Python package for the behavioral sciences. <em>Proceedings of the Annual Meeting of the Cognitive Science Society</em>, 46.</li>
+            <li>LaFollette, K. J., & Demaree, H. A. (2022). Comparing the effects of stress on directed and random exploration. <em>Proceedings of the 5th Multidisciplinary Conference on Reinforcement Learning and Decision Making</em>.</li>
+            <li>LaFollette, K. J., Kotynski, A. E., Merner, A. R., Lim, R., Jiang, H., & Demaree, H. A. (2021). Exposure to discrete emotions influence processes of evidence accumulation in reinforcement-learning. <em>Proceedings of the Annual Meeting of the Cognitive Science Society</em>, 43, 486-492.</li>
+          </ul>
+
+          <h3>In Review</h3>
+          <ul>
+            <li>LaFollette, K. J., Fan, J., Puccio, A., & Demaree, H. A. (Under Review). Democratizing diffusion decision models: A comprehensive tutorial on developing, validating, and fitting diffusion decision models in Python with FlexDDM. <a href="https://doi.org/10.31234/osf.io/j9m67" target="_blank" rel="noopener noreferrer">https://doi.org/10.31234/osf.io/j9m67</a></li>
+            <li>Rubez, D., Vazquez, J. I., & LaFollette, K. J. (Revise & Resubmit). From structure to mindset, not mobility: Neighborhood scarcity drives implicit attitudes toward change.</li>
+          </ul>
+
+          <h3>In Preparation</h3>
+          <ul>
+            <li>Barnett, M. K., LaFollette, K. J., & Macnamara, B. N. Recalculating avoidance: Math anxiety predicts avoidance of effortful problem solving.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="research-card">
+        <summary>
+          <div class="summary-copy">
+            <h2>Between Decision Dynamics</h2>
+            <p>This level models how decision and affective dynamics propagate across time, task environments, and social context, including social sharing, endogenous-exogenous coupling, and nonlinear adaptation.</p>
+            <div class="hint">Click to expand/collapse publications.</div>
+          </div>
+          <div class="summary-image">
+            <img src="assets/pnas.2413441122fig04.jpg" alt="Figure 4 from PNAS paper on nonlinear reinforcement learning" />
+            <div class="img-cap">LaFollette, Yuval, Schurr, Melnikoff, & Goldenberg, <em>PNAS</em> (2025), Fig. 4.</div>
+          </div>
+        </summary>
+        <div class="card-content">
+          <h3>Published</h3>
+          <ul>
+            <li>LaFollette, K. J., Yuval, J., Schurr, R., Melnikoff, D., & Goldenberg, A. (2025). Data-driven equation discovery reveals nonlinear reinforcement learning in humans. <em>PNAS</em>. <a href="https://doi.org/10.1073/pnas.2413441122" target="_blank" rel="noopener noreferrer">https://doi.org/10.1073/pnas.2413441122</a></li>
+            <li>LaFollette, K. J., Frank, D. J., Burgoyne, A. P., & Macnamara, B. N. (2026). Task, person, and experiential characteristics drive the transfer of learning. <em>Communications Psychology</em>. <a href="https://doi.org/10.1038/s44271-026-00408-9" target="_blank" rel="noopener noreferrer">https://doi.org/10.1038/s44271-026-00408-9</a></li>
+            <li>Barnett, M. K., LaFollette, K. J., & Macnamara, B. N. (2024). Distraction in math anxious individuals during math effort-based problem solving. <em>Proceedings of the Annual Meeting of the Cognitive Science Society</em>, 46.</li>
+          </ul>
+
+          <h3>In Review</h3>
+          <ul>
+            <li>LaFollette, K. J., Frank, D. J., Burgoyne, A. P., & Macnamara, B. N. (Under Review). Multi-tasking versus multi-learning: Performance but not learning suffers when pursuing simultaneous goals.</li>
+            <li>Prince, C., Demaree, H. A., & LaFollette, K. J. (Revise & Resubmit). Internal and external forces shape human emotion (DynAffect-C line). <a href="https://doi.org/10.31234/osf.io/jvxza_v3" target="_blank" rel="noopener noreferrer">https://doi.org/10.31234/osf.io/jvxza_v3</a></li>
+          </ul>
+
+          <h3>In Preparation</h3>
+          <ul>
+            <li>LaFollette, K. J., Demaree, H. A., & Goldenberg, A. Social sharing modulates the dynamics of affective arousal. <a href="https://docs.google.com/document/d/1e9DVglC6kK1ZqgYckpEn9dMA6De2xoyM/edit?rtpof=true&amp;sd=true&amp;tab=t.0" target="_blank" rel="noopener noreferrer">Working paper</a>.</li>
+            <li>LaFollette, K. J., & Demaree, H. A. Affect shapes sequential risky choice differently from financial outcomes: Evidence from sparse equation discovery across four gambling paradigms.</li>
+            <li>LaFollette, K. J., Frank, D. J., Burgoyne, A. P., & Macnamara, B. N. The dynamic advantage: Static training fails to prepare learners for changing real-time testing.</li>
+            <li>LaFollette, K. J., Demaree, H. A., & Goldenberg, A. A bottom-up equation discovery approach in momentary emotion analysis.</li>
+          </ul>
+        </div>
+      </details>
+    </main>
+  </div>
+
+  <script>
+    (function () {
+      const cards = Array.from(document.querySelectorAll('.research-card'));
+
+      function setOpen(card, shouldOpen) {
+        const content = card.querySelector('.card-content');
+        if (!content) return;
+
+        if (shouldOpen) {
+          card.classList.add('is-open');
+          card.setAttribute('open', '');
+          content.style.maxHeight = content.scrollHeight + 'px';
+        } else {
+          content.style.maxHeight = content.scrollHeight + 'px';
+          requestAnimationFrame(() => {
+            card.classList.remove('is-open');
+            content.style.maxHeight = '0px';
+            setTimeout(() => card.removeAttribute('open'), 380);
+          });
+        }
+      }
+
+      cards.forEach((card) => {
+        const summary = card.querySelector('summary');
+        if (!summary) return;
+
+        if (card.hasAttribute('open')) {
+          card.classList.add('is-open');
+          const c = card.querySelector('.card-content');
+          if (c) c.style.maxHeight = c.scrollHeight + 'px';
+        }
+
+        summary.addEventListener('click', (e) => {
+          e.preventDefault();
+          const isOpen = card.classList.contains('is-open');
+
+          if (!isOpen) {
+            cards.forEach((other) => {
+              if (other !== card && other.classList.contains('is-open')) setOpen(other, false);
+            });
+            setOpen(card, true);
+          } else {
+            setOpen(card, false);
+          }
+        });
+      });
+
+      window.addEventListener('resize', () => {
+        cards.forEach((card) => {
+          if (card.classList.contains('is-open')) {
+            const content = card.querySelector('.card-content');
+            if (content) content.style.maxHeight = content.scrollHeight + 'px';
+          }
+        });
+      });
+    })();
+  </script>
+  <script>
+    (function(){
+      var links=document.querySelectorAll('#email-link');
+      links.forEach(function(a){ a.setAttribute('href','mailto:' + 'kyle.lafollette' + '@' + 'chicagobooth.edu'); });
+    })();
+  </script>
+</body>
+</html>
+
+
+
+
