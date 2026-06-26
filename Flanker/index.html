@@ -42,14 +42,14 @@
  *******************/
 const qp = new URLSearchParams(location.search);
 const sched = (qp.get('sched') || qp.get('condition') || '').toLowerCase();
-if (sched === 's4') {
+if (sched === 's6') {
   instface = 'WF';
   filetype = 'webp';
-  mysched = 'flanker_schedule_s4.csv';
+  mysched = 'flanker_schedule_s6.csv';
 } else {
   instface = 'WM';
   filetype = 'webp';
-  mysched = 'flanker_schedule_s3.csv';
+  mysched = 'flanker_schedule_s5.csv';
 }
 
 const CONFIG = {
@@ -157,7 +157,7 @@ function render(){
   if(CONFIG.showKeyCues && (s==='practice' || s==='main' || s==='fix' || s==='blank' || s==='stim' || s==='tooFast' || s==='tooSlow' || s==='inst1' || s==='inst2' || s==='inst3' || s==='practiceIntro')){
     app.append(
       h('div',{class:'kbdhelp'}, h('span',{class:'mono'},'Q'), ' Not emotional ', h('img',{src:'neutral_face.png',alt:'neutral'})),
-      h('div',{class:'kbdhelp right'}, h('span',{class:'mono'},'P'), ' Emotional ', h('img',{src:'happy_face.png',alt:'happy'}))
+      h('div',{class:'kbdhelp right'}, h('span',{class:'mono'},'P'), ' Emotional ', h('img',{src:'sad_face.png',alt:'sad'}))
     );
   }
 
@@ -178,7 +178,7 @@ function render(){
       h('h2',{style:'margin:1px 0'},'Task Instructions'),
       h('div',{},
         h('p',{style:'margin:1px 0'},'You will see five faces in a row. Your job is to judge the emotion of the ', h('b',{},'MIDDLE'), ' face only.'),
-        h('p',{style:'margin:1px 0'}, h('span',{class:'mono'},'Q'),' = not emotional (neutral). ', h('span',{class:'mono'},'P'),' = emotional (e.g., happy).')
+        h('p',{style:'margin:1px 0'}, h('span',{class:'mono'},'Q'),' = not emotional (neutral). ', h('span',{class:'mono'},'P'),' = emotional (e.g., sad).')
       ),
       h('button',{class:'btn',onclick:()=>go('inst2')},'Continue')
     );
@@ -189,7 +189,7 @@ function render(){
       h('div',{class:'stimulus'},
         h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_NC.${filetype}`,alt:'not emotional face'}),
         h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_NC.${filetype}`,alt:'not emotional face'}),
-        h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_HC.${filetype}`,alt:'emotional face'}),
+        h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_SC.${filetype}`,alt:'emotional face'}),
         h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_NC.${filetype}`,alt:'not emotional face'}),
         h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_NC.${filetype}`,alt:'not emotional face'})
       ),
@@ -210,7 +210,7 @@ function render(){
       h('div',{class:'stimulus'},
         h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_NC.${filetype}`,alt:'not emotional face'}),
         h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_NC.${filetype}`,alt:'not emotional face'}),
-        h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_HC.${filetype}`,alt:'emotional face'}),
+        h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_SC.${filetype}`,alt:'emotional face'}),
         h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_NC.${filetype}`,alt:'not emotional face'}),
         h('img',{src:`/RADIATE_BMP/RADIATE_450_COLOR_BMP/${instface}/${instface}01/${instface}01_NC.${filetype}`,alt:'not emotional face'})
       ),
@@ -468,7 +468,7 @@ async function boot(){
     console.warn('CSV/preload issue, using tiny demo set. Details:', (err && err.message) ? err.message : err);
     state.trials = [
       {images:['/RADIATE_BMP/.../WF01_NC.jpg','/RADIATE_BMP/.../WF01_NC.jpg','/RADIATE_BMP/.../WF01_NC.jpg','/RADIATE_BMP/.../WF01_NC.jpg','/RADIATE_BMP/.../WF01_NC.jpg'], correct:'Q', congruency:'congruent', faces:'neutral'},
-      {images:['/RADIATE_BMP/.../WF01_NC.jpg','/RADIATE_BMP/.../WF01_NC.jpg','/RADIATE_BMP/.../WF01_HC.jpg','/RADIATE_BMP/.../WF01_NC.jpg','/RADIATE_BMP/.../WF01_NC.jpg'], correct:'P', congruency:'incongruent', faces:'happy'}
+      {images:['/RADIATE_BMP/.../WF01_NC.jpg','/RADIATE_BMP/.../WF01_NC.jpg','/RADIATE_BMP/.../WF01_SC.jpg','/RADIATE_BMP/.../WF01_NC.jpg','/RADIATE_BMP/.../WF01_NC.jpg'], correct:'P', congruency:'incongruent', faces:'sad'}
     ];
     state.practice = state.trials.slice(0,1);
     state.block = state.trials.slice(1);
