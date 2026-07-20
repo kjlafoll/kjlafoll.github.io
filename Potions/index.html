@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Potions Manager Game</title>
+  <link rel="stylesheet" href="./styles.css?v=5">
+</head>
+<body>
+  <div class="game-shell">
+    <main class="playfield">
+      <div id="board" class="board">
+        <svg id="board-svg" class="board-svg" viewBox="0 0 1200 760" preserveAspectRatio="none" aria-hidden="true">
+          <g id="group-halos"></g>
+          <g id="group-beams"></g>
+        </svg>
+        <aside class="board-sidebar">
+          <div class="hud-chip hud-staff">
+            <span class="hud-label">Employees</span>
+            <div class="hud-value-wrap">
+              <strong id="staff-count">8</strong>
+              <button id="hire-btn" class="hire-btn" type="button" aria-label="Hire one chemist">+</button>
+            </div>
+          </div>
+          <div id="reward-track" class="reward-track board-reward-track" aria-live="polite"></div>
+          <div class="hud-chip hud-money">
+            <span class="hud-label">Company funds</span>
+            <strong id="leader-score">$0</strong>
+          </div>
+          <div class="hud-chip hud-payroll">
+            <span class="hud-label">Payroll / round</span>
+            <strong id="payroll-score">$0</strong>
+          </div>
+          <div id="next-round-wrap" class="next-round-wrap sidebar-round-wrap">
+            <svg class="round-ring" viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="round-ring-track" cx="60" cy="60" r="50"></circle>
+              <circle id="round-ring-progress" class="round-ring-progress" cx="60" cy="60" r="50"></circle>
+            </svg>
+            <button id="next-round-btn" class="next-round-btn">Next round</button>
+          </div>
+        </aside>
+        <div id="workers-layer" class="workers-layer"></div>
+        <div id="event-popup" class="event-popup" aria-live="polite" hidden>
+          <div class="event-popup-card">
+            <div id="event-popup-title" class="event-popup-title"></div>
+            <div id="event-popup-body" class="event-popup-body"></div>
+            <button id="event-popup-close" class="event-popup-close" type="button">Got it</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div id="onboarding-overlay" class="onboarding-overlay" aria-live="polite">
+    <div id="tutorial-spotlight" class="tutorial-spotlight" aria-hidden="true"></div>
+    <div class="onboarding-card">
+      <div id="onboarding-step" class="onboarding-step">Choose a mode</div>
+      <h2 id="onboarding-title">Pick how your chemists work.</h2>
+      <p id="onboarding-body" class="onboarding-body"></p>
+      <div id="tutorial-progress" class="tutorial-progress"></div>
+      <div id="mode-picker" class="mode-picker">
+        <button id="mode-one-btn" class="mode-choice">
+          <strong>Standard</strong>
+          <span>Chemists stay payoff-biased, favoring stronger compounds the way the original task incentivized them to.</span>
+        </button>
+        <button id="mode-one-fast-btn" class="mode-choice">
+          <strong>Fast</strong>
+          <span>Same payoff-biased chemists, but rounds auto-run until a discovery appears and then pause for reconfiguration.</span>
+        </button>
+      </div>
+      <label class="skip-tutorial-toggle">
+        <input id="skip-tutorial-checkbox" type="checkbox">
+        <span>Skip tutorial and jump straight into the lab after choosing a mode</span>
+      </label>
+      <label class="skip-tutorial-toggle">
+        <input id="endless-rounds-checkbox" type="checkbox">
+        <span>Remove the round limit and keep going until the flagship compound is discovered</span>
+      </label>
+      <div id="tutorial-actions" class="tutorial-actions">
+        <button id="tutorial-back-btn" class="tutorial-btn secondary">Back</button>
+        <button id="tutorial-next-btn" class="tutorial-btn">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="./app.js?v=5"></script>
+</body>
+</html>
