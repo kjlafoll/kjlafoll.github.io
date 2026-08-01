@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 190" role="img" aria-label="Person expressing emotion">
+  <rect width="160" height="190" rx="28" fill="#f7f9fb"/>
+  <ellipse cx="80" cy="102" rx="46" ry="56" fill="#d99a75"/>
+  <path d="M38 79c2-31 20-51 45-53 25-2 44 15 50 48-16-7-33-10-52-8-17 2-31 6-43 13z" fill="#2f2419"/>
+  <path d="M45 76c8-21 23-32 42-31 16 1 29 10 37 28-14-4-28-6-44-4-13 1-25 4-35 7z" fill="#463221"/>
+  <circle cx="62" cy="96" r="6" fill="#182033"/>
+  <circle cx="98" cy="96" r="6" fill="#182033"/>
+  <path d="M51 84c8-5 18-5 27 0" fill="none" stroke="#4b3327" stroke-width="5" stroke-linecap="round"/>
+  <path d="M88 84c9-5 19-5 27 0" fill="none" stroke="#4b3327" stroke-width="5" stroke-linecap="round"/>
+  <path d="M80 106c-2 6-2 11 0 16" fill="none" stroke="#a05a42" stroke-width="5" stroke-linecap="round"/>
+  <path d="M58 137c13 15 31 15 44 0" fill="none" stroke="#743b35" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="49" cy="114" r="7" fill="#e8ad91" opacity=".65"/>
+  <circle cx="111" cy="114" r="7" fill="#e8ad91" opacity=".65"/>
+</svg>
