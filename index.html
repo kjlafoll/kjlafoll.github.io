@@ -4,45 +4,483 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Kyle J. LaFollette</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,300;8..60,400;8..60,500;8..60,600&family=Libre+Franklin:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
   <style>
     :root {
-      --text: #202124;
-      --muted: #535a62;
-      --line: #e2e5e9;
-      --soft: #f7f9fb;
-      --blue: #1a73e8;
-      --green: #327a5b;
-      --amber: #a46312;
-      --rose: #a23b55;
-      --ink: #172033;
-      --night: #10162a;
-      --cyan: #67e8f9;
-      --violet: #8b5cf6;
-      --gold: #f4b53f;
+      --bg: #f7f2e9;
+      --band: #ebe3d4;
+      --card: #fbf8f1;
+      --nav-bg: rgba(247, 242, 233, .88);
+      --text: #17222e;
+      --body: #33414d;
+      --muted: #6b747e;
+      --line: rgba(23, 34, 46, .13);
+      --line-strong: rgba(23, 34, 46, .30);
+      --blue: #2e5c8a;
+      --green: #365f50;
+      --amber: #a85c2e;
+      --rose: #94485c;
+      --ink: #17222e;
+      --night: #17222e;
+      --cyan: #8fb4da;
+      --violet: #5d6f8f;
+      --gold: #a85c2e;
+    }
+    body.dark-mode {
+      --bg: #111821;
+      --band: #17212b;
+      --card: #18222d;
+      --nav-bg: rgba(17, 24, 33, .88);
+      --text: #edf1f4;
+      --body: #c4ccd4;
+      --muted: #929daa;
+      --line: rgba(237, 241, 244, .15);
+      --line-strong: rgba(237, 241, 244, .34);
+      --blue: #9dbfe3;
+      --green: #93c5ad;
+      --amber: #e3a06d;
+      --rose: #d98ca0;
+      --ink: #edf1f4;
+      --night: #0c1118;
+      --cyan: #9dbfe3;
+      --violet: #a8b3d2;
+      --gold: #e3a06d;
     }
 
     * { box-sizing: border-box; }
-    body { margin: 0; font-family: Arial, Helvetica, sans-serif; color: var(--text); background: #fff; }
-    .wrap { max-width: 1040px; margin: 0 auto; padding: 0 24px 56px; }
-    header { border-bottom: 1px solid var(--line); padding: 22px 0 14px; margin-bottom: 24px; }
-    h1 { margin: 0 0 10px; font-size: 30px; font-weight: 500; }
-    nav { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; font-size: 14px; }
-    nav a { color: #1f1f1f; text-decoration: none; }
+    html { scroll-behavior: auto; }
+    body { margin: 0; font-family: "Libre Franklin", Arial, Helvetica, sans-serif; color: var(--text); background: var(--bg); -webkit-font-smoothing: antialiased; }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 16% 18%, rgba(46,92,138,.08), transparent 28%),
+        radial-gradient(circle at 84% 36%, rgba(168,92,46,.08), transparent 30%),
+        radial-gradient(circle at 36% 82%, rgba(54,95,80,.07), transparent 26%);
+      z-index: 0;
+    }
+    body.dark-mode::before {
+      background:
+        radial-gradient(circle at 16% 18%, rgba(157,191,227,.08), transparent 28%),
+        radial-gradient(circle at 84% 36%, rgba(227,160,109,.08), transparent 30%),
+        radial-gradient(circle at 36% 82%, rgba(147,197,173,.07), transparent 26%);
+    }
+    .wrap { max-width: none; margin: 0; padding: 0; }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      border-bottom: 1px solid var(--line);
+      padding: 15px max(32px, calc((100vw - 1120px) / 2 + 32px));
+      margin-bottom: 0;
+      background: var(--nav-bg);
+      backdrop-filter: blur(10px);
+    }
+    h1 { margin: 0; display: flex; align-items: center; gap: 10px; font-weight: 500; }
+    h1 a { font-family: "Source Serif 4", Georgia, serif; font-size: 22px; font-weight: 500; letter-spacing: -.01em; color: var(--ink); text-decoration: none; }
+    h1 span { display: none; }
+    nav { display: flex; gap: 24px; flex-wrap: wrap; align-items: center; font-size: 14px; color: var(--body); }
+    nav a { color: inherit; text-decoration: none; }
     nav a:hover { color: var(--blue); }
+    .nav-contact { padding: 7px 16px; border: 1px solid var(--ink); border-radius: 999px; color: var(--ink); }
+    .theme-toggle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      border: 1px solid var(--line-strong);
+      border-radius: 999px;
+      padding: 7px 12px;
+      background: transparent;
+      color: var(--ink);
+      cursor: pointer;
+      font: inherit;
+      font-size: 13px;
+      line-height: 1;
+    }
+    .theme-toggle:hover { border-color: var(--blue); color: var(--blue); }
+    .nav-product { display: inline-flex; align-items: center; gap: 6px; }
+    .nav-product img {
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      object-fit: cover;
+      box-shadow: 0 2px 6px rgba(23,34,46,.18);
+    }
     p { margin: 0 0 14px; line-height: 1.65; }
-    h2 { margin: 28px 0 12px; font-size: 20px; font-weight: 600; }
-    h3 { margin: 0 0 8px; font-size: 16px; }
+    h2 { margin: 28px 0 12px; font-family: "Source Serif 4", Georgia, serif; font-size: 20px; font-weight: 500; }
+    h3 { margin: 0 0 8px; font-family: "Source Serif 4", Georgia, serif; font-size: 16px; }
     a { color: var(--blue); text-decoration: none; }
     a:hover { text-decoration: underline; }
     button, textarea { font: inherit; }
+    header, main, footer { position: relative; z-index: 1; }
+    main { overflow: hidden; }
 
-    .news-rail { overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: #fff; margin-bottom: 30px; }
+    .section-block {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0;
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 44px 32px;
+      border-top: 1px solid var(--line);
+      scroll-margin-top: 86px;
+    }
+    .hero-shell,
+    .news-rail { scroll-margin-top: 86px; }
+.section-title {
+      margin: 0 0 16px;
+      font-size: clamp(28px, 4vw, 46px);
+      line-height: 1.02;
+      letter-spacing: -.02em;
+      font-weight: 400;
+      color: var(--ink);
+    }
+    .section-lede {
+      max-width: 780px;
+      color: var(--body);
+      font-size: 17px;
+      line-height: 1.7;
+    }
+    .hero-shell {
+      display: grid;
+      position: relative;
+      grid-template-columns: minmax(0, 1.55fr) minmax(288px, 1fr);
+      gap: 64px;
+      align-items: center;
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 38px 32px 26px;
+      overflow: visible;
+    }
+    main > *:not(.hero-motif) { position: relative; z-index: 1; }
+    .hero-motif {
+      position: absolute;
+      left: 0;
+      top: 0;
+      z-index: 0;
+      width: 100%;
+      height: 100%;
+      opacity: .68;
+      pointer-events: none;
+    }
+    .hero-claim {
+      margin: 0 0 20px;
+      font-family: "Source Serif 4", Georgia, serif;
+      font-weight: 400;
+      font-size: clamp(42px, 6vw, 66px);
+      line-height: 1.02;
+      letter-spacing: -.025em;
+      color: var(--ink);
+    }
+    .hero-claim em { color: var(--blue); font-style: italic; }
+    .hero-copy {
+      max-width: 720px;
+      color: var(--body);
+      font-size: 18.5px;
+      line-height: 1.62;
+    }
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 24px;
+    }
+    .pill-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--line-strong);
+      border-radius: 999px;
+      padding: 13px 24px;
+      color: var(--ink);
+      font-size: 14.5px;
+      font-weight: 500;
+      text-decoration: none;
+    }
+    .pill-link.primary {
+      background: var(--ink);
+      border-color: var(--ink);
+      color: var(--bg);
+    }
+    .hero-art {
+      position: relative;
+      justify-self: end;
+      width: 288px;
+      min-height: 350px;
+      overflow: visible;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+    .hero-art::before {
+      display: none;
+    }
+    .portrait-card {
+      position: relative;
+      left: auto;
+      top: auto;
+      width: 288px;
+      height: 350px;
+      padding: 0;
+      border-radius: 6px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      box-shadow: none;
+      backdrop-filter: none;
+      overflow: hidden;
+      z-index: 1;
+    }
+    .portrait-card img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 0;
+    }
+    .orbit-card {
+      position: static;
+      width: 288px;
+      max-width: calc(100vw - 40px);
+      padding: 0;
+      margin: 26px auto 0;
+      border-radius: 0;
+      background: transparent;
+      color: var(--muted);
+      box-shadow: none;
+      font-family: "IBM Plex Mono", Consolas, monospace;
+      font-size: clamp(8px, 2.4vw, 11px);
+      line-height: 1.5;
+      letter-spacing: .06em;
+      text-align: center;
+      text-transform: uppercase;
+    }
+    .orbit-card strong { display: none; }
+    .orbit-card span { display: block; color: inherit; font-size: inherit; line-height: 1.65; white-space: nowrap; }
+    .control-node { display: none; }
+.research-pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 20px;
+    }
+    .research-pill-row span {
+      border: 1px solid #dbe1e8;
+      border-radius: 999px;
+      padding: 8px 12px;
+      background: var(--card);
+      color: #3f454d;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .publication-grid,
+    .project-grid,
+    .teaching-grid {
+      display: grid;
+      gap: 14px;
+    }
+    .publication-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 22px;
+    }
+    .scholar-link {
+      color: var(--blue);
+      font-size: 14px;
+      white-space: nowrap;
+    }
+    .publication-card,
+    .project-card,
+    .teaching-card,
+    .product-card,
+    .contact-card {
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: #fff;
+      padding: 20px;
+      box-shadow: 0 14px 32px rgba(17,24,39,.04);
+    }
+    .publication-card {
+      display: grid;
+      grid-template-columns: 150px 1fr auto;
+      gap: 18px;
+      align-items: start;
+    }
+    .pub-meta {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .publication-card h3,
+    .project-card h3,
+    .teaching-card h3,
+    .product-card h3,
+    .contact-card h3 {
+      margin: 0 0 8px;
+      color: var(--ink);
+      font-size: 20px;
+      line-height: 1.2;
+    }
+    .publication-card p,
+    .project-card p,
+    .teaching-card p,
+    .product-card p,
+    .contact-card p {
+      color: var(--muted);
+      margin-bottom: 0;
+    }
+    .badge {
+      border: 1px solid #dbe1e8;
+      border-radius: 999px;
+      padding: 7px 10px;
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    body.dark-mode .publication-card {
+      background: rgba(24,34,45,.94);
+      border-color: rgba(237,241,244,.17);
+      box-shadow: 0 14px 34px rgba(0,0,0,.18);
+    }
+    body.dark-mode .publication-card h3 { color: var(--ink); }
+    body.dark-mode .publication-card p,
+    body.dark-mode .pub-meta { color: var(--body); }
+    body.dark-mode .badge {
+      border-color: rgba(237,241,244,.30);
+      color: #dfe7ee;
+      background: rgba(255,255,255,.045);
+    }
+    .project-grid {
+      grid-template-columns: repeat(3, 1fr);
+      margin-bottom: 22px;
+    }
+    .project-card {
+      background: linear-gradient(180deg, #fff, #f9fbf8);
+    }
+    .teaching-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+    .teaching-card { background: rgba(251,248,241,.90); }
+    .teaching-group {
+      border-top: 2px solid var(--ink);
+      padding-top: 18px;
+    }
+    .teaching-group h3 {
+      margin: 0 0 4px;
+      font-size: 20px;
+    }
+    .teaching-group > p {
+      margin: 0 0 16px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .course-row {
+      display: grid;
+      grid-template-columns: 142px 1fr;
+      gap: 18px;
+      padding: 16px 0;
+      border-top: 1px solid var(--line);
+    }
+    .course-meta {
+      font-family: "IBM Plex Mono", Consolas, monospace;
+      color: var(--blue);
+      font-size: 11.5px;
+      line-height: 1.45;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+    .course-row strong {
+      display: block;
+      color: var(--ink);
+      font-family: "Source Serif 4", Georgia, serif;
+      font-size: 18px;
+      font-weight: 500;
+      line-height: 1.25;
+      margin-bottom: 4px;
+    }
+    .course-row span {
+      display: block;
+      color: var(--muted);
+      font-size: 13.5px;
+      line-height: 1.5;
+    }
+    .product-card {
+      display: grid;
+      grid-template-columns: 1fr 230px;
+      gap: 24px;
+      align-items: center;
+      border-color: rgba(255,255,255,.18);
+      background: var(--night);
+      color: var(--bg);
+    }
+    .product-card .section-title,
+    .product-card h3 { color: #f7f2e9; }
+    .product-card p { color: #d8e0e8; }
+    .product-mark {
+      min-height: 190px;
+      border-radius: 26px;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      background: rgba(255,255,255,.06);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.12);
+    }
+    .product-mark img { display: block; width: 100%; height: 100%; object-fit: cover; }
+    .store-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      width: fit-content;
+      margin-top: 22px;
+      border-radius: 10px;
+      padding: 10px 15px;
+      background: #05070a;
+      color: #fff;
+      border: 1px solid rgba(255,255,255,.26);
+      box-shadow: none;
+      font-weight: 700;
+      font-size: 15px;
+      line-height: 1.1;
+      text-decoration: none;
+    }
+    .ms-mark {
+      display: grid;
+      grid-template-columns: repeat(2, 8px);
+      grid-template-rows: repeat(2, 8px);
+      gap: 2px;
+      flex: 0 0 auto;
+    }
+    .ms-mark span:nth-child(1) { background: #f25022; }
+    .ms-mark span:nth-child(2) { background: #7fba00; }
+    .ms-mark span:nth-child(3) { background: #00a4ef; }
+    .ms-mark span:nth-child(4) { background: #ffb900; }
+    .store-link strong { display: block; color: #fff; }
+    .contact-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .news-rail { overflow: hidden; max-width: 1120px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); margin: 6px auto 0; }
     .news-track { display: flex; width: max-content; animation: ticker 34s linear infinite; will-change: transform; }
-    .news-item { width: 320px; min-height: 92px; padding: 12px 14px; border-right: 1px solid #eceff1; display: flex; gap: 10px; align-items: center; }
-    .news-item img { width: 28px; height: 28px; object-fit: contain; }
-    .news-item strong { display: block; font-size: 13px; margin-bottom: 2px; }
-    .news-item span { font-size: 13px; line-height: 1.35; color: #3b3f45; }
+    .news-item { width: 320px; min-height: 92px; padding: 12px 14px; border-right: 1px solid var(--line); display: flex; gap: 10px; align-items: center; }
+    .news-item img { width: 34px; height: 34px; object-fit: contain; padding: 4px; border-radius: 9px; background: #fff; box-shadow: 0 2px 8px rgba(23,34,46,.10); }
+    .news-item strong { display: block; font-size: 13px; margin-bottom: 2px; color: var(--ink); }
+    .news-item span { font-size: 13px; line-height: 1.35; color: var(--body); }
     @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
     .hero { display: grid; grid-template-columns: 220px 1fr; gap: 24px; align-items: start; margin-bottom: 18px; }
@@ -67,8 +505,10 @@
       border: 1px solid var(--line);
       border-radius: 14px;
       overflow: hidden;
-      background: #fff;
+      background: var(--card);
       box-shadow: 0 14px 34px rgba(15, 23, 42, 0.06);
+      display: flex;
+      flex-direction: column;
     }
     .demo-head { padding: 16px 16px 12px; border-bottom: 1px solid var(--line); }
     .demo-kicker { display: block; color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 6px; }
@@ -77,22 +517,13 @@
 
     .org-stage {
       position: relative;
-      height: 360px;
+      flex: 1 1 auto;
+      min-height: 360px;
       overflow: hidden;
       background:
-        radial-gradient(circle at 22% 14%, rgba(103, 232, 249, 0.18), transparent 28%),
-        radial-gradient(circle at 74% 20%, rgba(139, 92, 246, 0.18), transparent 26%),
-        linear-gradient(180deg, #171d3a 0%, #10162a 100%);
-    }
-    .org-stage::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(255,255,255,0.045) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.045) 1px, transparent 1px);
-      background-size: 34px 34px;
-      pointer-events: none;
+        radial-gradient(circle at 22% 14%, rgba(46, 92, 138, 0.08), transparent 28%),
+        radial-gradient(circle at 74% 20%, rgba(54, 95, 80, 0.08), transparent 26%),
+        linear-gradient(180deg, #fbfcff 0%, #f6f9fc 100%);
     }
     .org-svg, .org-workers { position: absolute; inset: 0; width: 100%; height: 100%; }
     .org-svg { pointer-events: none; }
@@ -130,9 +561,9 @@
       margin-top: 3px;
       padding: 3px 6px;
       border-radius: 999px;
-      background: rgba(8, 15, 32, .88);
-      border: 1px solid rgba(255,255,255,.14);
-      color: #edf3ff;
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(46,92,138,.14);
+      color: #17222e;
       font-size: 10px;
       text-align: center;
       white-space: nowrap;
@@ -159,10 +590,11 @@
       display: flex;
       flex-wrap: wrap;
       gap: 7px;
-      padding: 10px 12px 0;
+      padding: 10px 12px;
       background: #f8fafc;
       color: var(--muted);
       font-size: 11px;
+      border-bottom: 1px solid rgba(46,92,138,.08);
     }
     .legend-dot { display: inline-flex; align-items: center; gap: 4px; }
     .legend-dot::before {
@@ -197,7 +629,7 @@
       to { stroke-dashoffset: -36; }
     }
 
-    .emotion-demo { padding: 14px; background: linear-gradient(180deg, #fbfcff 0%, #f6f9fc 100%); }
+    .emotion-demo { flex: 1; padding: 14px; background: linear-gradient(180deg, #fbfcff 0%, #f6f9fc 100%); }
     .tracked-shell {
       display: grid;
       grid-template-columns: minmax(205px, .95fr) minmax(180px, .8fr);
@@ -341,6 +773,7 @@
       font-size: 12px;
       line-height: 1.3;
     }
+    .phone-compose textarea::placeholder { color: #64748b; opacity: 1; }
     .phone-compose button {
       width: 40px;
       height: 40px;
@@ -455,6 +888,7 @@
       pointer-events: none;
     }
     .ddm-demo {
+      flex: 1;
       min-height: 440px;
       padding: 14px;
       background:
@@ -554,6 +988,7 @@
       accent-color: var(--blue);
     }
     .assembly-demo {
+      flex: 1;
       min-height: 440px;
       padding: 14px;
       background:
@@ -725,28 +1160,123 @@
     .outcome-dot { stroke: #fff; stroke-width: 2; }
     .belief-label { font-size: 12px; fill: #535a62; font-weight: 700; }
     .belief-label.x-label { text-anchor: middle; }
-    .paper-link {
-      margin-top: 10px;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      background: #fff;
-      padding: 9px 11px;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.4;
+    body.dark-mode .theme-toggle { background: rgba(255,255,255,.06); }
+    body.dark-mode .nav-product img,
+    body.dark-mode .news-item img { box-shadow: 0 2px 10px rgba(0,0,0,.28); }
+    body.dark-mode .pill-link {
+      background: rgba(255,255,255,.045);
+      color: var(--ink);
+      border-color: rgba(237,241,244,.30);
     }
-    .paper-link a { font-weight: 700; }
-    .ddm-paper-link { margin: 10px 14px 0; }
-    .caption { padding: 10px 14px 14px; color: var(--muted); font-size: 12px; line-height: 1.45; background: #f8fafc; }
-
-    footer { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 12px; color: #666; font-size: 12px; }
+    body.dark-mode .pill-link.primary {
+      background: #edf1f4;
+      border-color: #edf1f4;
+      color: #111821;
+    }
+    body.dark-mode .project-card,
+    body.dark-mode .teaching-card,
+    body.dark-mode .contact-card,
+    body.dark-mode .demo-card {
+      background: rgba(24,34,45,.94);
+      border-color: rgba(237,241,244,.17);
+      box-shadow: 0 14px 34px rgba(0,0,0,.18);
+    }
+    body.dark-mode .project-card h3,
+    body.dark-mode .teaching-card h3,
+    body.dark-mode .contact-card h3,
+    body.dark-mode .demo-head h3 { color: var(--ink); }
+    body.dark-mode .project-card p,
+    body.dark-mode .teaching-card p,
+    body.dark-mode .contact-card p,
+    body.dark-mode .demo-head p,
+    body.dark-mode .demo-kicker,
+    body.dark-mode .section-lede,
+    body.dark-mode .demo-intro { color: var(--body); }
+    body.dark-mode .demo-head { border-color: rgba(237,241,244,.15); }
+    body.dark-mode .product-card {
+      background: #0c1118;
+      border-color: rgba(237,241,244,.18);
+    }
+    body.dark-mode .product-card p { color: #dfe7ee; }
+    body.dark-mode .news-rail { background: rgba(24,34,45,.94); }
+    body.dark-mode .research-pill-row span {
+      background: rgba(255,255,255,.045);
+      border-color: rgba(237,241,244,.30);
+      color: #dfe7ee;
+    }
+    body.dark-mode .metric,
+    body.dark-mode .ddm-stat,
+    body.dark-mode .expectation-control,
+    body.dark-mode .ddm-face-card,
+    body.dark-mode .slider-bank,
+    body.dark-mode .ddm-panel,
+    body.dark-mode .belief-panel,
+    body.dark-mode .factory-panel {
+      background: #f8fafc;
+      color: #17222e;
+    }
+    body.dark-mode .org-stage,
+    body.dark-mode .org-legend,
+    body.dark-mode .org-panel,
+    body.dark-mode .emotion-demo,
+    body.dark-mode .ddm-demo,
+    body.dark-mode .assembly-demo {
+      background: linear-gradient(180deg, #fbfcff 0%, #f6f9fc 100%);
+      color: #17222e;
+    }
+    body.dark-mode .org-label,
+    body.dark-mode .message-bubble.ai,
+    body.dark-mode .phone-compose textarea,
+    body.dark-mode .inspection-result,
+    body.dark-mode .expectation-control label,
+    body.dark-mode .expectation-scale,
+    body.dark-mode .assembly-buttons button,
+    body.dark-mode .belief-legend,
+    body.dark-mode .ddm-control label,
+    body.dark-mode .face-label {
+      color: #17222e;
+    }
+    body.dark-mode .phone-compose textarea {
+      background: #fff;
+      border-color: #cbd5e1;
+      caret-color: #17222e;
+    }
+    body.dark-mode .phone-compose textarea::placeholder { color: #64748b; opacity: 1; }
+    body.dark-mode .assembly-buttons button { background: #fff; border-color: #cbd5e1; }
+    body.dark-mode .assembly-buttons button:hover { color: #2e5c8a; border-color: #2e5c8a; }
+    body.dark-mode .metric strong,
+    body.dark-mode .ddm-stat strong { color: #17222e; }
+    body.dark-mode .metric span,
+    body.dark-mode .ddm-stat span { color: #5b6672; }
+    body.dark-mode .course-row strong { color: var(--ink); }
+    body.dark-mode .course-row span,
+    body.dark-mode .course-meta { color: var(--body); }
+    body.dark-mode .hero-motif { opacity: .82; }
+    #contact { padding-bottom: 24px; }
+footer { margin-top: 0; border-top: 1px solid var(--line); padding: 14px max(32px, calc((100vw - 1120px) / 2 + 32px)) 18px; color: var(--muted); font-size: 12px; }
 
     @media (max-width: 900px) {
+      .hero-shell { grid-template-columns: 1fr; }
+      .section-block { grid-template-columns: 1fr; gap: 16px; }
+.project-grid { grid-template-columns: 1fr; }
+      .publication-card { grid-template-columns: 1fr; }
+      .product-card { grid-template-columns: 1fr; }
       .demo-grid { grid-template-columns: 1fr; }
     }
     @media (max-width: 760px) {
+      header { align-items: flex-start; flex-direction: column; padding: 13px 20px; gap: 10px; }
+      h1 { flex-direction: row; gap: 8px; }
+      h1 span { font-size: 9.5px; }
+      nav { gap: 12px; font-size: 13px; }
+      .nav-contact { padding: 5px 12px; }
       .hero { grid-template-columns: 1fr; }
       .hero img { max-width: 260px; }
+      .hero-shell { padding: 40px 20px 38px; }
+      .hero-claim { font-size: 38px; }
+      .hero-art { justify-self: center; width: 220px; min-height: 268px; }
+      .portrait-card { width: 220px; height: 268px; }
+      .orbit-card { width: 220px; text-align: center; }
+      .section-block { padding-left: 20px; padding-right: 20px; }
       .news-item { width: 280px; }
       .org-panel { grid-template-columns: 1fr; }
       .tracked-shell { grid-template-columns: 1fr; }
@@ -759,22 +1289,37 @@
 <body>
   <div class="wrap">
     <header>
-      <h1>Kyle J. LaFollette</h1>
+      <h1><a href="#top">Kyle J. LaFollette</a></h1>
       <nav>
-        <a href="index.html">Home</a>
-        <a href="research.html">Research</a>
-        <a href="teaching-service.html">Teaching & Service</a>
-        <a href="talks.html">Talks</a>
+        <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode"><i class="fa-solid fa-moon" aria-hidden="true"></i><span>Dark mode</span></button>
+        <a href="#identity">Research</a>
+        <a href="#publications">Publications</a>
+        <a href="#windows">Projects</a>
+        <a href="#teaching">Teaching</a>
+        <a class="nav-product" href="#flexddm">FlexDDM <img src="assets/flexddm-boxart.png" alt="" /></a>
         <a href="Kyle-LaFollette-CV.pdf" download>CV</a>
-        <a href="#" id="email-link" title="Email" aria-label="Email"><i class="fa-solid fa-envelope"></i></a>
-        <a href="https://github.com/kjlafoll" title="GitHub" aria-label="GitHub" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-github"></i></a>
-        <a href="https://scholar.google.com/citations?user=NUDFbQQAAAAJ&hl=en&oi=ao" title="Google Scholar" aria-label="Google Scholar" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-graduation-cap"></i></a>
-        <a href="https://www.linkedin.com/in/kylelafollette" title="LinkedIn" aria-label="LinkedIn" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-linkedin"></i></a>
+        <a href="#contact" class="nav-contact">Contact</a>
       </nav>
     </header>
 
     <main>
-      <div class="news-rail" aria-label="News carousel">
+      <canvas class="hero-motif" id="hero-motif" aria-hidden="true"></canvas>
+      <section class="hero-shell" id="top" aria-label="Introduction">
+        <div>
+<h2 class="hero-claim">Managing <em>control</em> over<br>individual and<br>collective decisions.</h2>
+          <p class="hero-copy">I study how much control people have over the expectations, emotions, and beliefs that shape social judgment, decision-making, and organizational behavior, using computational tools to separate what can be changed from what quietly drives behavior outside awareness.</p>
+          <div class="hero-actions">
+            <a class="pill-link primary" href="#identity">Explore my research</a>
+            <a class="pill-link" href="#windows">See interactive work</a>
+            <a class="pill-link" href="#contact">Collaborate</a>
+          </div>
+        </div>
+        <div class="hero-art" aria-label="Visual summary of control over judgment, emotion, and systems">
+          <div class="portrait-card"><img src="images/kyle-lafollette-photo.jpg" alt="Kyle J. LaFollette" /></div>
+          <div class="orbit-card"><strong>control</strong><span>University of Chicago Booth School of Business<br>Roman Family Center for Decision Research</span></div>
+        </div>
+      </section>
+<div class="news-rail" aria-label="News carousel">
         <div class="news-track">
           <div class="news-item"><img src="assets/logos/nhb.png" alt="NHB" /><div><strong>April 2026</strong><span><em>Nature Human Behaviour</em> paper on the mechanism behind the IAT.</span></div></div>
           <div class="news-item"><img src="assets/logos/commpsych.png" alt="Communications Psychology" /><div><strong>February 2026</strong><span><em>Communications Psychology</em> paper on learning transfer across task, person, and experience.</span></div></div>
@@ -790,200 +1335,519 @@
         </div>
       </div>
 
-      <section class="hero">
-        <img src="images/kyle-lafollette-photo.jpg" alt="Kyle J. LaFollette" />
-        <div>
-          <p>I am a Principal Researcher at the University of Chicago Booth School of Business, in the Roman Family Center for Decision Research.</p>
-          <p>In 2025, I completed my PhD in Psychology at Case Western Reserve University. My dissertation, <em>Investigations of Affective Dynamics Using Equation Detection Algorithms</em>, focused on how emotional and cognitive processes can be described as interacting nonlinear systems. I was advised by Heath A. Demaree, Brooke N. Macnamara, and Amit Goldenberg.</p>
-          <p>In 2017, I obtained a BS in Cognitive Science and Biopsychology from the University of Michigan. Between 2017-2020, I completed post-baccalaureate research assistantships at the University of Arizona and Stanford University.</p>
+      <section class="section-block" id="identity" aria-label="Research identity">
+<div>
+          <h2 class="section-title">A computational social psychology of control.</h2>
+          <p class="section-lede">Methodologically, I combine behavioral experiments, diffusion decision models, reinforcement learning models, social network analysis, experience sampling, dynamical systems approaches, and theory-constrained equation discovery algorithms, decomposing behavior into the parts that are controllable and the parts that are not. I am especially interested in using computational tools to build interpretable models of how emotional and cognitive processes unfold together over time, and to identify the control variables - inputs in system dynamics and control theory - that shape these processes for achieving desired performance.</p>
+          <div class="research-pill-row" aria-label="Research methods and themes">
+            <span>Implicit expectations</span>
+            <span>Emotion dynamics</span>
+            <span>Decision diffusion models</span>
+            <span>Reinforcement learning</span>
+            <span>Social networks</span>
+            <span>Equation discovery algorithms</span>
+          </div>
         </div>
       </section>
 
-      <section class="interest-box" aria-label="Research on control">
-        <h2>A Computational Social Psychology of Control</h2>
-        <p>I am a computational social psychologist studying how much control people have over the expectations, emotions, and beliefs that shape social judgment, decision-making, and organizational behavior.</p>
-        <p>Methodologically, I combine behavioral experiments, diffusion decision models, reinforcement learning models, social network analysis, experience sampling, dynamical systems approaches, and theory-constrained equation discovery algorithms, decomposing behavior into the parts that are controllable and the parts that are not. I am especially interested in using computational tools to build interpretable models of how emotional and cognitive processes unfold together over time, and to identify the control variables - inputs in system dynamics and control theory - that shape these processes for achieving desired performance.</p>
+      <section class="section-block" id="publications" aria-label="Selected publications">
+        <div>
+          <div class="publication-head">
+            <h2 class="section-title">Selected publications.</h2>
+            <a class="scholar-link" href="https://scholar.google.com/citations?user=NUDFbQQAAAAJ&hl=en&oi=ao" target="_blank" rel="noopener noreferrer">Full list on Google Scholar ↗</a>
+          </div>
+          <div class="publication-grid">
+            <article class="publication-card">
+              <div class="pub-meta">Nature Human Behaviour · 2026</div>
+              <div>
+                <h3>Challenging the mechanism for the implicit association test</h3>
+                <p>Shows that response caution, rather than automatic association alone, explains much of the IAT's signature effect across a large set of topics.</p>
+              </div>
+              <a class="badge" href="https://doi.org/10.1038/s41562-026-02439-y" target="_blank" rel="noopener noreferrer">paper ↗</a>
+            </article>
+            <article class="publication-card">
+              <div class="pub-meta">Communications Psychology · 2026</div>
+              <div>
+                <h3>Task, person, and experiential characteristics drive the transfer of learning</h3>
+                <p>Examines when learning carries forward across contexts and when environments hide the skills people have actually acquired.</p>
+              </div>
+              <a class="badge" href="https://doi.org/10.1038/s44271-026-00408-9" target="_blank" rel="noopener noreferrer">paper ↗</a>
+            </article>
+            <article class="publication-card">
+              <div class="pub-meta">Scientific Reports · 2025</div>
+              <div>
+                <h3>Judgment of crowds as emotional increases with the proportion of Black faces</h3>
+                <p>Uses process models to show how racial composition shapes emotion inference in crowds through evidence accumulation.</p>
+              </div>
+              <a class="badge" href="https://doi.org/10.1038/s41598-025-95029-3" target="_blank" rel="noopener noreferrer">paper ↗</a>
+            </article>
+            <article class="publication-card">
+              <div class="pub-meta">PNAS · 2025</div>
+              <div>
+                <h3>Data-driven equation discovery reveals nonlinear reinforcement learning in humans</h3>
+                <p>Uses equation discovery algorithms to uncover interpretable, nonlinear rules for how people update expectations after feedback.</p>
+              </div>
+              <a class="badge" href="https://doi.org/10.1073/pnas.2413441122" target="_blank" rel="noopener noreferrer">paper ↗</a>
+            </article>
+          </div>
+        </div>
+      </section>
+      <section class="section-block" id="windows" aria-label="Ongoing projects and interactive windows">
+<div>
+          <h2 class="section-title">Questions currently on my desk.</h2>
+          <p class="section-lede">These interactive windows give a small, playful glimpse into the problems I study: how leaders structure teams, how people share emotion with AI and one another, how social judgments unfold through decision processes, and how expectations update over time.</p>
+          <div class="project-grid" aria-label="Current project themes">
+            <article class="project-card"><h3>Team control</h3><p>How do leaders structure networks so teams preserve diverse ideas without locking knowledge into isolated silos?</p></article>
+            <article class="project-card"><h3>Emotional control</h3><p>How do conversations, social sharing, and AI-mediated responses redirect emotional trajectories in daily life?</p></article>
+            <article class="project-card"><h3>Judgment control</h3><p>When are fast social judgments controllable policies rather than fixed reflexes?</p></article>
+          </div>
+          <section class="demo-grid" aria-label="Interactive research demos">
+            <article class="demo-card">
+              <div class="demo-head">
+                <span class="demo-kicker">Expectations about organizational dynamics</span>
+                <h3>Rearrange a network of workers</h3>
+                <p>Drag workers closer together or farther apart. Click a worker to change their affective tendency. Productivity is strongest when teams preserve some local specialization while still keeping bridges across units.</p>
+              </div>
+              <div class="org-legend" aria-label="Affective tendency legend">
+                <span class="legend-dot" style="--dot:#22c55e">positive</span>
+                <span class="legend-dot" style="--dot:#3b82f6">steady</span>
+                <span class="legend-dot" style="--dot:#f97316">concerned</span>
+                <span class="legend-dot" style="--dot:#facc15">explorer</span>
+                <span class="legend-dot" style="--dot:#e11d48">negative</span>
+              </div>
+              <div id="org-stage" class="org-stage" aria-label="Interactive organization network">
+                <svg id="org-svg" class="org-svg" aria-hidden="true"></svg>
+                <div id="org-workers" class="org-workers"></div>
+              </div>
+              <div class="org-panel">
+                <div class="metric"><span>Teams</span><strong id="org-teams">0</strong></div>
+                <div class="metric"><span>Emotional Health</span><strong id="org-climate">0%</strong></div>
+                <div class="metric"><span>Productivity</span><strong id="org-discovery">0%</strong></div>
+              </div>
+</article>
+
+            <article class="demo-card">
+              <div class="demo-head">
+                <span class="demo-kicker">Technology and social-emotional health</span>
+                <h3>Share an emotion with AI</h3>
+                <p>Share a feeling with an AI friend and watch a continuously monitored emotional trajectory respond. The phone captures the conversation; the watch shows how future emotional dynamics begin to change.</p>
+              </div>
+              <div class="emotion-demo">
+                <div class="tracked-shell">
+                  <div class="phone-device" aria-label="AI friend text conversation on a smartphone">
+                    <div class="phone-screen">
+                      <div class="phone-topbar">
+                        <div class="phone-contact"><span class="ai-avatar">AI</span><span>AI Friend</span></div>
+                        <span class="phone-camera" aria-hidden="true"></span>
+                      </div>
+                      <div class="message-thread" id="message-thread" aria-live="polite">
+                        <div class="message-bubble ai">Want to share what you're feeling today?</div>
+                        <div class="message-bubble me hidden" id="user-message"></div>
+                        <div class="message-bubble ai typing-bubble hidden" id="typing-bubble"><span></span><span></span><span></span></div>
+                        <div class="message-bubble ai hidden" id="ai-response"></div>
+                      </div>
+                      <div class="phone-compose">
+                        <textarea id="feeling-input" aria-label="Reply to AI friend" placeholder="Type what you're feeling..."></textarea>
+                        <button id="share-feeling" type="button" aria-label="Send feeling"><i class="fa-solid fa-paper-plane" aria-hidden="true"></i></button>
+                      </div>
+                      <div class="phone-nav" aria-hidden="true"><span></span><span></span><span></span></div>
+                    </div>
+                  </div>
+
+                  <div class="watch-device" aria-label="Smartwatch happiness trajectory">
+                    <div class="watch-strap" aria-hidden="true"></div>
+                    <div class="watch-case">
+                      <div id="trajectory-wrap" class="trajectory-wrap" aria-label="Continuously monitored happiness on a smartwatch">
+                        <span class="axis-label high">High Happiness</span>
+                        <span class="axis-label low">Low Happiness</span>
+                        <span class="watch-status" id="watch-status">live</span>
+                        <svg id="trajectory-svg" viewBox="0 0 200 160" preserveAspectRatio="none">
+                          <path id="drawn-path" d="" fill="none" stroke="#67e8f9" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+</article>
+
+            <article class="demo-card">
+              <div class="demo-head">
+                <span class="demo-kicker">Implicit expectations about emotion</span>
+                <h3>Tune an emotion-inference process</h3>
+                <p>Adjust a diffusion decision model for judging whether a face is emotional. The same observed response can reflect faster evidence accumulation, more caution, or a noisier stream of evidence.</p>
+              </div>
+              <div class="ddm-demo">
+                <div class="ddm-shell">
+                  <div class="face-panel" aria-label="Face expressing emotion">
+                    <img class="emotion-face" src="assets/emotion-face.svg" alt="A person expressing emotion" />
+                    <div class="face-label">Is this person emotional?</div>
+                  </div>
+                  <div class="ddm-panel">
+                    <svg class="ddm-plot" viewBox="0 0 320 210" preserveAspectRatio="xMidYMid meet" aria-label="Diffusion decision model evidence trajectory">
+                      <line class="ddm-axis" x1="34" y1="105" x2="294" y2="105"></line>
+                      <line class="bound-line" id="ddm-upper" x1="34" y1="46" x2="294" y2="46"></line>
+                      <line class="bound-line" id="ddm-lower" x1="34" y1="164" x2="294" y2="164"></line>
+                      <text class="ddm-label" id="ddm-upper-label" x="38" y="35">emotional</text>
+                      <text class="ddm-label" id="ddm-lower-label" x="38" y="181">not emotional</text>
+                      <text class="ddm-label time-label" id="ddm-time-label" x="294" y="199">time</text>
+                      <path class="ddm-path" id="ddm-path" d=""></path>
+                      <circle class="ddm-hit" id="ddm-hit" cx="0" cy="0" r="6"></circle>
+                    </svg>
+                    <div class="ddm-readout">
+                      <div class="ddm-stat"><span>Decision</span><strong id="ddm-choice">Emotional</strong></div>
+                      <div class="ddm-stat"><span>RT</span><strong id="ddm-rt">0 ms</strong></div>
+                    </div>
+                    <div class="ddm-controls">
+                      <div class="ddm-control">
+                        <label for="ddm-drift">Decision ease <span id="ddm-drift-val">0.65</span></label>
+                        <input id="ddm-drift" type="range" min="-1.2" max="1.2" step="0.05" value="0.65" />
+                      </div>
+                      <div class="ddm-control">
+                        <label for="ddm-caution">Response caution <span id="ddm-caution-val">1.00</span></label>
+                        <input id="ddm-caution" type="range" min="0.55" max="1.55" step="0.05" value="1.00" />
+                      </div>
+                      <div class="ddm-control">
+                        <label for="ddm-noise">Evidence noise <span id="ddm-noise-val">0.55</span></label>
+                        <input id="ddm-noise" type="range" min="0.10" max="1.20" step="0.05" value="0.55" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+</article>
+
+            <article class="demo-card">
+              <div class="demo-head">
+                <span class="demo-kicker">How expectations update</span>
+                <h3>Inspect an assembly line</h3>
+                <p>Report the chance that the next phone will work, then inspect it and observe the outcome. The plotted trajectory shows your stated expectations as the system reveals itself over time.</p>
+              </div>
+              <div class="assembly-demo">
+                <div class="assembly-shell">
+                  <div class="factory-panel">
+                    <div class="conveyor" aria-label="Assembly line with a phone moving along it">
+                      <div class="phone-product" id="phone-product" aria-hidden="true"></div>
+                    </div>
+                    <div class="expectation-control">
+                      <label for="expectation-slider">Chance the next phone works <span id="reported-value">50%</span></label>
+                      <input id="expectation-slider" type="range" min="0" max="100" step="5" value="50" />
+                      <div class="expectation-scale"><span>0%</span><span>50%</span><span>100%</span></div>
+                    </div>
+                    <div class="assembly-buttons">
+                      <button id="inspect-phone" type="button">Submit expectation and inspect</button>
+                    </div>
+                    <div class="inspection-result" id="inspection-result">Report your expectation to begin building a personalized updating trajectory.</div>
+                  </div>
+                  <div class="belief-panel">
+                    <div class="belief-legend">
+                      <span class="belief-key" style="--key:#1a73e8">reported expectation</span>
+                      <span class="belief-key model">fitted updating rule</span>
+                      <span class="belief-key" style="--key:#22c55e">working</span>
+                      <span class="belief-key" style="--key:#ef4444">defective</span>
+                    </div>
+                    <svg class="belief-plot" viewBox="0 0 320 420" preserveAspectRatio="xMidYMid meet" aria-label="Expectation trajectory over inspection rounds">
+                      <line class="belief-axis" x1="44" y1="12" x2="44" y2="376"></line>
+                      <line class="belief-axis" x1="44" y1="376" x2="294" y2="376"></line>
+                      <line class="belief-tick" x1="38" y1="12" x2="44" y2="12"></line>
+                      <line class="belief-tick" x1="38" y1="194" x2="44" y2="194"></line>
+                      <line class="belief-tick" x1="38" y1="376" x2="44" y2="376"></line>
+                      <text class="belief-label" x="8" y="17">100%</text>
+                      <text class="belief-label" x="16" y="199">50%</text>
+                      <text class="belief-label" x="21" y="381">0%</text>
+                      <text class="belief-label x-label" x="170" y="410">inspection round</text>
+                      <g id="outcome-dots"></g>
+                      <path class="belief-model" id="belief-model-path" d=""></path>
+                      <path class="belief-path" id="belief-path" d=""></path>
+                      <circle class="belief-dot" id="belief-dot" cx="34" cy="100" r="5"></circle>
+                    </svg>
+</div>
+                </div>
+              </div>
+</article>
+          </section>
+        </div>
       </section>
 
-      <section class="demo-grid" aria-label="Interactive research demos">
-        <article class="demo-card">
-          <div class="demo-head">
-            <span class="demo-kicker">Expectations about organizational dynamics</span>
-            <h3>Rearrange a network of workers</h3>
-            <p>Drag workers closer together or farther apart. Click a worker to change their affective tendency. Productivity is strongest when teams preserve some local specialization while still keeping bridges across units.</p>
-          </div>
-          <div id="org-stage" class="org-stage" aria-label="Interactive organization network">
-            <svg id="org-svg" class="org-svg" aria-hidden="true"></svg>
-            <div id="org-workers" class="org-workers"></div>
-          </div>
-          <div class="org-panel">
-            <div class="metric"><span>Teams</span><strong id="org-teams">0</strong></div>
-            <div class="metric"><span>Emotional Health</span><strong id="org-climate">0%</strong></div>
-            <div class="metric"><span>Productivity</span><strong id="org-discovery">0%</strong></div>
-          </div>
-          <div class="org-legend" aria-label="Affective tendency legend">
-            <span class="legend-dot" style="--dot:#22c55e">positive</span>
-            <span class="legend-dot" style="--dot:#3b82f6">steady</span>
-            <span class="legend-dot" style="--dot:#f97316">concerned</span>
-            <span class="legend-dot" style="--dot:#facc15">explorer</span>
-            <span class="legend-dot" style="--dot:#e11d48">negative</span>
-          </div>
-          <div class="caption">The organizing question is how leaders' expectations about teams shape information flow: fully isolated silos can prevent integration, fully connected groups can homogenize ideas, and partially bridged units may preserve diversity while still allowing discoveries to spread. The affective composition of those units also matters for how well people sustain exploration.</div>
-        </article>
-
-        <article class="demo-card">
-          <div class="demo-head">
-            <span class="demo-kicker">Technology and social-emotional health</span>
-            <h3>Share an emotion with AI</h3>
-            <p>Share a feeling with an AI friend and watch a continuously monitored emotional trajectory respond. The phone captures the conversation; the watch shows how future emotional dynamics begin to change.</p>
-          </div>
-          <div class="emotion-demo">
-            <div class="tracked-shell">
-              <div class="phone-device" aria-label="AI friend text conversation on a smartphone">
-                <div class="phone-screen">
-                  <div class="phone-topbar">
-                    <div class="phone-contact"><span class="ai-avatar">AI</span><span>AI Friend</span></div>
-                    <span class="phone-camera" aria-hidden="true"></span>
-                  </div>
-                  <div class="message-thread" id="message-thread" aria-live="polite">
-                    <div class="message-bubble ai">Want to share what you're feeling today?</div>
-                    <div class="message-bubble me hidden" id="user-message"></div>
-                    <div class="message-bubble ai typing-bubble hidden" id="typing-bubble"><span></span><span></span><span></span></div>
-                    <div class="message-bubble ai hidden" id="ai-response"></div>
-                  </div>
-                  <div class="phone-compose">
-                    <textarea id="feeling-input" aria-label="Reply to AI friend" placeholder="Type what you're feeling..."></textarea>
-                    <button id="share-feeling" type="button" aria-label="Send feeling"><i class="fa-solid fa-paper-plane" aria-hidden="true"></i></button>
-                  </div>
-                  <div class="phone-nav" aria-hidden="true"><span></span><span></span><span></span></div>
-                </div>
-              </div>
-
-              <div class="watch-device" aria-label="Smartwatch happiness trajectory">
-                <div class="watch-strap" aria-hidden="true"></div>
-                <div class="watch-case">
-                  <div id="trajectory-wrap" class="trajectory-wrap" aria-label="Continuously monitored happiness on a smartwatch">
-                    <span class="axis-label high">High Happiness</span>
-                    <span class="axis-label low">Low Happiness</span>
-                    <span class="watch-status" id="watch-status">live</span>
-                    <svg id="trajectory-svg" viewBox="0 0 200 160" preserveAspectRatio="none">
-                      <path id="drawn-path" d="" fill="none" stroke="#67e8f9" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path>
-                    </svg>
-                  </div>
-                </div>
-              </div>
+      <section class="section-block" id="teaching" aria-label="Teaching and service preview">
+        <div>
+          <h2 class="section-title">Teaching and service.</h2>
+          <div class="teaching-grid">
+            <div class="teaching-group">
+              <h3>Graduate</h3>
+              <p>Course instruction for researchers learning computational tools.</p>
+              <div class="course-row"><div class="course-meta">Spring 2023</div><div><strong>Python for Psychological Science</strong><span>A graduate methods course focused on Python programming, data workflows, and computational tools for psychological science.</span></div></div>
+            </div>
+            <div class="teaching-group">
+              <h3>Undergraduate</h3>
+              <p>Courses and seminars in quantitative and computational psychology.</p>
+              <div class="course-row"><div class="course-meta">Fall 2021,<br>2023</div><div><strong>Quantitative Methods in Psychology</strong><span>An undergraduate statistics course covering research design, probability, statistical inference, data visualization, and psychological data analysis.</span></div></div>
+              <div class="course-row"><div class="course-meta">Fall 2022</div><div><strong>Computational Psychology & Neuroeconomics</strong><span>A special topics seminar on computational approaches to decision-making, value, learning, and affect.</span></div></div>
+            </div>
+            <div class="teaching-group">
+              <h3>Statistical consulting</h3>
+              <div class="course-row"><div class="course-meta">2025-present<br>RF-CDR</div><div><strong>Roman Family Center for Decision Research</strong><span>Statistical Consultant supporting behavioral science and marketing faculty and students at Chicago Booth.</span></div></div>
+              <div class="course-row"><div class="course-meta">2025<br>ARI project</div><div><strong>Army Research Institute consulting</strong><span>Consulting on cognitive and affective learning and decision-making systems for Army Research Institute Grant #W911NF-22-1-0238.</span></div></div>
+            </div>
+            <div class="teaching-group">
+              <h3>Service</h3>
+              <div class="course-row"><div class="course-meta">Ad hoc<br>reviewing</div><div><strong>Journal service</strong><span>Reviewer for outlets including PNAS, Scientific Reports, Emotion, Journal of Statistical Software, and Frontiers in Psychology.</span></div></div>
+              <div class="course-row"><div class="course-meta">Representative<br>talks</div><div><strong>Equation discovery in behavioral science</strong><span>Educating researchers on data-driven equation discovery methods, including talks at the Automated Scientific Discovery of Mind and Brain Workshop at Princeton and the Knowledge Lab at the University of Chicago.</span></div></div>
             </div>
           </div>
-          <div class="caption">The watch continuously tracks happiness, and sharing an emotion changes the modeled dynamics going forward. Digital devices and wearable technologies can repeatedly sample emotional states as they unfold. Combined with brief prompts about conversations with other people or AI systems, those data can be used to model how social interaction redirects a person's emotional trajectory, and how those dynamics differ across individuals.</div>
-        </article>
+        </div>
+      </section>
+      <section class="section-block" id="flexddm" aria-label="FlexDDM product release">
+<div class="product-card">
+          <div>
+            <h2 class="section-title">FlexDDM, flexible decision diffusion modeling for all behavioral scientists.</h2>
+            <p>FlexDDM is for students and career academics alike who want to build, validate, fit, and learn about a large variety of decision diffusion models. The package is powerful, using C++ machine code for fitting, but accessible through minimal front-end Python, helpful tutorials, and a point-and-click interface. It is flexible enough to run a wide range of models, including custom models.</p>
+            <a class="store-link" aria-label="Get FlexDDM from Microsoft"><span class="ms-mark" aria-hidden="true"><span></span><span></span><span></span><span></span></span><strong>Get it from Microsoft</strong></a>
+          </div>
+          <div class="product-mark" aria-hidden="true"><img src="assets/flexddm-boxart.png" alt="" /></div>
+        </div>
+      </section>
 
-        <article class="demo-card">
-          <div class="demo-head">
-            <span class="demo-kicker">Implicit expectations about emotion</span>
-            <h3>Tune an emotion-inference process</h3>
-            <p>Adjust a diffusion decision model for judging whether a face is emotional. The same observed response can reflect faster evidence accumulation, more caution, or a noisier stream of evidence.</p>
+      <section class="section-block" id="contact" aria-label="Contact">
+<div class="contact-card">
+          <h2 class="section-title">Let's talk about control.</h2>
+          <p>I am especially interested in collaborations on emotion dynamics, implicit expectations, behavioral process models, digital and AI-mediated sociality, and team or organizational systems.</p>
+          <div class="contact-row">
+            <a class="pill-link" href="#" id="email-link-footer"><i class="fa-solid fa-envelope" aria-hidden="true"></i>Email</a>
+            <a class="pill-link" href="https://scholar.google.com/citations?user=NUDFbQQAAAAJ&hl=en&oi=ao" target="_blank" rel="noopener noreferrer">Google Scholar</a>
+            <a class="pill-link" href="https://github.com/kjlafoll" target="_blank" rel="noopener noreferrer">GitHub</a>
+            <a class="pill-link" href="https://www.linkedin.com/in/kylelafollette" target="_blank" rel="noopener noreferrer">LinkedIn</a>
           </div>
-          <div class="ddm-demo">
-            <div class="ddm-shell">
-              <div class="face-panel" aria-label="Face expressing emotion">
-                <img class="emotion-face" src="assets/emotion-face.svg" alt="A person expressing emotion" />
-                <div class="face-label">Is this person emotional?</div>
-              </div>
-              <div class="ddm-panel">
-                <svg class="ddm-plot" viewBox="0 0 320 210" preserveAspectRatio="xMidYMid meet" aria-label="Diffusion decision model evidence trajectory">
-                  <line class="ddm-axis" x1="34" y1="105" x2="294" y2="105"></line>
-                  <line class="bound-line" id="ddm-upper" x1="34" y1="46" x2="294" y2="46"></line>
-                  <line class="bound-line" id="ddm-lower" x1="34" y1="164" x2="294" y2="164"></line>
-                  <text class="ddm-label" id="ddm-upper-label" x="38" y="35">emotional</text>
-                  <text class="ddm-label" id="ddm-lower-label" x="38" y="181">not emotional</text>
-                  <text class="ddm-label time-label" id="ddm-time-label" x="294" y="199">time</text>
-                  <path class="ddm-path" id="ddm-path" d=""></path>
-                  <circle class="ddm-hit" id="ddm-hit" cx="0" cy="0" r="6"></circle>
-                </svg>
-                <div class="ddm-readout">
-                  <div class="ddm-stat"><span>Decision</span><strong id="ddm-choice">Emotional</strong></div>
-                  <div class="ddm-stat"><span>RT</span><strong id="ddm-rt">0 ms</strong></div>
-                </div>
-                <div class="ddm-controls">
-                  <div class="ddm-control">
-                    <label for="ddm-drift">Decision ease <span id="ddm-drift-val">0.65</span></label>
-                    <input id="ddm-drift" type="range" min="-1.2" max="1.2" step="0.05" value="0.65" />
-                  </div>
-                  <div class="ddm-control">
-                    <label for="ddm-caution">Response caution <span id="ddm-caution-val">1.00</span></label>
-                    <input id="ddm-caution" type="range" min="0.55" max="1.55" step="0.05" value="1.00" />
-                  </div>
-                  <div class="ddm-control">
-                    <label for="ddm-noise">Evidence noise <span id="ddm-noise-val">0.55</span></label>
-                    <input id="ddm-noise" type="range" min="0.10" max="1.20" step="0.05" value="0.55" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="paper-link ddm-paper-link">For process-model applications to implicit expectations and emotion inference in crowds, see my <a href="https://doi.org/10.1038/s41598-025-95029-3" target="_blank" rel="noopener noreferrer">Scientific Reports paper on crowd emotion amplification</a> and my <a href="https://doi.org/10.1038/s41562-026-02439-y" target="_blank" rel="noopener noreferrer">Nature Human Behaviour paper on the IAT</a>.</div>
-          <div class="caption">Process models of decision-making let us ask what people are doing when they infer another person's emotional state: accumulating more emotional evidence, setting a more cautious threshold before responding, or sampling from a noisier stream of social information.</div>
-        </article>
-
-        <article class="demo-card">
-          <div class="demo-head">
-            <span class="demo-kicker">How expectations update</span>
-            <h3>Inspect an assembly line</h3>
-            <p>Report the chance that the next phone will work, then inspect it and observe the outcome. The plotted trajectory shows your stated expectations as the system reveals itself over time.</p>
-          </div>
-          <div class="assembly-demo">
-            <div class="assembly-shell">
-              <div class="factory-panel">
-                <div class="conveyor" aria-label="Assembly line with a phone moving along it">
-                  <div class="phone-product" id="phone-product" aria-hidden="true"></div>
-                </div>
-                <div class="expectation-control">
-                  <label for="expectation-slider">Chance the next phone works <span id="reported-value">50%</span></label>
-                  <input id="expectation-slider" type="range" min="0" max="100" step="5" value="50" />
-                  <div class="expectation-scale"><span>0%</span><span>50%</span><span>100%</span></div>
-                </div>
-                <div class="assembly-buttons">
-                  <button id="inspect-phone" type="button">Submit expectation and inspect</button>
-                </div>
-                <div class="inspection-result" id="inspection-result">Report your expectation to begin building a personalized updating trajectory.</div>
-              </div>
-              <div class="belief-panel">
-                <div class="belief-legend">
-                  <span class="belief-key" style="--key:#1a73e8">reported expectation</span>
-                  <span class="belief-key model">fitted updating rule</span>
-                  <span class="belief-key" style="--key:#22c55e">working</span>
-                  <span class="belief-key" style="--key:#ef4444">defective</span>
-                </div>
-                <svg class="belief-plot" viewBox="0 0 320 420" preserveAspectRatio="xMidYMid meet" aria-label="Expectation trajectory over inspection rounds">
-                  <line class="belief-axis" x1="44" y1="12" x2="44" y2="376"></line>
-                  <line class="belief-axis" x1="44" y1="376" x2="294" y2="376"></line>
-                  <line class="belief-tick" x1="38" y1="12" x2="44" y2="12"></line>
-                  <line class="belief-tick" x1="38" y1="194" x2="44" y2="194"></line>
-                  <line class="belief-tick" x1="38" y1="376" x2="44" y2="376"></line>
-                  <text class="belief-label" x="8" y="17">100%</text>
-                  <text class="belief-label" x="16" y="199">50%</text>
-                  <text class="belief-label" x="21" y="381">0%</text>
-                  <text class="belief-label x-label" x="170" y="410">inspection round</text>
-                  <g id="outcome-dots"></g>
-                  <path class="belief-model" id="belief-model-path" d=""></path>
-                  <path class="belief-path" id="belief-path" d=""></path>
-                  <circle class="belief-dot" id="belief-dot" cx="34" cy="100" r="5"></circle>
-                </svg>
-                <div class="paper-link">See this logic in action in my <a href="https://doi.org/10.1073/pnas.2413441122" target="_blank" rel="noopener noreferrer">PNAS paper on equation discovery and nonlinear reinforcement learning</a>.</div>
-              </div>
-            </div>
-          </div>
-          <div class="caption">This illustrates how expectations about a system can change after each outcome. Equation discovery algorithms let us estimate the form of those updating rules from behavior, revealing whether different people learn through gradual averaging, surprise-weighted shifts, or nonlinear jumps.</div>
-        </article>
+        </div>
       </section>
     </main>
 
-    <footer>Last updated August 2026</footer>
+    <footer>&copy; 2026 Kyle J. LaFollette. Last updated August 2026.</footer>
   </div>
 
   <script>
     (function(){
-      document.querySelectorAll('#email-link').forEach(function(a){
+      var header = document.querySelector('header');
+      document.querySelectorAll('header a[href^="#"]').forEach(function(link){
+        link.addEventListener('click', function(event){
+          var id = link.getAttribute('href');
+          var target = id === '#top' ? document.getElementById('top') : document.querySelector(id);
+          if (!target) return;
+          event.preventDefault();
+          var headerOffset = (header ? header.offsetHeight : 0) + 18;
+          var maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+          var top = target.getBoundingClientRect().top + window.scrollY - headerOffset;
+          var next = Math.max(0, Math.min(maxScroll, Math.round(top)));
+          window.scrollTo({ top: next, behavior: 'auto' });
+          if (history.pushState) history.pushState(null, '', id);
+        });
+      });
+    })();
+  </script>
+
+  <script>
+    (function(){
+      var toggle = document.getElementById('theme-toggle');
+      var icon = toggle ? toggle.querySelector('i') : null;
+      var label = toggle ? toggle.querySelector('span') : null;
+      var saved = localStorage.getItem('site-theme');
+
+      function applyTheme(mode) {
+        var dark = mode === 'dark';
+        document.body.classList.toggle('dark-mode', dark);
+        if (icon) {
+          icon.className = dark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+        }
+        if (toggle) {
+          toggle.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+        }
+        if (label) {
+          label.textContent = dark ? 'Light mode' : 'Dark mode';
+        }
+      }
+
+      applyTheme(saved || 'dark');
+      if (toggle) {
+        toggle.addEventListener('click', function(){
+          var next = document.body.classList.contains('dark-mode') ? 'light' : 'dark';
+          localStorage.setItem('site-theme', next);
+          applyTheme(next);
+        });
+      }
+    })();
+  </script>
+
+  <script>
+    (function(){
+      var canvas = document.getElementById('hero-motif');
+      var main = document.querySelector('main');
+      if (!canvas || !main || !canvas.getContext) return;
+
+      var ctx = canvas.getContext('2d');
+      var width = 0;
+      var height = 0;
+      var ratio = Math.min(window.devicePixelRatio || 1, 2);
+      var nodes = [];
+      var pulses = [];
+      var frame = 0;
+      var linkDistance = 158;
+
+      function contentHeight() {
+        var bottom = 0;
+        Array.prototype.forEach.call(main.children, function(child){
+          if (child === canvas) return;
+          bottom = Math.max(bottom, child.offsetTop + child.offsetHeight);
+        });
+        return bottom;
+      }
+
+      function build() {
+        width = Math.max(320, main.clientWidth || window.innerWidth);
+        height = Math.max(window.innerHeight, contentHeight());
+        canvas.width = width * ratio;
+        canvas.height = height * ratio;
+        canvas.style.width = width + 'px';
+        canvas.style.height = height + 'px';
+        ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+        var count = Math.max(80, Math.min(170, Math.round((width * height) / 22000)));
+        nodes = Array.from({ length: count }, function(_, i){
+          return {
+            id: i,
+            x: Math.random() * width,
+            y: Math.random() * height,
+            vx: (Math.random() - .5) * .12,
+            vy: (Math.random() - .5) * .12,
+            r: 1.5 + Math.random() * 2.4,
+            warmth: Math.random() * .18,
+            shape: Math.random() > .58 ? 'diamond' : 'bead',
+            tilt: Math.random() * Math.PI
+          };
+        });
+      }
+
+      function visibleEdges() {
+        var edges = [];
+        for (var i = 0; i < nodes.length; i += 1) {
+          for (var j = i + 1; j < nodes.length; j += 1) {
+            var a = nodes[i], b = nodes[j];
+            var dist = Math.hypot(a.x - b.x, a.y - b.y);
+            if (dist < linkDistance) edges.push({ a: a, b: b, dist: dist });
+          }
+        }
+        return edges;
+      }
+
+      function seedPulse(edges) {
+        if (!edges.length || Math.random() > .11) return;
+        var edge = edges[Math.floor(Math.random() * edges.length)];
+        var reverse = Math.random() > .5;
+        pulses.push({ a: reverse ? edge.b : edge.a, b: reverse ? edge.a : edge.b, t: 0, hue: Math.random() > .42 ? 'warm' : 'cool', generation: 0, hit: false });
+        if (pulses.length > 28) pulses.shift();
+      }
+
+      function cascadeFrom(node, edges, generation) {
+        if (generation > 1 || Math.random() > .68) return;
+        var local = edges.filter(function(edge){
+          return (edge.a === node || edge.b === node) && edge.dist < linkDistance * .9;
+        });
+        local.sort(function(){ return Math.random() - .5; });
+        local.slice(0, 2).forEach(function(edge){
+          var neighbor = edge.a === node ? edge.b : edge.a;
+          pulses.push({ a: node, b: neighbor, t: 0, hue: 'warm', generation: generation + 1, hit: false });
+        });
+        if (pulses.length > 34) pulses.splice(0, pulses.length - 34);
+      }
+
+      function draw() {
+        frame += 1;
+        var dark = document.body.classList.contains('dark-mode');
+        ctx.clearRect(0, 0, width, height);
+        nodes.forEach(function(node){
+          node.x += node.vx;
+          node.y += node.vy;
+          node.warmth *= .955;
+          if (node.x < -24) node.x = width + 24;
+          if (node.x > width + 24) node.x = -24;
+          if (node.y < -24) node.y = height + 24;
+          if (node.y > height + 24) node.y = -24;
+        });
+
+        var edges = visibleEdges();
+        if (frame % 8 === 0) seedPulse(edges);
+
+        edges.forEach(function(edge){
+          var alpha = (1 - edge.dist / linkDistance) * (dark ? .34 : .22);
+          ctx.strokeStyle = dark ? 'rgba(157, 191, 227, ' + alpha.toFixed(3) + ')' : 'rgba(46, 92, 138, ' + alpha.toFixed(3) + ')';
+          ctx.lineWidth = 1.05;
+          ctx.beginPath();
+          ctx.moveTo(edge.a.x, edge.a.y);
+          ctx.lineTo(edge.b.x, edge.b.y);
+          ctx.stroke();
+        });
+
+        pulses = pulses.filter(function(pulse){ return pulse.t <= 1; });
+        pulses.forEach(function(pulse){
+          pulse.t = Math.min(1, pulse.t + .016);
+          var t = pulse.t;
+          var x = pulse.a.x + (pulse.b.x - pulse.a.x) * t;
+          var y = pulse.a.y + (pulse.b.y - pulse.a.y) * t;
+          var color = pulse.hue === 'warm' ? (dark ? '227, 160, 109' : '168, 92, 46') : (dark ? '157, 191, 227' : '46, 92, 138');
+          var glow = Math.max(0, 1 - Math.abs(t - .56) * 1.7);
+          ctx.strokeStyle = 'rgba(' + color + ', ' + (.12 + glow * .28).toFixed(3) + ')';
+          ctx.lineWidth = 2.25;
+          ctx.beginPath();
+          ctx.moveTo(pulse.a.x, pulse.a.y);
+          ctx.lineTo(x, y);
+          ctx.stroke();
+          ctx.fillStyle = 'rgba(' + color + ', ' + (.20 + glow * .32).toFixed(3) + ')';
+          ctx.beginPath();
+          ctx.arc(x, y, 2.8 + glow * 3.2, 0, Math.PI * 2);
+          ctx.fill();
+          if (t >= .995 && !pulse.hit) {
+            pulse.hit = true;
+            pulse.b.warmth = Math.min(1, pulse.b.warmth + .34);
+            cascadeFrom(pulse.b, edges, pulse.generation || 0);
+          }
+        });
+
+        nodes.forEach(function(node){
+          var warm = Math.min(1, node.warmth);
+          ctx.fillStyle = warm > .18
+            ? 'rgba(' + (dark ? '227, 160, 109' : '168, 92, 46') + ', ' + (.32 + warm * .36).toFixed(3) + ')'
+            : (dark ? 'rgba(157, 191, 227, .58)' : 'rgba(46, 92, 138, .34)');
+          ctx.save();
+          ctx.translate(node.x, node.y);
+          ctx.rotate(node.tilt + Math.sin(frame / 180 + node.id) * .12);
+          var size = node.r * 2.25 + warm * 3.2;
+          if (node.shape === 'diamond') {
+            ctx.beginPath();
+            ctx.moveTo(0, -size);
+            ctx.lineTo(size * .72, 0);
+            ctx.lineTo(0, size);
+            ctx.lineTo(-size * .72, 0);
+            ctx.closePath();
+            ctx.fill();
+          } else {
+            var radius = Math.min(size * .45, 3.2);
+            ctx.beginPath();
+            ctx.roundRect(-size * .82, -size * .42, size * 1.64, size * .84, radius);
+            ctx.fill();
+          }
+          ctx.restore();
+        });
+        window.requestAnimationFrame(draw);
+      }
+
+      build();
+      draw();
+      window.addEventListener('resize', build);
+      window.setTimeout(build, 400);
+    })();
+  </script>
+
+  <script>
+    (function(){
+      document.querySelectorAll('#email-link, #email-link-footer').forEach(function(a){
         var u = 'kyle.lafollette';
         var d = 'chicagobooth.edu';
         a.setAttribute('href', 'mailto:' + u + '@' + d);
@@ -1100,7 +1964,7 @@
           var x2 = edge[1].x * box.width, y2 = edge[1].y * box.height;
           var strength = tieStrength(edge[0], edge[1], scored.climate);
           var className = strength > .62 ? ' class="flow-line"' : '';
-          var stroke = strength > .62 ? 'rgba(103,232,249,.92)' : 'rgba(103,232,249,.38)';
+          var stroke = strength > .62 ? 'rgba(46, 92, 138, .72)' : 'rgba(46, 92, 138, .26)';
           var width = strength > .62 ? 3.4 : 2.2;
           return '<line' + className + ' x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="' + stroke + '" stroke-width="' + width + '" stroke-linecap="round"></line>';
         }).join('');
