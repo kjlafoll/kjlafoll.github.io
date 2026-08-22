@@ -266,7 +266,7 @@
       text-transform: none;
     }
     .orbit-card strong { display: block; color: var(--ink); font-family: "Source Serif 4", Georgia, serif; font-size: 17px; font-weight: 500; letter-spacing: -.01em; line-height: 1.2; margin-bottom: 5px; }
-    .orbit-card span { display: block; color: inherit; font-size: inherit; line-height: 1.65; white-space: nowrap; }
+    .orbit-card span { display: block; width: max-content; max-width: calc(100vw - 40px); margin: 0 auto; color: inherit; font-size: inherit; line-height: 1.65; text-align: center; white-space: nowrap; }
     .control-node { display: none; }
 .research-pill-row {
       display: flex;
@@ -1828,6 +1828,21 @@ footer { margin-top: 0; border-top: 1px solid var(--line); padding: 14px max(32p
       var animationId = null;
       var lastDraw = 0;
       var linkDistance = 158;
+      var isMobileLayout = false;
+
+      function makeNode(id, mobile) {
+        return {
+          id: id,
+          x: Math.random() * width,
+          y: Math.random() * height,
+          vx: (Math.random() - .5) * (mobile ? .18 : .12),
+          vy: (Math.random() - .5) * (mobile ? .18 : .12),
+          r: 1.5 + Math.random() * 2.4,
+          warmth: Math.random() * .18,
+          shape: Math.random() > .58 ? 'diamond' : 'bead',
+          tilt: Math.random() * Math.PI
+        };
+      }
 
       function contentHeight() {
         var bottom = 0;
@@ -1839,6 +1854,10 @@ footer { margin-top: 0; border-top: 1px solid var(--line); padding: 14px max(32p
       }
 
       function build() {
+        var oldWidth = width;
+        var oldHeight = height;
+        var hadNodes = nodes.length > 0;
+        var oldMobile = isMobileLayout;
         width = Math.max(320, main.clientWidth || window.innerWidth);
         height = Math.max(window.innerHeight, contentHeight());
         canvas.width = width * ratio;
@@ -1847,24 +1866,31 @@ footer { margin-top: 0; border-top: 1px solid var(--line); padding: 14px max(32p
         canvas.style.height = height + 'px';
         ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
         var mobile = window.matchMedia && window.matchMedia('(max-width: 760px)').matches;
+        isMobileLayout = mobile;
         linkDistance = mobile ? 118 : 158;
         var density = mobile ? 36000 : 22000;
         var minNodes = mobile ? 48 : 80;
         var maxNodes = mobile ? 96 : 170;
         var count = Math.max(minNodes, Math.min(maxNodes, Math.round((width * height) / density)));
-        nodes = Array.from({ length: count }, function(_, i){
-          return {
-            id: i,
-            x: Math.random() * width,
-            y: Math.random() * height,
-            vx: (Math.random() - .5) * (mobile ? .18 : .12),
-            vy: (Math.random() - .5) * (mobile ? .18 : .12),
-            r: 1.5 + Math.random() * 2.4,
-            warmth: Math.random() * .18,
-            shape: Math.random() > .58 ? 'diamond' : 'bead',
-            tilt: Math.random() * Math.PI
-          };
+        pulses = [];
+        if (!hadNodes || oldMobile !== mobile) {
+          nodes = Array.from({ length: count }, function(_, i){ return makeNode(i, mobile); });
+          return;
+        }
+        var xScale = oldWidth ? width / oldWidth : 1;
+        var yScale = oldHeight && Math.abs(height - oldHeight) > 220 ? height / oldHeight : 1;
+        nodes.forEach(function(node){
+          node.x = Math.max(-24, Math.min(width + 24, node.x * xScale));
+          node.y = Math.max(-24, Math.min(height + 24, node.y * yScale));
+          node.vx = Math.sign(node.vx || (Math.random() - .5)) * Math.min(Math.abs(node.vx || .08), mobile ? .18 : .12);
+          node.vy = Math.sign(node.vy || (Math.random() - .5)) * Math.min(Math.abs(node.vy || .08), mobile ? .18 : .12);
         });
+        if (nodes.length > count) {
+          nodes = nodes.slice(0, count);
+        }
+        while (nodes.length < count) {
+          nodes.push(makeNode(nodes.length, mobile));
+        }
       }
 
       function visibleEdges() {
