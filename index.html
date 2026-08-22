@@ -521,6 +521,7 @@
     .demo-kicker { display: block; color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 6px; }
     .demo-head h3 { font-size: 18px; }
     .demo-head p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.45; min-height: 57px; }
+    .mobile-demo-toggle { display: none; }
 
     .org-stage {
       position: relative;
@@ -1271,25 +1272,124 @@ footer { margin-top: 0; border-top: 1px solid var(--line); padding: 14px max(32p
       .demo-grid { grid-template-columns: 1fr; }
     }
     @media (max-width: 760px) {
-      header { align-items: flex-start; flex-direction: column; padding: 13px 20px; gap: 10px; }
+      header { align-items: flex-start; flex-direction: column; padding: 11px 16px 9px; gap: 8px; }
       h1 { flex-direction: row; gap: 8px; }
+      h1 a { font-size: 20px; }
       h1 span { font-size: 9.5px; }
-      nav { gap: 12px; font-size: 13px; }
+      nav {
+        width: 100%;
+        flex-wrap: nowrap;
+        gap: 8px;
+        overflow-x: auto;
+        padding-bottom: 2px;
+        font-size: 12px;
+        scrollbar-width: none;
+      }
+      nav::-webkit-scrollbar { display: none; }
+      nav a,
+      .theme-toggle {
+        flex: 0 0 auto;
+        border: 1px solid var(--line-strong);
+        border-radius: 999px;
+        padding: 6px 10px;
+        background: rgba(255,255,255,.045);
+      }
+      .theme-toggle { font-size: 12px; }
+      .nav-product img { display: none; }
       .nav-contact { padding: 5px 12px; }
       .hero { grid-template-columns: 1fr; }
       .hero img { max-width: 260px; }
-      .hero-shell { padding: 40px 20px 38px; }
-      .hero-claim { font-size: 38px; }
-      .hero-art { justify-self: center; width: 220px; min-height: 268px; }
-      .portrait-card { width: 220px; height: 268px; }
+      .hero-shell {
+        padding: 28px 16px 20px;
+        gap: 26px;
+      }
+      .hero-claim {
+        font-size: clamp(34px, 12vw, 46px);
+        line-height: 1.02;
+        margin-bottom: 14px;
+      }
+      .hero-copy { font-size: 15.5px; line-height: 1.55; }
+      .hero-actions { margin-top: 16px; gap: 8px; }
+      .pill-link { padding: 10px 15px; font-size: 13px; }
+      .hero-art { justify-self: center; width: 190px; min-height: 246px; }
+      .portrait-card { width: 190px; height: 232px; }
       .orbit-card { width: 220px; text-align: center; }
-      .section-block { padding-left: 20px; padding-right: 20px; }
-      .news-item { width: 280px; }
+      .section-block { padding: 34px 16px; }
+      .section-title { font-size: clamp(31px, 10vw, 42px); }
+      .section-lede { font-size: 15px; line-height: 1.6; }
+      .research-pill-row { gap: 6px; }
+      .research-pill-row span { padding: 7px 10px; font-size: 11px; }
+      .news-rail { margin-top: 0; border-left: 0; border-right: 0; border-radius: 0; }
+      .news-item { width: 250px; min-height: 74px; padding: 10px 12px; }
+      .news-item img { width: 30px; height: 30px; }
+      .news-item strong,
+      .news-item span { font-size: 12px; }
+      .publication-head { align-items: flex-start; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+      .publication-card { padding: 16px; gap: 10px; border-radius: 16px; }
+      .publication-card h3 { font-size: 17px; }
+      .pub-authors,
+      .publication-card p { font-size: 12.5px; }
+      .pub-meta { font-size: 10.5px; }
+      .badge { justify-self: start; }
+      .demo-grid { gap: 12px; }
+      .demo-card {
+        display: block;
+        border-radius: 16px;
+      }
+      .demo-head { padding: 14px; border-bottom: 0; }
+      .demo-head p {
+        min-height: 0;
+        font-size: 12.5px;
+      }
+      .mobile-demo-toggle {
+        display: block;
+        width: calc(100% - 28px);
+        margin: 0 14px 14px;
+        border: 1px solid var(--line-strong);
+        border-radius: 999px;
+        padding: 9px 12px;
+        background: rgba(255,255,255,.045);
+        color: var(--ink);
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .demo-card > :not(.demo-head):not(.mobile-demo-toggle) { display: none; }
+      .demo-card.mobile-open > :not(.demo-head):not(.mobile-demo-toggle) { display: block; }
+      .demo-card.mobile-open .tracked-shell,
+      .demo-card.mobile-open .ddm-shell,
+      .demo-card.mobile-open .assembly-shell,
+      .demo-card.mobile-open .org-panel {
+        display: grid;
+      }
+      .demo-card.mobile-open .org-legend { display: flex; }
+      .org-stage { min-height: 270px; }
       .org-panel { grid-template-columns: 1fr; }
       .tracked-shell { grid-template-columns: 1fr; }
+      .phone-device { height: 390px; transform: scale(.92); transform-origin: top center; margin-bottom: -32px; }
+      .phone-screen { height: 360px; }
+      .watch-body { transform: scale(.88); transform-origin: top center; min-height: 265px; }
       .ddm-shell { grid-template-columns: 1fr; }
+      .ddm-demo,
+      .assembly-demo,
+      .emotion-demo { padding: 10px; }
+      .ddm-demo { min-height: 0; }
+      .ddm-plot { height: 165px; }
       .assembly-shell { grid-template-columns: 1fr; }
+      .assembly-demo { min-height: 0; }
+      .belief-panel { min-height: 330px; }
+      .belief-plot { min-height: 280px; }
       .face-panel { min-height: 190px; }
+      .teaching-grid { gap: 26px; }
+      .course-row { grid-template-columns: 1fr; gap: 8px; padding: 14px 0; }
+      .course-meta { font-size: 10px; }
+      .product-card { padding: 18px; border-radius: 18px; }
+      .product-card .section-title { font-size: 31px; }
+      .product-card p { font-size: 14px; line-height: 1.55; }
+      .product-mark { min-height: 150px; max-width: 210px; justify-self: center; }
+      .contact-card { padding: 18px; border-radius: 18px; }
+      footer { padding-left: 16px; padding-right: 16px; }
+      .hero-motif { opacity: .45; }
+      body.dark-mode .hero-motif { opacity: .48; }
     }
   </style>
 </head>
@@ -1419,6 +1519,7 @@ footer { margin-top: 0; border-top: 1px solid var(--line); padding: 14px max(32p
                 <h3>Rearrange a network of workers</h3>
                 <p>Drag workers closer together or farther apart. Click a worker to change their affective tendency. Productivity is strongest when teams preserve some local specialization while still keeping bridges across units.</p>
               </div>
+              <button class="mobile-demo-toggle" type="button" aria-expanded="false">Tap to interact</button>
               <div class="org-legend" aria-label="Affective tendency legend">
                 <span class="legend-dot" style="--dot:#22c55e">positive</span>
                 <span class="legend-dot" style="--dot:#3b82f6">steady</span>
@@ -1443,6 +1544,7 @@ footer { margin-top: 0; border-top: 1px solid var(--line); padding: 14px max(32p
                 <h3>Share an emotion with AI</h3>
                 <p>Share a feeling with an AI friend and watch a continuously monitored emotional trajectory respond. The phone captures the conversation; the watch shows how future emotional dynamics begin to change.</p>
               </div>
+              <button class="mobile-demo-toggle" type="button" aria-expanded="false">Tap to interact</button>
               <div class="emotion-demo">
                 <div class="tracked-shell">
                   <div class="phone-device" aria-label="AI friend text conversation on a smartphone">
@@ -1488,6 +1590,7 @@ footer { margin-top: 0; border-top: 1px solid var(--line); padding: 14px max(32p
                 <h3>Tune an emotion-inference process</h3>
                 <p>Adjust a diffusion decision model for judging whether a face is emotional. The same observed response can reflect faster evidence accumulation, more caution, or a noisier stream of evidence.</p>
               </div>
+              <button class="mobile-demo-toggle" type="button" aria-expanded="false">Tap to interact</button>
               <div class="ddm-demo">
                 <div class="ddm-shell">
                   <div class="face-panel" aria-label="Face expressing emotion">
@@ -1534,6 +1637,7 @@ footer { margin-top: 0; border-top: 1px solid var(--line); padding: 14px max(32p
                 <h3>Inspect an assembly line</h3>
                 <p>Report the chance that the next phone will work, then inspect it and observe the outcome. The plotted trajectory shows your stated expectations as the system reveals itself over time.</p>
               </div>
+              <button class="mobile-demo-toggle" type="button" aria-expanded="false">Tap to interact</button>
               <div class="assembly-demo">
                 <div class="assembly-shell">
                   <div class="factory-panel">
@@ -1635,6 +1739,30 @@ footer { margin-top: 0; border-top: 1px solid var(--line); padding: 14px max(32p
 
     <footer>&copy; 2026 Kyle J. LaFollette. Last updated August 2026.</footer>
   </div>
+
+  <script>
+    (function(){
+      document.querySelectorAll('.mobile-demo-toggle').forEach(function(button){
+        button.addEventListener('click', function(){
+          var card = button.closest('.demo-card');
+          var willOpen = !card.classList.contains('mobile-open');
+          document.querySelectorAll('.demo-card.mobile-open').forEach(function(openCard){
+            if (openCard !== card) {
+              openCard.classList.remove('mobile-open');
+              var openButton = openCard.querySelector('.mobile-demo-toggle');
+              if (openButton) {
+                openButton.textContent = 'Tap to interact';
+                openButton.setAttribute('aria-expanded', 'false');
+              }
+            }
+          });
+          card.classList.toggle('mobile-open', willOpen);
+          button.textContent = willOpen ? 'Close interaction' : 'Tap to interact';
+          button.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+        });
+      });
+    })();
+  </script>
 
   <script>
     (function(){
