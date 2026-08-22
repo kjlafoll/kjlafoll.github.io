@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Kyle J. LaFollette</title>
+  <title>Kyle J. LaFollette, PhD</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,300;8..60,400;8..60,500;8..60,600&family=Libre+Franklin:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -177,7 +177,7 @@
       margin: 0 0 20px;
       font-family: "Source Serif 4", Georgia, serif;
       font-weight: 400;
-      font-size: clamp(42px, 6vw, 66px);
+      font-size: clamp(40px, 5.7vw, 62px);
       line-height: 1.02;
       letter-spacing: -.025em;
       color: var(--ink);
@@ -263,9 +263,9 @@
       line-height: 1.5;
       letter-spacing: .06em;
       text-align: center;
-      text-transform: uppercase;
+      text-transform: none;
     }
-    .orbit-card strong { display: none; }
+    .orbit-card strong { display: block; color: var(--ink); font-family: "Source Serif 4", Georgia, serif; font-size: 17px; font-weight: 500; letter-spacing: -.01em; line-height: 1.2; margin-bottom: 5px; }
     .orbit-card span { display: block; color: inherit; font-size: inherit; line-height: 1.65; white-space: nowrap; }
     .control-node { display: none; }
 .research-pill-row {
@@ -483,8 +483,9 @@
     }
 
     .news-rail { overflow: hidden; max-width: 1120px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); margin: 6px auto 0; }
-    .news-track { display: flex; width: max-content; animation: ticker 34s linear infinite; will-change: transform; }
-    .news-item { width: 320px; min-height: 92px; padding: 12px 14px; border-right: 1px solid var(--line); display: flex; gap: 10px; align-items: center; }
+    .news-track { display: flex; width: max-content; animation: ticker 42s linear infinite; will-change: transform; }
+    .news-item { width: 320px; min-height: 92px; padding: 12px 14px; border-right: 1px solid var(--line); display: flex; gap: 10px; align-items: center; color: inherit; text-decoration: none; }
+    .news-item:hover { background: rgba(46,92,138,.06); text-decoration: none; }
     .news-item img { width: 34px; height: 34px; object-fit: contain; padding: 4px; border-radius: 9px; background: #fff; box-shadow: 0 2px 8px rgba(23,34,46,.10); }
     .news-item strong { display: block; font-size: 13px; margin-bottom: 2px; color: var(--ink); }
     .news-item span { font-size: 13px; line-height: 1.35; color: var(--body); }
@@ -1304,7 +1305,7 @@ footer { margin-top: 0; border-top: 1px solid var(--line); padding: 14px max(32p
         gap: 26px;
       }
       .hero-claim {
-        font-size: clamp(34px, 12vw, 46px);
+        font-size: clamp(32px, 11vw, 44px);
         line-height: 1.02;
         margin-bottom: 14px;
       }
@@ -1396,7 +1397,7 @@ footer { margin-top: 0; border-top: 1px solid var(--line); padding: 14px max(32p
 <body>
   <div class="wrap">
     <header>
-      <h1><a href="#top">Kyle J. LaFollette</a></h1>
+      <h1><a href="#top">Kyle J. LaFollette, PhD</a></h1>
       <nav>
         <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode"><i class="fa-solid fa-moon" aria-hidden="true"></i><span>Dark mode</span></button>
         <a href="#identity">Research</a>
@@ -1404,7 +1405,7 @@ footer { margin-top: 0; border-top: 1px solid var(--line); padding: 14px max(32p
         <a href="#windows">Projects</a>
         <a href="#teaching">Teaching</a>
         <a class="nav-product" href="#flexddm">FlexDDM <img src="assets/flexddm-boxart.png" alt="" /></a>
-        <a href="Kyle-LaFollette-CV.pdf" download>CV</a>
+        <a href="Kyle-LaFollette-CV.pdf" target="_blank" rel="noopener noreferrer">CV</a>
         <a href="#contact" class="nav-contact">Contact</a>
       </nav>
     </header>
@@ -1423,22 +1424,22 @@ footer { margin-top: 0; border-top: 1px solid var(--line); padding: 14px max(32p
         </div>
         <div class="hero-art" aria-label="Visual summary of control over judgment, emotion, and systems">
           <div class="portrait-card"><img src="images/kyle-lafollette-photo.jpg" alt="Kyle J. LaFollette" /></div>
-          <div class="orbit-card"><strong>control</strong><span>University of Chicago Booth School of Business<br>Roman Family Center for Decision Research</span></div>
+          <div class="orbit-card"><strong>Kyle J. LaFollette, PhD</strong><span>University of Chicago Booth School of Business<br>Roman Family Center for Decision Research</span></div>
         </div>
       </section>
 <div class="news-rail" aria-label="News carousel">
         <div class="news-track">
-          <div class="news-item"><img src="assets/logos/nhb.png" alt="NHB" /><div><strong>April 2026</strong><span><em>Nature Human Behaviour</em> paper on the mechanism behind the IAT.</span></div></div>
-          <div class="news-item"><img src="assets/logos/commpsych.png" alt="Communications Psychology" /><div><strong>February 2026</strong><span><em>Communications Psychology</em> paper on learning transfer across task, person, and experience.</span></div></div>
-          <div class="news-item"><img src="assets/logos/nhb.png" alt="Scientific Reports" /><div><strong>September 2025</strong><span><em>Scientific Reports</em> paper on crowd emotion judgment and racial composition.</span></div></div>
-          <div class="news-item"><img src="assets/logos/booth.png" alt="Chicago Booth" /><div><strong>July 2025</strong><span>Joined Chicago Booth as Principal Researcher in the RF-CDR.</span></div></div>
-          <div class="news-item"><img src="assets/logos/pnas.png" alt="PNAS" /><div><strong>July 2025</strong><span><em>PNAS</em> paper on nonlinear reinforcement-learning dynamics.</span></div></div>
+          <a class="news-item" href="https://doi.org/10.1038/s41562-026-02439-y" target="_blank" rel="noopener noreferrer"><img src="assets/logos/nhb.png" alt="NHB" /><div><strong>April 2026</strong><span><em>Nature Human Behaviour</em> paper on the mechanism behind the IAT.</span></div></a>
+          <a class="news-item" href="https://doi.org/10.1038/s44271-026-00408-9" target="_blank" rel="noopener noreferrer"><img src="assets/logos/commpsych.png" alt="Communications Psychology" /><div><strong>February 2026</strong><span><em>Communications Psychology</em> paper on learning transfer across task, person, and experience.</span></div></a>
+          <a class="news-item" href="https://doi.org/10.1038/s41598-025-95029-3" target="_blank" rel="noopener noreferrer"><img src="assets/logos/nhb.png" alt="Scientific Reports" /><div><strong>September 2025</strong><span><em>Scientific Reports</em> paper on crowd emotion judgment and racial composition.</span></div></a>
+          <a class="news-item" href="https://www.chicagobooth.edu/research/roman/who-we-are/principal-researchers/kyle-lafollette" target="_blank" rel="noopener noreferrer"><img src="assets/logos/booth.png" alt="Chicago Booth" /><div><strong>July 2025</strong><span>Joined Chicago Booth as Principal Researcher in the RF-CDR.</span></div></a>
+          <a class="news-item" href="https://doi.org/10.1073/pnas.2413441122" target="_blank" rel="noopener noreferrer"><img src="assets/logos/pnas.png" alt="PNAS" /><div><strong>July 2025</strong><span><em>PNAS</em> paper on nonlinear reinforcement-learning dynamics.</span></div></a>
 
-          <div class="news-item"><img src="assets/logos/nhb.png" alt="NHB" /><div><strong>April 2026</strong><span><em>Nature Human Behaviour</em> paper on the mechanism behind the IAT.</span></div></div>
-          <div class="news-item"><img src="assets/logos/commpsych.png" alt="Communications Psychology" /><div><strong>February 2026</strong><span><em>Communications Psychology</em> paper on learning transfer across task, person, and experience.</span></div></div>
-          <div class="news-item"><img src="assets/logos/nhb.png" alt="Scientific Reports" /><div><strong>September 2025</strong><span><em>Scientific Reports</em> paper on crowd emotion judgment and racial composition.</span></div></div>
-          <div class="news-item"><img src="assets/logos/booth.png" alt="Chicago Booth" /><div><strong>July 2025</strong><span>Joined Chicago Booth as Principal Researcher in the RF-CDR.</span></div></div>
-          <div class="news-item"><img src="assets/logos/pnas.png" alt="PNAS" /><div><strong>July 2025</strong><span><em>PNAS</em> paper on nonlinear reinforcement-learning dynamics.</span></div></div>
+          <a class="news-item" href="https://doi.org/10.1038/s41562-026-02439-y" target="_blank" rel="noopener noreferrer"><img src="assets/logos/nhb.png" alt="NHB" /><div><strong>April 2026</strong><span><em>Nature Human Behaviour</em> paper on the mechanism behind the IAT.</span></div></a>
+          <a class="news-item" href="https://doi.org/10.1038/s44271-026-00408-9" target="_blank" rel="noopener noreferrer"><img src="assets/logos/commpsych.png" alt="Communications Psychology" /><div><strong>February 2026</strong><span><em>Communications Psychology</em> paper on learning transfer across task, person, and experience.</span></div></a>
+          <a class="news-item" href="https://doi.org/10.1038/s41598-025-95029-3" target="_blank" rel="noopener noreferrer"><img src="assets/logos/nhb.png" alt="Scientific Reports" /><div><strong>September 2025</strong><span><em>Scientific Reports</em> paper on crowd emotion judgment and racial composition.</span></div></a>
+          <a class="news-item" href="https://www.chicagobooth.edu/research/roman/who-we-are/principal-researchers/kyle-lafollette" target="_blank" rel="noopener noreferrer"><img src="assets/logos/booth.png" alt="Chicago Booth" /><div><strong>July 2025</strong><span>Joined Chicago Booth as Principal Researcher in the RF-CDR.</span></div></a>
+          <a class="news-item" href="https://doi.org/10.1073/pnas.2413441122" target="_blank" rel="noopener noreferrer"><img src="assets/logos/pnas.png" alt="PNAS" /><div><strong>July 2025</strong><span><em>PNAS</em> paper on nonlinear reinforcement-learning dynamics.</span></div></a>
         </div>
       </div>
 
@@ -1505,19 +1506,14 @@ footer { margin-top: 0; border-top: 1px solid var(--line); padding: 14px max(32p
       </section>
       <section class="section-block" id="windows" aria-label="Ongoing projects and interactive windows">
 <div>
-          <h2 class="section-title">Questions currently on my desk.</h2>
+          <h2 class="section-title">Current projects.</h2>
           <p class="section-lede">These interactive windows give a small, playful glimpse into the problems I study: how leaders structure teams, how people share emotion with AI and one another, how social judgments unfold through decision processes, and how expectations update over time.</p>
-          <div class="project-grid" aria-label="Current project themes">
-            <article class="project-card"><h3>Team control</h3><p>How do leaders structure networks so teams preserve diverse ideas without locking knowledge into isolated silos?</p></article>
-            <article class="project-card"><h3>Emotional control</h3><p>How do conversations, social sharing, and AI-mediated responses redirect emotional trajectories in daily life?</p></article>
-            <article class="project-card"><h3>Judgment control</h3><p>When are fast social judgments controllable policies rather than fixed reflexes?</p></article>
-          </div>
           <section class="demo-grid" aria-label="Interactive research demos">
             <article class="demo-card">
               <div class="demo-head">
                 <span class="demo-kicker">Expectations about organizational dynamics</span>
                 <h3>Rearrange a network of workers</h3>
-                <p>Drag workers closer together or farther apart. Click a worker to change their affective tendency. Productivity is strongest when teams preserve some local specialization while still keeping bridges across units.</p>
+                <p>Drag workers closer together or farther apart. Click a worker to change their affective tendency and see how leaders can control information flow, emotional health, and productivity.</p>
               </div>
               <button class="mobile-demo-toggle" type="button" aria-expanded="false">Tap to interact</button>
               <div class="org-legend" aria-label="Affective tendency legend">
@@ -1542,7 +1538,7 @@ footer { margin-top: 0; border-top: 1px solid var(--line); padding: 14px max(32p
               <div class="demo-head">
                 <span class="demo-kicker">Technology and social-emotional health</span>
                 <h3>Share an emotion with AI</h3>
-                <p>Share a feeling with an AI friend and watch a continuously monitored emotional trajectory respond. The phone captures the conversation; the watch shows how future emotional dynamics begin to change.</p>
+                <p>Share a feeling with an AI friend and watch a monitored emotional trajectory respond, asking how technology can return control over emotional dynamics as they unfold.</p>
               </div>
               <button class="mobile-demo-toggle" type="button" aria-expanded="false">Tap to interact</button>
               <div class="emotion-demo">
@@ -1588,7 +1584,7 @@ footer { margin-top: 0; border-top: 1px solid var(--line); padding: 14px max(32p
               <div class="demo-head">
                 <span class="demo-kicker">Implicit expectations about emotion</span>
                 <h3>Tune an emotion-inference process</h3>
-                <p>Adjust a diffusion decision model for judging whether a face is emotional. The same observed response can reflect faster evidence accumulation, more caution, or a noisier stream of evidence.</p>
+                <p>Adjust a diffusion decision model for judging whether a face is emotional, separating controllable response caution from evidence and noise in fast social inference.</p>
               </div>
               <button class="mobile-demo-toggle" type="button" aria-expanded="false">Tap to interact</button>
               <div class="ddm-demo">
@@ -1635,7 +1631,7 @@ footer { margin-top: 0; border-top: 1px solid var(--line); padding: 14px max(32p
               <div class="demo-head">
                 <span class="demo-kicker">How expectations update</span>
                 <h3>Inspect an assembly line</h3>
-                <p>Report the chance that the next phone will work, then inspect it and observe the outcome. The plotted trajectory shows your stated expectations as the system reveals itself over time.</p>
+                <p>Report the chance that the next phone will work, then inspect it and observe how control variables shape the way expectations update as the system reveals itself.</p>
               </div>
               <button class="mobile-demo-toggle" type="button" aria-expanded="false">Tap to interact</button>
               <div class="assembly-demo">
@@ -1725,7 +1721,7 @@ footer { margin-top: 0; border-top: 1px solid var(--line); padding: 14px max(32p
 
       <section class="section-block" id="contact" aria-label="Contact">
 <div class="contact-card">
-          <h2 class="section-title">Let's talk about control.</h2>
+          <h2 class="section-title">Contact Me.</h2>
           <p>I am especially interested in collaborations on emotion dynamics, implicit expectations, behavioral process models, digital and AI-mediated sociality, and team or organizational systems.</p>
           <div class="contact-row">
             <a class="pill-link" href="#" id="email-link-footer"><i class="fa-solid fa-envelope" aria-hidden="true"></i>Email</a>
@@ -1829,6 +1825,8 @@ footer { margin-top: 0; border-top: 1px solid var(--line); padding: 14px max(32p
       var nodes = [];
       var pulses = [];
       var frame = 0;
+      var animationId = null;
+      var lastDraw = 0;
       var linkDistance = 158;
 
       function contentHeight() {
@@ -1848,14 +1846,19 @@ footer { margin-top: 0; border-top: 1px solid var(--line); padding: 14px max(32p
         canvas.style.width = width + 'px';
         canvas.style.height = height + 'px';
         ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-        var count = Math.max(80, Math.min(170, Math.round((width * height) / 22000)));
+        var mobile = window.matchMedia && window.matchMedia('(max-width: 760px)').matches;
+        linkDistance = mobile ? 118 : 158;
+        var density = mobile ? 36000 : 22000;
+        var minNodes = mobile ? 48 : 80;
+        var maxNodes = mobile ? 96 : 170;
+        var count = Math.max(minNodes, Math.min(maxNodes, Math.round((width * height) / density)));
         nodes = Array.from({ length: count }, function(_, i){
           return {
             id: i,
             x: Math.random() * width,
             y: Math.random() * height,
-            vx: (Math.random() - .5) * .12,
-            vy: (Math.random() - .5) * .12,
+            vx: (Math.random() - .5) * (mobile ? .18 : .12),
+            vy: (Math.random() - .5) * (mobile ? .18 : .12),
             r: 1.5 + Math.random() * 2.4,
             warmth: Math.random() * .18,
             shape: Math.random() > .58 ? 'diamond' : 'bead',
@@ -1897,7 +1900,12 @@ footer { margin-top: 0; border-top: 1px solid var(--line); padding: 14px max(32p
         if (pulses.length > 34) pulses.splice(0, pulses.length - 34);
       }
 
-      function draw() {
+      function draw(timestamp) {
+        if (timestamp && timestamp - lastDraw < 24) {
+          animationId = window.requestAnimationFrame(draw);
+          return;
+        }
+        lastDraw = timestamp || performance.now();
         frame += 1;
         var dark = document.body.classList.contains('dark-mode');
         ctx.clearRect(0, 0, width, height);
@@ -1974,13 +1982,21 @@ footer { margin-top: 0; border-top: 1px solid var(--line); padding: 14px max(32p
           }
           ctx.restore();
         });
-        window.requestAnimationFrame(draw);
+        animationId = window.requestAnimationFrame(draw);
       }
 
       build();
       draw();
       window.addEventListener('resize', build);
       window.setTimeout(build, 400);
+      window.setInterval(function(){
+        if (!animationId) return;
+        if (document.visibilityState !== 'hidden' && performance.now() - lastDraw > 140) {
+          window.cancelAnimationFrame(animationId);
+          animationId = null;
+          draw(performance.now());
+        }
+      }, 140);
     })();
   </script>
 
