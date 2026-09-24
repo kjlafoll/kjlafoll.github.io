@@ -1,4 +1,4 @@
-﻿const BOARD_WIDTH = 1200;
+const BOARD_WIDTH = 1200;
 const BOARD_HEIGHT = 760;
 const WORKER_RADIUS = 28;
 const PROXIMITY_THRESHOLD = 205;
@@ -13,14 +13,22 @@ const PLAYER_VALUE_MULTIPLIER = 10000;
 const INITIAL_COMPANY_CASH = 5000000;
 
 const WORKER_PROFILES = [
-  { id: "W1", name: "Maya", skin: "#f1c27d", hair: "#2f1b12", outfit: "#ef4444", accent: "#fca5a5", hairStyle: "bun", accessory: "earring", bodyStyle: "cloak" },
-  { id: "W2", name: "Jonah", skin: "#c68642", hair: "#111827", outfit: "#22c55e", accent: "#86efac", hairStyle: "short", accessory: "glasses", bodyStyle: "jacket" },
-  { id: "W3", name: "Priya", skin: "#e0ac69", hair: "#3f2a1d", outfit: "#06b6d4", accent: "#67e8f9", hairStyle: "wave", accessory: "scarf", bodyStyle: "robe" },
-  { id: "W4", name: "Elena", skin: "#f1c27d", hair: "#7c2d12", outfit: "#eab308", accent: "#fde68a", hairStyle: "bob", accessory: "glasses", bodyStyle: "vest" },
-  { id: "W5", name: "Marcus", skin: "#8d5524", hair: "#1f2937", outfit: "#8b5cf6", accent: "#c4b5fd", hairStyle: "curl", accessory: "beard", bodyStyle: "jacket" },
-  { id: "W6", name: "Nia", skin: "#ffdbac", hair: "#0f172a", outfit: "#ec4899", accent: "#f9a8d4", hairStyle: "puff", accessory: "earring", bodyStyle: "tunic" },
-  { id: "W7", name: "Omar", skin: "#c68642", hair: "#422006", outfit: "#f97316", accent: "#fdba74", hairStyle: "fade", accessory: "mustache", bodyStyle: "vest" },
-  { id: "W8", name: "Sofia", skin: "#e0ac69", hair: "#4c1d95", outfit: "#3b82f6", accent: "#93c5fd", hairStyle: "ponytail", accessory: "scarf", bodyStyle: "cloak" }
+  { id: "W1", name: "Maya", avatarIndex: 1 },
+  { id: "W2", name: "Jonah", avatarIndex: 0 },
+  { id: "W3", name: "Priya", avatarIndex: 2 },
+  { id: "W4", name: "Omar", avatarIndex: 3 },
+  { id: "W5", name: "Elena", avatarIndex: 4 },
+  { id: "W6", name: "Nia", avatarIndex: 5 },
+  { id: "W7", name: "Marcus", avatarIndex: 6 },
+  { id: "W8", name: "Sofia", avatarIndex: 7 },
+  { id: "W9", name: "Talia", avatarIndex: 8 },
+  { id: "W10", name: "Felix", avatarIndex: 9 },
+  { id: "W11", name: "Iris", avatarIndex: 10 },
+  { id: "W12", name: "Theo", avatarIndex: 11 },
+  { id: "W13", name: "Leo", avatarIndex: 12 },
+  { id: "W14", name: "Amara", avatarIndex: 13 },
+  { id: "W15", name: "Kai", avatarIndex: 14 },
+  { id: "W16", name: "Zara", avatarIndex: 15 }
 ];
 
 const BASE_WORKERS = WORKER_PROFILES.map((profile) => ({
@@ -105,46 +113,141 @@ const TUTORIAL_STEPS = [
   {
     step: "Mission",
     title: "You run a chemical company.",
-    body: "Every first-time compound discovery becomes a profitable product for the company. Your job is to organize chemists so they uncover both pathways and eventually the final crossover breakthrough.",
-    target: "#board"
+    body: "You manage a small R&D lab. Chemists can collaborate to discover new chemical products that your company can sell. First, you will learn what chemists actually do during a round.",
+    target: "#board",
+    kind: "read",
+    hideControls: true,
+    hideWorkers: true,
+    completeLabel: "Hit Next"
   },
   {
-    step: "Workspace",
-    title: "The grid is your whole workspace.",
-    body: "Drag chemists anywhere on the board. Their positions determine who ends up in the same team and how knowledge spreads.",
-    target: "#board"
+    step: "First team",
+    title: "Start by making a team.",
+    body: "Drag the two chemists close together. When they are close enough, they form a team and can share compounds with each other.",
+    target: "#board",
+    extraHighlights: [".worker-node"],
+    kind: "pairGroup",
+    hideControls: true,
+    incompleteLabel: "Drag the 2 chemists together",
+    completeLabel: "Hit Next"
   },
   {
-    step: "Employees",
-    title: "This controls your active employees.",
-    body: "Use the plus button to add chemists and the minus button on a chemist to remove them. Every active chemist must belong to a group of at least two before a round can begin.",
-    target: ".hud-staff",
-    extraHighlights: [".worker-remove-btn"]
+    step: "Known compounds",
+    title: "Teams share what they know.",
+    body: "Right now both chemists know the same six starting compounds. In each round, team members select compounds they know and combine three of them. Some combinations create new products; many do not.",
+    target: ".group-knowledge",
+    kind: "read",
+    hideControls: true,
+    completeLabel: "Hit Next"
   },
   {
-    step: "Pathways",
-    title: "Track both pathways and watch specialties form.",
-    body: "The pathway card shows progress on the A and B product lines. Specialization badges on chemists tell you when someone has started to strongly favor one pathway over the other.",
+    step: "Try a round",
+    title: "Try a practice round.",
+    body: "To have your chemists share compounds and test whether they can discover a new product, press the Next round button.",
+    target: "#next-round-wrap",
+    kind: "roundNoDiscovery",
+    hideControls: true,
+    showRoundControl: true,
+    incompleteLabel: "Press Next round",
+    completeLabel: "Hit Next"
+  },
+  {
+    step: "Try again",
+    title: "Try another round.",
+    body: "Press Next round again. The same team will share compounds and test another combination that could create a new product.",
+    target: "#next-round-wrap",
+    kind: "roundDiscovery",
+    hideControls: true,
+    showRoundControl: true,
+    incompleteLabel: "Press Next round again",
+    completeLabel: "Hit Next"
+  },
+  {
+    step: "Discovery",
+    title: "That is the core task.",
+    body: "A team shared known compounds, tried a three-compound combination, and created a new product. In the real task, you decide how many chemists to use and how to arrange them between rounds.",
+    target: ".group-knowledge",
+    kind: "read",
+    hideControls: true,
+    completeLabel: "Hit Next"
+  },
+  {
+    step: "Innovation tracks",
+    title: "The company tracks product paths.",
+    body: "The tracker shows two product tracks, A and B. Compounds farther to the right are more valuable, and the final crossover product requires progress on both tracks. Chemists do not know the hidden recipes; they choose from compounds they know, with higher-value compounds more likely to be selected.",
     target: ".board-reward-track",
-    extraHighlights: [".specialization-badge"]
+    extraHighlights: [".specialization-badge"],
+    kind: "read",
+    completeLabel: "Hit Next"
   },
   {
-    step: "Funds",
-    title: "Company funds rise and fall here.",
-    body: "Discovery rewards push company funds upward. Payroll and long dry spells drain the company's cash.",
-    target: ".hud-money"
+    step: "Funding",
+    title: "Watch funds and payroll.",
+    body: "Company funds are your runway. You can keep playing while funds stay above zero. Every round deducts payroll, and payroll depends on how many active chemists you have.",
+    target: ".hud-money",
+    extraHighlights: [".hud-payroll"],
+    kind: "read",
+    completeLabel: "Hit Next"
   },
   {
-    step: "Payroll",
-    title: "Payroll is your constant cost.",
-    body: "This updates with your workforce size. If you let company funds fall to zero before the final breakthrough, the company goes bankrupt.",
-    target: ".hud-payroll"
+    step: "Staffing",
+    title: "Practice hiring and firing.",
+    body: "Click the + button to hire one chemist. Then click the - button on any chemist to fire one. This teaches how payroll can grow or shrink.",
+    target: ".hud-staff",
+    extraHighlights: [".worker-remove-btn"],
+    kind: "hireFire",
+    incompleteLabel: "Hire one, then fire one",
+    completeLabel: "Hit Next"
   },
   {
-    step: "Next Round",
-    title: "Run rounds from this button.",
-    body: "Press Next round to let chemists act. In Fast mode, the system keeps advancing until a discovery appears or until you press Stop. The outer ring pulses every round so you can see time passing.",
-    target: "#next-round-wrap"
+    step: "Trio",
+    title: "Make a three-person team.",
+    body: "First hire one more chemist, then drag all three close together. Larger teams share knowledge within the whole team.",
+    target: "#board",
+    extraHighlights: [".hud-staff", ".worker-node"],
+    kind: "trioGroup",
+    incompleteLabel: "Hire 1 and make a trio",
+    completeLabel: "Hit Next"
+  },
+  {
+    step: "Team discovery",
+    title: "Try the three-person team.",
+    body: "Press Next round. Two chemists inside the team will partner for a test, while the whole team stays connected to the result.",
+    target: "#next-round-wrap",
+    kind: "roundTrioDiscovery",
+    hideControls: true,
+    showRoundControl: true,
+    incompleteLabel: "Press Next round",
+    completeLabel: "Hit Next"
+  },
+  {
+    step: "Teams",
+    title: "Practice making two teams.",
+    body: "Now hire two more chemists, then arrange the practice lab into one pair and one trio. This is the kind of reconfiguration you will use during the real task.",
+    target: "#board",
+    extraHighlights: [".hud-staff", ".worker-node"],
+    kind: "pairAndTrio",
+    incompleteLabel: "Hire 2, then make teams of 2 and 3",
+    completeLabel: "Hit Next"
+  },
+  {
+    step: "Discovery payoff",
+    title: "Discoveries change the company.",
+    body: "First-time discoveries fill the tracker and add revenue to company funds. Rediscovering something the company already found may change who knows it, but it does not pay again.",
+    target: ".board-reward-track",
+    extraHighlights: [".hud-money", ".hud-payroll"],
+    kind: "read",
+    completeLabel: "Hit Next"
+  },
+  {
+    step: "Begin",
+    title: "Your job is to lead the R&D lab.",
+    body: "You will start fresh with a company budget and a small team of chemists. Arrange teams, hire or fire chemists when you think it helps, and decide when to continue rounds. Your goal is to help the company discover valuable new products across the hidden product tracks before payroll drains the budget.",
+    target: "#board",
+    kind: "read",
+    hideControls: true,
+    hideWorkers: true,
+    completeLabel: "Start game"
   }
 ];
 
@@ -196,7 +299,10 @@ function initialize() {
 }
 
 function createInitialState() {
-  const workers = Array.from({ length: STARTING_EMPLOYEE_COUNT }, (_, index) => createWorker(index));
+  const workers = [];
+  for (let index = 0; index < STARTING_EMPLOYEE_COUNT; index += 1) {
+    workers.push(createWorker(workers, index));
+  }
 
   return {
     sessionId: `potions-${Date.now()}`,
@@ -209,6 +315,8 @@ function createInitialState() {
     mode: null,
     onboardingStage: "mode",
     tutorialStep: 0,
+    tutorialFlags: {},
+    tutorialMessage: "",
     gameOver: false,
     isAnimating: false,
     autoRunning: false,
@@ -246,6 +354,7 @@ function bindEvents() {
 }
 
 function render() {
+  document.body.classList.toggle("mode-screen", state.onboardingStage === "mode");
   computeNetwork();
   renderHeader();
   renderBoard();
@@ -261,15 +370,26 @@ function renderHeader() {
   els.staffCount.textContent = String(state.workers.length);
   els.rewardTrack.innerHTML = renderCureTracker(progress.foundStages, state.gameOver && !hasCure(discovered));
   els.nextRoundBtn.textContent = state.gameOver ? "Complete" : state.autoRunning ? (state.stopRequested ? "Stopping..." : "Stop") : "Next round";
-  els.nextRoundBtn.disabled = (state.isAnimating && !state.autoRunning) || state.gameOver || state.onboardingStage !== "done";
-  els.hireBtn.disabled = state.isAnimating || state.gameOver || state.onboardingStage !== "done" || state.autoRunning || state.workers.length >= MAX_EMPLOYEES;
+  const canUseNextRound = state.onboardingStage === "done" || tutorialAllows("round");
+  const canUseHire = state.onboardingStage === "done" || tutorialAllows("hire");
+  els.nextRoundBtn.disabled = (state.isAnimating && !state.autoRunning) || state.gameOver || !canUseNextRound;
+  els.hireBtn.disabled = state.isAnimating || state.gameOver || !canUseHire || state.autoRunning || state.workers.length >= MAX_EMPLOYEES;
   els.nextRoundWrap.classList.toggle("running", state.isAnimating || state.autoRunning);
 }
 
 function renderBoard() {
+  const tutorialStep = currentTutorialStep();
+  els.board.classList.toggle("tutorial-basics", Boolean(tutorialStep?.hideControls));
+  els.board.classList.toggle("tutorial-basics-round", Boolean(tutorialStep?.hideControls && tutorialStep?.showRoundControl));
+  els.board.classList.toggle("tutorial-intro", Boolean(tutorialStep?.hideWorkers));
   els.halos.innerHTML = "";
   els.beams.innerHTML = "";
   els.workersLayer.innerHTML = "";
+
+  if (tutorialStep?.hideWorkers) {
+    renderFactoryScene();
+    return;
+  }
 
   state.groups.forEach((group) => {
     if (group.members.length < 2) {
@@ -301,7 +421,7 @@ function renderBoard() {
     knowledge.style.left = `${(knowledgeX / BOARD_WIDTH) * 100}%`;
     knowledge.style.top = `${(Math.max(18, group.halo.cy - 16) / BOARD_HEIGHT) * 100}%`;
     knowledge.innerHTML = `
-      <span class="group-knowledge-label">Shared</span>
+      <span class="group-knowledge-label">${tutorialStep?.hideControls ? "Known compounds" : "Shared"}</span>
       <div class="potion-list">${sharedGroupKnowledge(group).map((potionId) => renderPotionToken(potionId, "sm")).join("")}</div>
     `;
     els.workersLayer.appendChild(knowledge);
@@ -312,11 +432,6 @@ function renderBoard() {
     node.className = "worker-node";
     node.style.left = `${(worker.x / BOARD_WIDTH) * 100}%`;
     node.style.top = `${(worker.y / BOARD_HEIGHT) * 100}%`;
-    node.style.setProperty("--worker-skin", worker.profile.skin);
-    node.style.setProperty("--worker-hair", worker.profile.hair);
-    node.style.setProperty("--worker-outfit", worker.profile.outfit);
-    node.style.setProperty("--worker-accent", worker.profile.accent);
-    node.style.setProperty("--worker-accessory", worker.profile.accent);
     node.dataset.workerId = worker.id;
 
     if (dragState?.workerId === worker.id) {
@@ -329,13 +444,10 @@ function renderBoard() {
     const avatar = document.createElement("div");
     avatar.className = "worker-avatar";
     avatar.addEventListener("pointerdown", (event) => startDragging(event, worker.id));
+    avatar.style.setProperty("--avatar-col", String(worker.profile.avatarIndex % 4));
+    avatar.style.setProperty("--avatar-row", String(Math.floor(worker.profile.avatarIndex / 4)));
     avatar.innerHTML = `
-      <span class="person hair-${worker.profile.hairStyle} body-${worker.profile.bodyStyle} accessory-${worker.profile.accessory}">
-        <span class="person-hair"></span>
-        <span class="person-head"></span>
-        <span class="person-body"></span>
-        <span class="person-accessory"></span>
-      </span>
+      <span class="worker-portrait" aria-hidden="true"></span>
     `;
 
     const specialization = specializationForWorker(worker);
@@ -344,7 +456,7 @@ function renderBoard() {
       specializationBadge.className = `specialization-badge ${specialization.className}`;
       specializationBadge.setAttribute("title", specialization.title);
       specializationBadge.setAttribute("aria-label", specialization.title);
-      specializationBadge.innerHTML = `<span class="specialization-icon">${specialization.icon}</span><span class="specialization-text">${specialization.label}</span>`;
+      specializationBadge.innerHTML = `<span class="specialization-text">${specialization.label}</span>`;
       node.appendChild(specializationBadge);
     }
 
@@ -357,7 +469,7 @@ function renderBoard() {
     removeBtn.type = "button";
     removeBtn.textContent = "-";
     removeBtn.setAttribute("aria-label", `Remove ${worker.name}`);
-    removeBtn.disabled = state.isAnimating || state.gameOver || state.onboardingStage !== "done" || state.autoRunning || state.workers.length <= MIN_GROUP_SIZE;
+    removeBtn.disabled = state.isAnimating || state.gameOver || !(state.onboardingStage === "done" || tutorialAllows("fire")) || state.autoRunning || state.workers.length <= MIN_GROUP_SIZE;
     removeBtn.addEventListener("click", (event) => {
       event.stopPropagation();
       removeWorker(worker.id);
@@ -367,7 +479,12 @@ function renderBoard() {
 
     worker.transient.forEach((message) => {
       const bubble = document.createElement("div");
-      bubble.className = message.kind === "spark" ? "spark" : message.kind === "money" ? "money-burst" : "bubble";
+      const className = message.kind === "spark" ? "spark" : message.kind === "money" ? "money-burst" : "bubble";
+      bubble.className = [
+        className,
+        message.frozen ? "tutorial-bubble-frozen" : "",
+        message.fading ? "tutorial-bubble-fading" : ""
+      ].filter(Boolean).join(" ");
       bubble.innerHTML = message.html;
       node.appendChild(bubble);
     });
@@ -396,6 +513,15 @@ function renderBoard() {
 
     els.workersLayer.appendChild(node);
   });
+}
+
+function renderFactoryScene() {
+  const scene = document.createElement("div");
+  scene.className = "factory-scene";
+  scene.innerHTML = `
+    <img class="factory-art" src="./assets/factory-vignette.png" alt="Stylized chemical factory with chemists outside">
+  `;
+  els.workersLayer.appendChild(scene);
 }
 
 function renderPopup() {
@@ -501,20 +627,210 @@ function renderOnboarding() {
   }
 
   const step = TUTORIAL_STEPS[state.tutorialStep];
+  const displayContent = tutorialDisplayContent(step);
   els.onboardingOverlay.classList.add("tutorial-stage");
-  els.onboardingStep.textContent = step.step;
+  els.onboardingStep.textContent = displayContent.step;
   els.onboardingStep.style.display = "none";
-  els.onboardingTitle.textContent = step.title;
-  els.onboardingBody.textContent = step.body;
+  els.onboardingTitle.textContent = displayContent.title;
+  els.onboardingBody.innerHTML = displayContent.body;
   els.tutorialProgress.classList.remove("visible");
   els.modePicker.style.display = "none";
   els.tutorialToggles.forEach((toggle) => { toggle.style.display = "none"; });
   els.tutorialActions.style.display = "flex";
   els.tutorialBackBtn.disabled = false;
-  els.tutorialNextBtn.disabled = false;
-  els.tutorialNextBtn.textContent = state.tutorialStep === TUTORIAL_STEPS.length - 1 ? "Start game" : "Next";
+  els.tutorialNextBtn.disabled = !tutorialStepComplete(step);
+  els.tutorialNextBtn.textContent = tutorialStepComplete(step)
+    ? (state.tutorialStep === TUTORIAL_STEPS.length - 1 ? "Start game" : "Next")
+    : (step.incompleteLabel || "Complete this step");
   applyTutorialFocus(step);
   positionTutorialCard();
+}
+
+function tutorialDisplayContent(step) {
+  const baseBody = `<span>${step.body}</span>`;
+  if (step.kind === "roundDiscovery" && state.tutorialFlags.roundComplete) {
+    return {
+      step: "Discovery",
+      title: "A new product was discovered.",
+      body: "<span>The team created a new product, and both chemists now know it. The company earns revenue for first-time discoveries, and that new knowledge can affect what chemists try in later rounds. Hit Next to continue.</span>"
+    };
+  }
+
+  if (step.kind === "roundNoDiscovery") {
+    if (state.tutorialFlags.roundPhase === "shared") {
+      return {
+        step: "Sharing",
+        title: "Chemists share compounds.",
+        body: "<span>The bubbles show which known compounds each chemist shared with the other chemist. The bubbles will stay visible while you read this. Hit Next to continue.</span>"
+      };
+    }
+    if (state.tutorialFlags.roundPhase === "tested") {
+      return {
+        step: "Testing",
+        title: "The team tests a combination.",
+        body: "<span>After sharing, the chemists test one three-compound combination. This bubble shows the exact combination they are trying. Hit Next to see what happened.</span>"
+      };
+    }
+    if (state.tutorialFlags.roundPhase === "result") {
+      return {
+        step: "Result",
+        title: "No new product was found.",
+        body: "<span>This combination did not create a new product. Many rounds will not produce a discovery, so you may need to keep trying or reorganize later. Hit Next to continue.</span>"
+      };
+    }
+  }
+  if (step.kind === "roundTrioDiscovery") {
+    if (state.tutorialFlags.roundPhase === "shared") {
+      return {
+        step: "Sharing",
+        title: "Two chemists partner inside the team.",
+        body: "<span>Only two chemists make this test together. The bubbles show which compounds those two chemists shared before choosing a combination. Hit Next to continue.</span>"
+      };
+    }
+    if (state.tutorialFlags.roundPhase === "tested") {
+      return {
+        step: "Testing",
+        title: "The pair tests one combination.",
+        body: "<span>The two partnering chemists now test one three-compound combination. Their teammate is still part of the same team, even though this specific test uses two chemists. Hit Next to see what happened.</span>"
+      };
+    }
+    if (state.tutorialFlags.roundPhase === "result") {
+      return {
+        step: "Discovery",
+        title: "The discovery spreads to the team.",
+        body: "<span>The two chemists discovered a new product. Because all three chemists are on the same team, that new knowledge is shared with the whole team. Hit Next to continue.</span>"
+      };
+    }
+  }
+
+  const complete = tutorialStepComplete(step);
+  const message = shouldShowTutorialInstruction(step, complete)
+    ? (state.tutorialMessage || step.incompleteLabel || "")
+    : "";
+  return {
+    step: step.step,
+    title: step.title,
+    body: message ? `${baseBody}<span class="tutorial-inline-instruction">${message}</span>` : baseBody
+  };
+}
+
+function shouldShowTutorialInstruction(step, complete) {
+  if (complete) {
+    return false;
+  }
+  return ["pairGroup", "hireFire", "trioGroup", "pairAndTrio"].includes(step.kind);
+}
+
+function isTutorialActive() {
+  return state.onboardingStage === "tutorial";
+}
+
+function currentTutorialStep() {
+  return isTutorialActive() ? TUTORIAL_STEPS[state.tutorialStep] : null;
+}
+
+function tutorialAllows(action) {
+  const step = currentTutorialStep();
+  if (!step) {
+    return false;
+  }
+  if (action === "hire") {
+    return ["hireFire", "trioGroup", "pairAndTrio"].includes(step.kind);
+  }
+  if (action === "fire") {
+    return step.kind === "hireFire";
+  }
+  if (action === "drag") {
+    return ["pairGroup", "trioGroup", "pairAndTrio"].includes(step.kind);
+  }
+  if (action === "round") {
+    return ["roundNoDiscovery", "roundDiscovery", "roundTrioDiscovery"].includes(step.kind)
+      && !state.tutorialFlags.roundComplete
+      && !state.tutorialFlags.roundPhase;
+  }
+  return false;
+}
+
+function tutorialStepComplete(step = currentTutorialStep()) {
+  if (!step) {
+    return false;
+  }
+  if (step.kind === "read") {
+    return true;
+  }
+  if (step.kind === "hireFire") {
+    return Boolean(state.tutorialFlags.hired && state.tutorialFlags.fired);
+  }
+  if (step.kind === "pairGroup") {
+    return hasGroupSizes([2]);
+  }
+  if (step.kind === "trioGroup") {
+    return state.workers.length >= 3 && hasGroupSizes([3]);
+  }
+  if (step.kind === "pairAndTrio") {
+    return hasGroupSizes([2, 3]);
+  }
+  if (step.kind === "roundNoDiscovery" || step.kind === "roundDiscovery" || step.kind === "roundTrioDiscovery") {
+    return Boolean(state.tutorialFlags.roundComplete || state.tutorialFlags.roundPhase);
+  }
+  return false;
+}
+
+function hasGroupSizes(requiredSizes) {
+  computeNetwork();
+  const actual = state.groups
+    .filter((group) => group.members.length >= MIN_GROUP_SIZE)
+    .map((group) => group.members.length)
+    .sort((a, b) => a - b);
+  const required = [...requiredSizes].sort((a, b) => a - b);
+  return required.length === actual.length && required.every((size, index) => size === actual[index]);
+}
+
+function enterTutorialStep(index) {
+  clearTransient();
+  state.tutorialStep = index;
+  state.tutorialFlags = {};
+  state.tutorialMessage = "";
+  setupTutorialStep(TUTORIAL_STEPS[index]);
+}
+
+function setupTutorialStep(step) {
+  if (!step) {
+    return;
+  }
+
+  computeNetwork();
+}
+
+function ensureWorkerCount(count) {
+  while (state.workers.length < count && state.workers.length < MAX_EMPLOYEES) {
+    state.workers.push(createWorker(state.workers, state.nextWorkerIndex));
+    state.nextWorkerIndex += 1;
+  }
+
+  while (state.workers.length > count && state.workers.length > MIN_GROUP_SIZE) {
+    state.workers.pop();
+  }
+}
+
+function setWorkerPositions(positions) {
+  positions.forEach((position, index) => {
+    const worker = state.workers[index];
+    if (!worker) {
+      return;
+    }
+    worker.x = clamp(position.x, WORKER_RADIUS + 12, safeBoardMaxX());
+    worker.y = clamp(position.y, safeBoardMinY(), safeBoardMaxY());
+  });
+}
+
+function startRealGameAfterTutorial() {
+  const selectedMode = state.mode;
+  const unlimitedRounds = state.unlimitedRounds;
+  state = createInitialState();
+  state.mode = selectedMode;
+  state.unlimitedRounds = unlimitedRounds;
+  state.onboardingStage = "done";
 }
 
 function selectMode(mode) {
@@ -531,12 +847,12 @@ function handleTutorialBack() {
   if (state.tutorialStep === 0) {
     state.onboardingStage = "mode";
   } else {
-    state.tutorialStep -= 1;
+    enterTutorialStep(state.tutorialStep - 1);
   }
   render();
 }
 
-function handleTutorialNext() {
+async function handleTutorialNext() {
   if (state.onboardingStage === "mode") {
     if (!state.mode) {
       return;
@@ -548,15 +864,29 @@ function handleTutorialNext() {
       return;
     }
     state.onboardingStage = "tutorial";
-    state.tutorialStep = 0;
+    enterTutorialStep(0);
     render();
     return;
   }
 
+  const step = currentTutorialStep();
+  if (["roundNoDiscovery", "roundTrioDiscovery"].includes(step?.kind) && state.tutorialFlags.roundPhase && !state.tutorialFlags.roundComplete) {
+    await continueGuidedNoDiscoveryRound();
+    return;
+  }
+
+  if (!tutorialStepComplete()) {
+    return;
+  }
+
+  if (["roundNoDiscovery", "roundTrioDiscovery"].includes(step?.kind) && state.tutorialFlags.roundComplete) {
+    await fadeTutorialBubbles();
+  }
+
   if (state.tutorialStep >= TUTORIAL_STEPS.length - 1) {
-    state.onboardingStage = "done";
+    startRealGameAfterTutorial();
   } else {
-    state.tutorialStep += 1;
+    enterTutorialStep(state.tutorialStep + 1);
   }
   render();
 }
@@ -571,7 +901,9 @@ function applyTutorialFocus(step) {
     return;
   }
 
-  target.classList.add("tutorial-focus");
+  if (step.target !== "#next-round-wrap") {
+    target.classList.add("tutorial-focus");
+  }
   extraTargets.forEach((extraTarget) => extraTarget.classList.add("tutorial-focus"));
   const rect = target.getBoundingClientRect();
   els.tutorialSpotlight.classList.add("visible");
@@ -591,28 +923,58 @@ function positionTutorialCard() {
     els.onboardingCard.style.removeProperty("left");
     els.onboardingCard.style.removeProperty("right");
     els.onboardingCard.style.removeProperty("width");
+    els.onboardingCard.style.removeProperty("maxHeight");
     return;
   }
 
-  const payrollPanel = document.querySelector(".hud-payroll");
-  const nextRoundWrap = document.querySelector(".sidebar-round-wrap");
-  const sidebar = document.querySelector(".board-sidebar");
-  if (!payrollPanel) {
+  const boardRect = els.board?.getBoundingClientRect();
+  if (!boardRect) {
     return;
   }
 
-  const rect = payrollPanel.getBoundingClientRect();
-  const sidebarRect = sidebar?.getBoundingClientRect();
-  const nextRect = nextRoundWrap?.getBoundingClientRect();
-  const cardWidth = Math.min(sidebarRect?.width || 290, window.innerWidth - 32);
-  const cardHeight = 168;
-  const desiredLeft = sidebarRect ? sidebarRect.left : Math.max(16, rect.left);
-  const maxTop = nextRect ? (nextRect.top - cardHeight - 12) : (window.innerHeight - cardHeight - 16);
-  const desiredTop = Math.max(rect.bottom + 10, Math.min(maxTop, rect.bottom + 10));
-  els.onboardingCard.style.top = `${desiredTop}px`;
-  els.onboardingCard.style.left = `${desiredLeft}px`;
+  const step = currentTutorialStep();
+  const target = step?.target ? document.querySelector(step.target) : null;
+  const sidebarRect = step?.hideControls ? null : document.querySelector(".board-sidebar")?.getBoundingClientRect();
+  const avoidRects = [
+    target?.getBoundingClientRect(),
+    ...[...document.querySelectorAll(".worker-node")].map((node) => node.getBoundingClientRect())
+  ].filter(Boolean);
+  const fieldLeft = boardRect.left + 24;
+  const fieldRight = (sidebarRect ? sidebarRect.left : boardRect.right) - 24;
+  const fieldTop = boardRect.top + 24;
+  const fieldBottom = boardRect.bottom - 24;
+  const availableWidth = Math.max(160, fieldRight - fieldLeft);
+  const cardWidth = Math.min(440, availableWidth);
+  const cardHeight = 260;
+  const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+  const overlapArea = (candidate, rect) => {
+    const left = Math.max(candidate.left, rect.left);
+    const right = Math.min(candidate.left + cardWidth, rect.right);
+    const top = Math.max(candidate.top, rect.top);
+    const bottom = Math.min(candidate.top + cardHeight, rect.bottom);
+    return Math.max(0, right - left) * Math.max(0, bottom - top);
+  };
+  const candidates = [
+    { left: fieldLeft, top: fieldTop },
+    { left: fieldRight - cardWidth, top: fieldTop },
+    { left: fieldLeft, top: fieldBottom - cardHeight },
+    { left: fieldRight - cardWidth, top: fieldBottom - cardHeight },
+    { left: fieldLeft + (fieldRight - fieldLeft - cardWidth) / 2, top: fieldTop + 80 },
+    { left: fieldLeft + (fieldRight - fieldLeft - cardWidth) / 2, top: fieldBottom - cardHeight - 80 }
+  ].map((candidate) => ({
+    left: clamp(candidate.left, fieldLeft, Math.max(fieldLeft, fieldRight - cardWidth)),
+    top: clamp(candidate.top, fieldTop, Math.max(fieldTop, fieldBottom - cardHeight))
+  }));
+  const best = candidates.reduce((winner, candidate) => {
+    const score = avoidRects.reduce((sum, rect) => sum + overlapArea(candidate, rect), 0);
+    return score < winner.score ? { ...candidate, score } : winner;
+  }, { ...candidates[0], score: Number.POSITIVE_INFINITY });
+
+  els.onboardingCard.style.top = `${best.top}px`;
+  els.onboardingCard.style.left = `${best.left}px`;
   els.onboardingCard.style.right = "auto";
   els.onboardingCard.style.width = `${cardWidth}px`;
+  els.onboardingCard.style.maxHeight = `${Math.max(180, fieldBottom - best.top)}px`;
 }
 
 function renderTutorialProgress() {
@@ -707,7 +1069,7 @@ function invalidWorkerIds() {
 }
 
 function startDragging(event, workerId) {
-  if (state.isAnimating || state.autoRunning || state.onboardingStage !== "done") {
+  if (state.isAnimating || state.autoRunning || !(state.onboardingStage === "done" || tutorialAllows("drag"))) {
     return;
   }
 
@@ -731,7 +1093,7 @@ function handlePointerMove(event) {
   const nextY = scaleToBoardY(event.clientY - rect.top, rect.height) + dragState.offsetY;
 
   worker.x = clamp(nextX, WORKER_RADIUS + 12, safeBoardMaxX());
-  worker.y = clamp(nextY, WORKER_RADIUS + 12, BOARD_HEIGHT - WORKER_RADIUS - 12);
+  worker.y = clamp(nextY, safeBoardMinY(), safeBoardMaxY());
   render();
 }
 
@@ -740,10 +1102,39 @@ function stopDragging() {
     return;
   }
   dragState = null;
+  updateTutorialGroupingMessage();
   render();
 }
 
+function updateTutorialGroupingMessage() {
+  if (!isTutorialActive()) {
+    return;
+  }
+
+  const step = currentTutorialStep();
+  if (!step || !["pairGroup", "trioGroup", "pairAndTrio"].includes(step.kind)) {
+    return;
+  }
+
+  if (tutorialStepComplete(step)) {
+    state.tutorialMessage = step.completeLabel || "Good. You can continue.";
+  } else if (step.kind === "pairGroup") {
+    state.tutorialMessage = "Keep dragging until exactly two chemists share one team circle.";
+  } else if (step.kind === "trioGroup") {
+    state.tutorialMessage = state.workers.length < 3
+      ? "First hire one more chemist with the + button."
+      : "Keep dragging until all three chemists share one team circle.";
+  } else {
+    state.tutorialMessage = "Keep adjusting until you have one pair and one trio.";
+  }
+}
+
 async function runRoundSequence() {
+  if (isTutorialActive()) {
+    await runTutorialRound();
+    return;
+  }
+
   if (state.autoRunning) {
     state.stopRequested = true;
     state.status = "Stopping";
@@ -775,6 +1166,296 @@ async function runRoundSequence() {
   } else {
     await playSingleRound(true);
   }
+}
+
+async function runTutorialRound() {
+  const step = currentTutorialStep();
+  if (!step || !tutorialAllows("round") || state.isAnimating) {
+    return;
+  }
+
+  const invalidWorkers = invalidWorkerIds();
+  if (invalidWorkers.length) {
+    showPopup(
+      "Make teams first",
+      step.kind === "roundTrioDiscovery"
+        ? "For this practice round, keep all three chemists together in one team before pressing Next round."
+        : step.hideControls
+        ? "For this practice round, drag the two chemists together into one team before pressing Next round."
+        : "For this practice round, arrange chemists into one pair and one trio before pressing Next round."
+    );
+    return;
+  }
+
+  state.isAnimating = true;
+  state.status = "Practice round";
+  clearTransient();
+  triggerRoundPulse(240);
+  render();
+  await wait(220);
+
+  const shouldDiscover = step.kind === "roundDiscovery" || step.kind === "roundTrioDiscovery";
+  const discoveryId = step.kind === "roundTrioDiscovery" ? "A2" : "A1";
+  const roundRecord = buildTutorialRoundRecord(shouldDiscover, discoveryId);
+  state.story = `Practice round ${roundRecord.round}: ${roundRecord.summary}`;
+
+  if (step.kind === "roundNoDiscovery" || step.kind === "roundTrioDiscovery") {
+    startGuidedTutorialRound(roundRecord);
+    return;
+  }
+
+  await animateTutorialInteraction(roundRecord.interactions[0], step.kind === "roundDiscovery");
+
+  if (roundRecord.interactions[0].discovery) {
+    roundRecord.interactions[0].discoverers.forEach((workerId) => {
+      const worker = getWorkerById(workerId);
+      worker.moneyBurstUntil = Date.now() + 2000;
+    });
+    applyStageRewards();
+    scheduleMoneyBurstCleanup();
+  }
+
+  clearTransient();
+  state.roundHistory.push(roundRecord);
+  state.round += 1;
+  state.status = "Tutorial";
+  state.isAnimating = false;
+  state.tutorialFlags.roundComplete = true;
+  state.tutorialMessage = roundRecord.interactions[0].discovery
+    ? "Discovery! The team created a new product, and both chemists now know it."
+    : "No discovery this time. The chemists shared compounds, but that three-compound combination did not create anything new.";
+  render();
+}
+
+function startGuidedTutorialRound(roundRecord) {
+  state.isAnimating = false;
+  state.status = "Tutorial";
+  state.tutorialFlags.roundRecord = roundRecord;
+  state.tutorialFlags.roundPhase = "shared";
+  showTutorialRoundPhase(roundRecord.interactions[0], "shared");
+  render();
+}
+
+async function continueGuidedNoDiscoveryRound() {
+  const roundRecord = state.tutorialFlags.roundRecord;
+  if (!roundRecord) {
+    return;
+  }
+
+  const interaction = roundRecord.interactions[0];
+  if (state.tutorialFlags.roundPhase === "shared") {
+    await fadeTutorialBubbles();
+    state.tutorialFlags.roundPhase = "tested";
+    showTutorialRoundPhase(interaction, "tested");
+    render();
+    return;
+  }
+
+  if (state.tutorialFlags.roundPhase === "tested") {
+    await fadeTutorialBubbles();
+    state.tutorialFlags.roundPhase = "result";
+    showTutorialRoundPhase(interaction, "result");
+    state.tutorialFlags.roundComplete = true;
+    state.roundHistory.push(roundRecord);
+    state.round += 1;
+    if (interaction.discovery) {
+      interaction.discoverers.forEach((workerId) => {
+        const worker = getWorkerById(workerId);
+        worker.moneyBurstUntil = Date.now() + 2000;
+      });
+      applyStageRewards();
+      scheduleMoneyBurstCleanup();
+    }
+    render();
+  }
+}
+
+async function fadeTutorialBubbles() {
+  const hasBubbles = state.workers.some((worker) => worker.transient.length);
+  if (!hasBubbles) {
+    return;
+  }
+
+  state.workers.forEach((worker) => {
+    worker.transient = worker.transient.map((message) => ({ ...message, fading: true }));
+  });
+  render();
+  await wait(260);
+  clearTransient();
+}
+
+function showTutorialRoundPhase(interaction, phase) {
+  const worker = getWorkerById(interaction.worker);
+  const partner = getWorkerById(interaction.partner);
+  clearTransient();
+
+  if (phase === "shared") {
+    worker.transient.push({ kind: "bubble", frozen: true, html: `shares ${renderPotionGroup(interaction.workerShared, "xs")}` });
+    partner.transient.push({ kind: "bubble", frozen: true, html: `shares ${renderPotionGroup(interaction.partnerShared, "xs")}` });
+  }
+
+  if (phase === "tested") {
+    worker.transient.push({ kind: "bubble", frozen: true, html: `test ${renderPotionGroup(interaction.triad, "xs")}` });
+    partner.transient.push({ kind: "bubble", frozen: true, html: `test ${renderPotionGroup(interaction.triad, "xs")}` });
+  }
+
+  if (phase === "result") {
+    if (interaction.discovery) {
+      applyInteractionDiscovery(interaction);
+      worker.transient.push({ kind: "bubble", frozen: true, html: `new product ${renderPotionGroup([interaction.discovery], "xs")}` });
+      partner.transient.push({ kind: "bubble", frozen: true, html: `new product ${renderPotionGroup([interaction.discovery], "xs")}` });
+      const teammateIds = interaction.groupMemberIds
+        .filter((workerId) => !interaction.discoverers.includes(workerId));
+      teammateIds.forEach((workerId) => {
+        const teammate = getWorkerById(workerId);
+        teammate.transient.push({ kind: "bubble", frozen: true, html: `learned ${renderPotionGroup([interaction.discovery], "xs")}` });
+      });
+    } else {
+      worker.transient.push({ kind: "bubble", frozen: true, html: "no new product" });
+      partner.transient.push({ kind: "bubble", frozen: true, html: "no new product" });
+    }
+  }
+}
+
+function applyInteractionDiscovery(interaction) {
+  if (!interaction.discovery || interaction.applied) {
+    return;
+  }
+
+  const worker = getWorkerById(interaction.worker);
+  const partner = getWorkerById(interaction.partner);
+  const group = state.groups.find((entry) => entry.members.some((member) => member.id === worker.id));
+  const discoverers = [];
+
+  [worker, partner].forEach((person) => {
+    if (!person.inventory.has(interaction.discovery)) {
+      person.inventory.add(interaction.discovery);
+      person.lastRound.made.push(interaction.discovery);
+      person.cumulativeDiscoveries += 1;
+      updateBest(person, interaction.discovery);
+      discoverers.push(person.id);
+    }
+  });
+
+  interaction.discoverers = discoverers;
+  if (discoverers.length && group) {
+    group.members
+      .filter((recipient) => recipient.id !== worker.id && recipient.id !== partner.id)
+      .forEach((recipient) => {
+        if (!recipient.inventory.has(interaction.discovery)) {
+          recipient.inventory.add(interaction.discovery);
+          recipient.lastRound.received.push(interaction.discovery);
+          updateBest(recipient, interaction.discovery);
+        }
+      });
+  }
+
+  interaction.applied = true;
+}
+
+async function animateTutorialInteraction(interaction, shouldDiscover) {
+  const worker = getWorkerById(interaction.worker);
+  const partner = getWorkerById(interaction.partner);
+
+  clearTransient();
+  worker.transient.push({ kind: "bubble", html: `shares ${renderPotionGroup(interaction.workerShared, "xs")}` });
+  partner.transient.push({ kind: "bubble", html: `shares ${renderPotionGroup(interaction.partnerShared, "xs")}` });
+  render();
+  await wait(1650);
+
+  clearTransient();
+  worker.transient.push({ kind: "bubble", html: `test ${renderPotionGroup(interaction.triad, "xs")}` });
+  partner.transient.push({ kind: "bubble", html: `test ${renderPotionGroup(interaction.triad, "xs")}` });
+  render();
+  await wait(1650);
+
+  clearTransient();
+  if (shouldDiscover) {
+    applyInteractionDiscovery(interaction);
+    interaction.discoverers.forEach((workerId) => {
+      const discoverer = getWorkerById(workerId);
+      discoverer.moneyBurstUntil = Date.now() + 2000;
+    });
+    scheduleMoneyBurstCleanup();
+    worker.transient.push({ kind: "spark", html: `new product ${renderPotionGroup([interaction.discovery], "xs")}` });
+    partner.transient.push({ kind: "spark", html: `new product ${renderPotionGroup([interaction.discovery], "xs")}` });
+  } else {
+    worker.transient.push({ kind: "bubble", html: "no new product" });
+    partner.transient.push({ kind: "bubble", html: "no new product" });
+  }
+  render();
+  await wait(1700);
+}
+
+function buildTutorialRoundRecord(shouldDiscover, discoveryId = "A1") {
+  computeNetwork();
+  const group = state.groups.find((entry) => entry.members.length >= MIN_GROUP_SIZE);
+  const worker = group.members[0];
+  const partner = group.members[1];
+  state.workers.forEach((entry) => {
+    entry.lastRound = emptyLastRound();
+  });
+
+  const discoveryTriads = {
+    A1: {
+      workerShared: ["a1", "a2"],
+      partnerShared: ["a3"],
+      triad: ["a1", "a2", "a3"]
+    },
+    A2: {
+      workerShared: ["A1", "a1"],
+      partnerShared: ["a2"],
+      triad: ["A1", "a1", "a2"]
+    }
+  };
+  const discoveryPlan = discoveryTriads[discoveryId] || discoveryTriads.A1;
+
+  const interaction = {
+    worker: worker.id,
+    partner: partner.id,
+    workerName: worker.name,
+    partnerName: partner.name,
+    teamName: group.teamName,
+    workerShared: shouldDiscover ? discoveryPlan.workerShared : ["a1", "b1"],
+    partnerShared: shouldDiscover ? discoveryPlan.partnerShared : ["b2"],
+    triad: shouldDiscover ? discoveryPlan.triad : ["a1", "b1", "b2"],
+    discovery: shouldDiscover ? discoveryId : null,
+    discoverers: [],
+    groupMemberIds: group.members.map((member) => member.id)
+  };
+
+  worker.lastRound.interaction = { partner: partner.name, triad: interaction.triad };
+  partner.lastRound.interaction = { partner: worker.name, triad: interaction.triad };
+
+  const diffusions = [];
+  if (shouldDiscover) {
+    interaction.discoverers = [worker, partner]
+      .filter((person) => !person.inventory.has(discoveryId))
+      .map((person) => person.id);
+
+    group.members
+      .filter((recipient) => recipient.id !== worker.id && recipient.id !== partner.id)
+      .forEach((recipient) => {
+        if (!recipient.inventory.has(discoveryId)) {
+          diffusions.push({ from: group.teamName, to: recipient.name, potion: discoveryId, source: "tutorial" });
+        }
+      });
+  }
+
+  return {
+    round: state.round,
+    interactions: [interaction],
+    diffusions,
+    summary: shouldDiscover
+      ? `${worker.name} and ${partner.name} unlocked ${renderPotionToken(discoveryId, "xs")} <span class="summary-potion-name">${potionName(discoveryId)}</span> for ${formatMoney(stageValueForPotion(discoveryId))}.`
+      : "The chemists shared ingredients, but no new product appeared. Keep trying.",
+    snapshot: state.workers.map((entry) => ({
+      worker: entry.id,
+      inventory: inventoryArray(entry.inventory),
+      bestTier: entry.bestTier,
+      bestScore: entry.bestScore
+    }))
+  };
 }
 
 async function runFastSequence() {
@@ -826,6 +1507,7 @@ async function playSingleRound(showAnimation) {
 
     roundRecord.interactions.forEach((interaction) => {
       if (interaction.discovery) {
+        applyInteractionDiscovery(interaction);
         interaction.discoverers.forEach((workerId) => {
           const worker = getWorkerById(workerId);
           worker.transient.push({ kind: "spark", html: `&#10024; ${renderPotionToken(interaction.discovery, "xs")}` });
@@ -835,6 +1517,12 @@ async function playSingleRound(showAnimation) {
     });
 
     scheduleMoneyBurstCleanup();
+    roundRecord.snapshot = state.workers.map((worker) => ({
+      worker: worker.id,
+      inventory: inventoryArray(worker.inventory),
+      bestTier: worker.bestTier,
+      bestScore: worker.bestScore
+    }));
 
     render();
     await wait(showAnimation ? 260 : 110);
@@ -925,15 +1613,9 @@ function simulateRound() {
       return;
     }
     const group = state.groups.find((entry) => entry.members.some((member) => member.id === worker.id));
-    [worker, partner].forEach((person) => {
-      if (!person.inventory.has(interaction.discovery)) {
-        person.inventory.add(interaction.discovery);
-        person.lastRound.made.push(interaction.discovery);
-        person.cumulativeDiscoveries += 1;
-        updateBest(person, interaction.discovery);
-        interaction.discoverers.push(person.id);
-      }
-    });
+    interaction.discoverers = [worker, partner]
+      .filter((person) => !person.inventory.has(interaction.discovery))
+      .map((person) => person.id);
 
     if (!interaction.discoverers.length) {
       return;
@@ -943,9 +1625,6 @@ function simulateRound() {
       .filter((recipient) => recipient.id !== worker.id && recipient.id !== partner.id)
       .forEach((recipient) => {
         if (!recipient.inventory.has(interaction.discovery)) {
-          recipient.inventory.add(interaction.discovery);
-          recipient.lastRound.received.push(interaction.discovery);
-          updateBest(recipient, interaction.discovery);
           diffusions.push({ from: interaction.teamName, to: recipient.name, potion: interaction.discovery });
         }
       });
@@ -1162,12 +1841,7 @@ function uniqueKnowledgeForWorker(worker) {
 function specializationForWorker(worker) {
   const progress = pathwayProgressForWorker(worker);
   if (progress.a.maxTier === 0 && progress.b.maxTier === 0) {
-    return {
-      className: "spec-new",
-      icon: "•",
-      label: "New",
-      title: "New hire with no pathway discoveries yet"
-    };
+    return null;
   }
 
   const tierGap = progress.a.maxTier - progress.b.maxTier;
@@ -1227,37 +1901,55 @@ function pathwayProgressForWorker(worker) {
 }
 
 function hireWorker() {
-  if (state.isAnimating || state.autoRunning || state.gameOver || state.workers.length >= MAX_EMPLOYEES) {
+  if (state.isAnimating || state.autoRunning || state.gameOver || !(state.onboardingStage === "done" || tutorialAllows("hire")) || state.workers.length >= MAX_EMPLOYEES) {
     return;
   }
 
-  const worker = createWorker(state.nextWorkerIndex);
+  const worker = createWorker(state.workers, state.nextWorkerIndex);
   state.workers.push(worker);
   state.nextWorkerIndex += 1;
+  if (isTutorialActive()) {
+    state.tutorialFlags.hired = true;
+    if (currentTutorialStep()?.kind === "trioGroup") {
+      worker.x = 706;
+      worker.y = 330;
+      state.tutorialMessage = "Now drag the new chemist into the pair to make a three-person team.";
+    } else if (currentTutorialStep()?.kind === "pairAndTrio") {
+      state.tutorialMessage = state.workers.length < 5
+        ? "Good. Hire one more chemist, then arrange one pair and one trio."
+        : "Now arrange the five chemists into one pair and one trio.";
+    } else {
+      state.tutorialMessage = "Good. Now click a minus button on any chemist to fire one.";
+    }
+  }
   state.story = `${worker.name} joined the company. Payroll updates when the next round begins.`;
   render();
 }
 
 function removeWorker(workerId) {
-  if (state.isAnimating || state.autoRunning || state.gameOver || state.workers.length <= MIN_GROUP_SIZE) {
+  if (state.isAnimating || state.autoRunning || state.gameOver || !(state.onboardingStage === "done" || tutorialAllows("fire")) || state.workers.length <= MIN_GROUP_SIZE) {
     return;
   }
 
   const worker = getWorkerById(workerId);
   state.workers = state.workers.filter((entry) => entry.id !== workerId);
+  if (isTutorialActive()) {
+    state.tutorialFlags.fired = true;
+    state.tutorialMessage = "Nice. You have practiced hiring and firing.";
+  }
   state.story = `${worker.name} has been removed from the roster. Future payroll is reduced.`;
   render();
 }
 
-function createWorker(index) {
-  const profile = WORKER_PROFILES[index % WORKER_PROFILES.length];
-  const position = initialPositionForIndex(index);
+function createWorker(activeWorkers = [], positionIndex = 0) {
+  const profile = chooseAvailableWorkerProfile(activeWorkers);
+  const position = initialPositionForIndex(positionIndex);
   return {
-    id: `W${index + 1}`,
-    name: generateWorkerName(index, profile.name),
+    id: profile.id,
+    name: profile.name,
     profile,
     x: clamp(position.x, WORKER_RADIUS + 12, safeBoardMaxX()),
-    y: position.y,
+    y: clamp(position.y, safeBoardMinY(), safeBoardMaxY()),
     inventory: new Set(BASE_POTIONS),
     bestTier: 0,
     bestScore: 10,
@@ -1268,8 +1960,22 @@ function createWorker(index) {
   };
 }
 
+function chooseAvailableWorkerProfile(activeWorkers = []) {
+  const activeProfileIds = new Set(activeWorkers.map((worker) => worker.profile.id));
+  const availableProfiles = WORKER_PROFILES.filter((profile) => !activeProfileIds.has(profile.id));
+  return sampleUniform(availableProfiles.length ? availableProfiles : WORKER_PROFILES);
+}
+
 function safeBoardMaxX() {
   return BOARD_WIDTH - RESERVED_SIDEBAR_WIDTH - WORKER_RADIUS - 12;
+}
+
+function safeBoardMinY() {
+  return WORKER_RADIUS + 18;
+}
+
+function safeBoardMaxY() {
+  return BOARD_HEIGHT - 64;
 }
 
 function initialPositionForIndex(index) {
@@ -1277,11 +1983,19 @@ function initialPositionForIndex(index) {
     { x: 126, y: 154 },
     { x: 374, y: 188 },
     { x: 676, y: 162 },
-    { x: 914, y: 196 },
+    { x: 812, y: 196 },
     { x: 148, y: 542 },
     { x: 404, y: 586 },
     { x: 638, y: 528 },
-    { x: 948, y: 574 }
+    { x: 808, y: 574 },
+    { x: 132, y: 318 },
+    { x: 332, y: 354 },
+    { x: 546, y: 326 },
+    { x: 766, y: 360 },
+    { x: 220, y: 688 },
+    { x: 460, y: 680 },
+    { x: 672, y: 690 },
+    { x: 824, y: 666 }
   ];
 
   if (index < basePositions.length) {
@@ -1291,14 +2005,9 @@ function initialPositionForIndex(index) {
   const column = index % 4;
   const row = Math.floor(index / 4);
   return {
-    x: 116 + (column * 248) + ((index * 17) % 38),
-    y: 126 + (row * 184) + ((index * 19) % 44)
+    x: clamp(116 + (column * 210) + ((index * 17) % 32), WORKER_RADIUS + 12, safeBoardMaxX()),
+    y: clamp(132 + ((row % 4) * 172) + ((index * 19) % 34), safeBoardMinY(), safeBoardMaxY())
   };
-}
-
-function generateWorkerName(index, fallback) {
-  const names = ["Maya", "Jonah", "Priya", "Elena", "Marcus", "Nia", "Omar", "Sofia", "Iris", "Theo", "Camila", "Noah", "Amina", "Felix", "Leah", "Hugo"];
-  return names[index] || `${fallback} ${Math.floor(index / WORKER_PROFILES.length) + 1}`;
 }
 
 function applyPayroll() {
@@ -1463,10 +2172,9 @@ function shuffled(items) {
 
 function teamNameForMembers(members) {
   const adjectives = ["Aurora", "Juniper", "Harbor", "Cinder", "Willow", "Comet", "Ember", "Silver", "Moss", "Lumen"];
-  const nouns = ["Circle", "Guild", "Collective", "Workshop", "Lanterns", "Makers", "Crew", "Studio", "Cluster", "House"];
   const key = members.map((member) => member.id).sort().join("");
   const hash = [...key].reduce((sum, char) => sum + char.charCodeAt(0), 0);
-  return `${adjectives[hash % adjectives.length]} ${nouns[hash % nouns.length]}`;
+  return `Team ${adjectives[hash % adjectives.length]}`;
 }
 
 function scaleToBoardX(pixelX, renderedWidth) {
@@ -1488,8 +2196,3 @@ function clamp(value, min, max) {
 function wait(ms) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
-
-
-
-
-
