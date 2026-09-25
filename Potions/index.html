@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Potions Manager Game</title>
-  <link rel="stylesheet" href="./styles.css?v=5">
+  <link rel="stylesheet" href="./styles.css?v=16">
 </head>
 <body>
   <div class="game-shell">
@@ -31,6 +31,10 @@
             <span class="hud-label">Payroll / round</span>
             <strong id="payroll-score">$0</strong>
           </div>
+          <div class="hud-chip hud-earnings">
+            <span class="hud-label">Your earnings</span>
+            <strong id="earnings-score">$0.00</strong>
+          </div>
           <div id="next-round-wrap" class="next-round-wrap sidebar-round-wrap">
             <svg class="round-ring" viewBox="0 0 120 120" aria-hidden="true">
               <circle class="round-ring-track" cx="60" cy="60" r="50"></circle>
@@ -54,8 +58,8 @@
   <div id="onboarding-overlay" class="onboarding-overlay" aria-live="polite">
     <div id="tutorial-spotlight" class="tutorial-spotlight" aria-hidden="true"></div>
     <div class="onboarding-card">
-      <div id="onboarding-step" class="onboarding-step">Choose a mode</div>
-      <h2 id="onboarding-title">Pick how your chemists work.</h2>
+      <div id="onboarding-step" class="onboarding-step">Tutorial</div>
+      <h2 id="onboarding-title">Would you like to complete the tutorial?</h2>
       <p id="onboarding-body" class="onboarding-body"></p>
       <div id="tutorial-progress" class="tutorial-progress"></div>
       <div id="mode-picker" class="mode-picker">
@@ -68,11 +72,11 @@
           <span>Same payoff-biased chemists, but rounds auto-run until a discovery appears and then pause for reconfiguration.</span>
         </button>
       </div>
-      <label class="skip-tutorial-toggle">
+      <label class="skip-tutorial-toggle" data-tutorial-option="skip">
         <input id="skip-tutorial-checkbox" type="checkbox">
-        <span>Skip tutorial and jump straight into the lab after choosing a mode</span>
+        <span>Skip tutorial and jump straight into the lab</span>
       </label>
-      <label class="skip-tutorial-toggle">
+      <label class="skip-tutorial-toggle" data-tutorial-option="endless">
         <input id="endless-rounds-checkbox" type="checkbox">
         <span>Remove the round limit and keep going until the flagship compound is discovered</span>
       </label>
@@ -83,6 +87,6 @@
     </div>
   </div>
 
-  <script src="./app.js?v=5"></script>
+  <script src="./app.js?v=16"></script>
 </body>
 </html>
