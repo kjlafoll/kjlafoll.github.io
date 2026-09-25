@@ -327,6 +327,7 @@ const els = {
   modeOneFastBtn: document.getElementById("mode-one-fast-btn"),
   tutorialToggles: [...document.querySelectorAll(".skip-tutorial-toggle")],
   skipTutorialCheckbox: document.getElementById("skip-tutorial-checkbox"),
+  tutorialNarrationCheckbox: document.getElementById("tutorial-narration-checkbox"),
   endlessRoundsCheckbox: document.getElementById("endless-rounds-checkbox"),
   tutorialActions: document.getElementById("tutorial-actions"),
   tutorialBackBtn: document.getElementById("tutorial-back-btn"),
@@ -375,6 +376,7 @@ function createInitialState() {
     autoRunning: false,
     stopRequested: false,
     unlimitedRounds: false,
+    tutorialNarrationEnabled: true,
     popup: null,
     companyCash: INITIAL_COMPANY_CASH,
     totalRevenue: 0,
@@ -404,6 +406,12 @@ function bindEvents() {
   els.modeOneFastBtn.addEventListener("click", () => selectMode("mode1fast"));
   els.tutorialBackBtn.addEventListener("click", handleTutorialBack);
   els.tutorialNextBtn.addEventListener("click", handleTutorialNext);
+  els.tutorialNarrationCheckbox.addEventListener("change", () => {
+    state.tutorialNarrationEnabled = Boolean(els.tutorialNarrationCheckbox.checked);
+    if (!state.tutorialNarrationEnabled) {
+      stopTutorialNarration();
+    }
+  });
   els.eventPopupClose.addEventListener("click", dismissPopup);
   window.addEventListener("pointermove", handlePointerMove);
   window.addEventListener("pointerup", stopDragging);
@@ -698,11 +706,11 @@ function renderOnboarding() {
     resetOnboardingCardPosition();
     els.onboardingStep.textContent = "Tutorial";
     els.onboardingTitle.textContent = "Would you like to complete the tutorial?";
-    els.onboardingBody.textContent = "Please turn on your browser or device audio before continuing. The tutorial includes spoken narration and walks through the lab, company funds, payroll, participant earnings, hiring, firing, and team arrangement. You can skip it if you already know how the task works.";
+    els.onboardingBody.textContent = "The tutorial walks through the lab, company funds, payroll, participant earnings, hiring, firing, and team arrangement. If you keep narration on, please turn on your browser or device audio before continuing.";
     els.onboardingStep.style.display = "block";
     els.tutorialProgress.classList.remove("visible");
     els.modePicker.style.display = "none";
-    els.tutorialToggles.forEach((toggle) => { toggle.style.display = toggle.dataset.tutorialOption === "skip" ? "flex" : "none"; });
+    els.tutorialToggles.forEach((toggle) => { toggle.style.display = ["skip", "narration"].includes(toggle.dataset.tutorialOption) ? "flex" : "none"; });
     els.tutorialActions.style.display = "flex";
     els.tutorialBackBtn.disabled = true;
     els.tutorialNextBtn.disabled = false;
@@ -966,9 +974,11 @@ function setWorkerPositions(positions) {
 function startRealGameAfterTutorial() {
   const selectedMode = state.mode;
   const unlimitedRounds = state.unlimitedRounds;
+  const tutorialNarrationEnabled = state.tutorialNarrationEnabled;
   state = createInitialState();
   state.mode = selectedMode;
   state.unlimitedRounds = unlimitedRounds;
+  state.tutorialNarrationEnabled = tutorialNarrationEnabled;
   state.onboardingStage = "done";
 }
 
@@ -999,6 +1009,7 @@ async function handleTutorialNext() {
   if (state.onboardingStage === "mode") {
     state.mode = "mode1";
     state.unlimitedRounds = false;
+    state.tutorialNarrationEnabled = Boolean(els.tutorialNarrationCheckbox.checked);
     els.endlessRoundsCheckbox.checked = false;
     if (els.skipTutorialCheckbox.checked) {
       state.onboardingStage = "done";
@@ -1875,7 +1886,7 @@ function tutorialNarrationFileForCurrentState(step = currentTutorialStep()) {
 }
 
 function playTutorialNarrationForCurrentState(step = currentTutorialStep()) {
-  if (state.onboardingStage !== "tutorial") {
+  if (state.onboardingStage !== "tutorial" || !state.tutorialNarrationEnabled) {
     stopTutorialNarration();
     return;
   }
