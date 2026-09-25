@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Potions Manager Game</title>
-  <link rel="stylesheet" href="./styles.css?v=26">
+  <link rel="stylesheet" href="./styles.css?v=27">
 </head>
 <body>
   <div class="game-shell">
@@ -76,6 +76,10 @@
         <input id="skip-tutorial-checkbox" type="checkbox">
         <span>Skip tutorial and jump straight into the lab</span>
       </label>
+      <label class="skip-tutorial-toggle" data-tutorial-option="narration">
+        <input id="tutorial-narration-checkbox" type="checkbox" checked>
+        <span>Play spoken tutorial narration</span>
+      </label>
       <label class="skip-tutorial-toggle" data-tutorial-option="endless">
         <input id="endless-rounds-checkbox" type="checkbox">
         <span>Remove the round limit and keep going until the flagship compound is discovered</span>
@@ -87,6 +91,6 @@
     </div>
   </div>
 
-  <script src="./app.js?v=26"></script>
+  <script src="./app.js?v=27"></script>
 </body>
 </html>
