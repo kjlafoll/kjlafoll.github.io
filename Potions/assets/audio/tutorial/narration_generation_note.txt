@@ -1,0 +1,1 @@
+Generated with edge-tts voice en-US-JennyNeural, rate -2%, pitch -2Hz. Narration uses exact tutorial body text only, not slide titles.

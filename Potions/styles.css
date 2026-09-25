@@ -894,6 +894,11 @@ body.mode-screen .game-shell {
   max-height: none;
 }
 
+.solo-knowledge {
+  border-color: rgba(148, 163, 184, 0.2);
+  background: rgba(7, 18, 36, 0.84);
+}
+
 .worker-avatar {
   position: absolute;
   left: 8px;
