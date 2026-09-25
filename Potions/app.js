@@ -1227,16 +1227,20 @@ function calculateHalo(members) {
 
   const xs = members.map((worker) => worker.x);
   const ys = members.map((worker) => worker.y);
-  const minX = Math.min(...xs) - 44;
-  const maxX = Math.max(...xs) + 44;
-  const minY = Math.min(...ys) - 48;
-  const maxY = Math.max(...ys) + 48;
+  const horizontalPadding = isMobileLayout() ? 34 : 44;
+  const verticalPadding = isMobileLayout() ? 26 : 48;
+  const minRadiusX = isMobileLayout() ? 46 : 60;
+  const minRadiusY = isMobileLayout() ? 42 : 68;
+  const minX = Math.min(...xs) - horizontalPadding;
+  const maxX = Math.max(...xs) + horizontalPadding;
+  const minY = Math.min(...ys) - verticalPadding;
+  const maxY = Math.max(...ys) + verticalPadding;
 
   return {
     cx: (minX + maxX) / 2,
     cy: (minY + maxY) / 2,
-    rx: Math.max(60, (maxX - minX) / 2),
-    ry: Math.max(68, (maxY - minY) / 2)
+    rx: Math.max(minRadiusX, (maxX - minX) / 2),
+    ry: Math.max(minRadiusY, (maxY - minY) / 2)
   };
 }
 
