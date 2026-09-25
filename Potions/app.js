@@ -271,6 +271,31 @@ const TUTORIAL_STEPS = [
     completeLabel: "Start game"
   }
 ];
+const TUTORIAL_AUDIO_FILES = [
+  "tutorial_01_mission.mp3",
+  "tutorial_02_first_team.mp3",
+  "tutorial_03_known_compounds.mp3",
+  "tutorial_04_try_round.mp3",
+  "tutorial_05_try_again.mp3",
+  "tutorial_06_discovery_core.mp3",
+  "tutorial_07_innovation_tracks.mp3",
+  "tutorial_08_funding.mp3",
+  "tutorial_09_payroll.mp3",
+  "tutorial_10_earnings.mp3",
+  "tutorial_11_staffing.mp3",
+  "tutorial_12_trio.mp3",
+  "tutorial_13_team_discovery.mp3",
+  "tutorial_14_teams.mp3",
+  "tutorial_15_discovery_payoff.mp3",
+  "tutorial_16_begin.mp3"
+];
+const TUTORIAL_DYNAMIC_AUDIO_FILES = {
+  discoveryFound: "tutorial_dynamic_discovery_found.mp3",
+  testCombination: "tutorial_dynamic_test_combination.mp3",
+  noProduct: "tutorial_dynamic_no_product.mp3",
+  independentTests: "tutorial_dynamic_independent_tests.mp3",
+  teamLearns: "tutorial_dynamic_team_learns.mp3"
+};
 
 const els = {
   nextRoundWrap: document.getElementById("next-round-wrap"),
@@ -312,6 +337,12 @@ let state = createInitialState();
 let dragState = null;
 let cashAnimationTimer = null;
 let moneyBurstCleanupTimer = null;
+let audioContext = null;
+let musicTimer = null;
+let musicStarted = false;
+let musicStep = 0;
+let tutorialNarration = null;
+let tutorialNarrationKey = "";
 
 initialize();
 
@@ -421,47 +452,7 @@ function renderBoard() {
   }
 
   state.groups.forEach((group) => {
-    if (group.members.length < 2) {
-      return;
-    }
-    const halo = document.createElementNS("http://www.w3.org/2000/svg", "ellipse");
-    halo.setAttribute("class", "group-halo");
-    halo.setAttribute("cx", String(group.halo.cx));
-    halo.setAttribute("cy", String(group.halo.cy));
-    halo.setAttribute("rx", String(group.halo.rx));
-    halo.setAttribute("ry", String(group.halo.ry));
-    els.halos.appendChild(halo);
-
-    const teamLabel = document.createElement("div");
-    teamLabel.className = "team-label";
-    teamLabel.style.left = `${(group.halo.cx / BOARD_WIDTH) * 100}%`;
-    teamLabel.style.top = `${(Math.max(24, group.halo.cy - group.halo.ry - 10) / BOARD_HEIGHT) * 100}%`;
-    teamLabel.textContent = group.teamName;
-    els.workersLayer.appendChild(teamLabel);
-
-    const knowledge = document.createElement("div");
-    knowledge.className = "group-knowledge";
-    const safeRightEdge = BOARD_WIDTH - effectiveReservedSidebarWidth();
-    const preferredRightX = group.halo.cx + group.halo.rx + 56;
-    const fallbackLeftX = group.halo.cx - group.halo.rx - 56;
-    const knowledgeX = isMobileLayout()
-      ? clamp(group.halo.cx, 90, BOARD_WIDTH - 90)
-      : preferredRightX > safeRightEdge
-        ? Math.max(86, fallbackLeftX)
-        : Math.min(safeRightEdge - 24, preferredRightX);
-    const preferredKnowledgeY = isMobileLayout()
-      ? group.halo.cy + group.halo.ry + 12
-      : Math.max(18, group.halo.cy - 16);
-    const knowledgeY = isMobileLayout() && preferredKnowledgeY > safeBoardMaxY() - 48
-      ? Math.max(safeBoardMinY(), group.halo.cy - group.halo.ry - 64)
-      : preferredKnowledgeY;
-    knowledge.style.left = `${(knowledgeX / BOARD_WIDTH) * 100}%`;
-    knowledge.style.top = `${(knowledgeY / BOARD_HEIGHT) * 100}%`;
-    knowledge.innerHTML = `
-      <span class="group-knowledge-label">${tutorialStep?.hideControls ? "Known compounds" : "Team knowledge"}</span>
-      <div class="potion-list">${sharedGroupKnowledge(group).map((potionId) => renderPotionToken(potionId, "sm")).join("")}</div>
-    `;
-    els.workersLayer.appendChild(knowledge);
+    renderGroupKnowledgeDisplay(group, tutorialStep);
   });
 
   state.workers.forEach((worker) => {
@@ -550,6 +541,50 @@ function renderBoard() {
 
     els.workersLayer.appendChild(node);
   });
+}
+
+function renderGroupKnowledgeDisplay(group, tutorialStep) {
+  const isTeam = group.members.length >= 2;
+  if (isTeam) {
+    const halo = document.createElementNS("http://www.w3.org/2000/svg", "ellipse");
+    halo.setAttribute("class", "group-halo");
+    halo.setAttribute("cx", String(group.halo.cx));
+    halo.setAttribute("cy", String(group.halo.cy));
+    halo.setAttribute("rx", String(group.halo.rx));
+    halo.setAttribute("ry", String(group.halo.ry));
+    els.halos.appendChild(halo);
+
+    const teamLabel = document.createElement("div");
+    teamLabel.className = "team-label";
+    teamLabel.style.left = `${(group.halo.cx / BOARD_WIDTH) * 100}%`;
+    teamLabel.style.top = `${(Math.max(24, group.halo.cy - group.halo.ry - 10) / BOARD_HEIGHT) * 100}%`;
+    teamLabel.textContent = group.teamName;
+    els.workersLayer.appendChild(teamLabel);
+  }
+
+  const knowledge = document.createElement("div");
+  knowledge.className = `group-knowledge ${isTeam ? "" : "solo-knowledge"}`.trim();
+  const safeRightEdge = BOARD_WIDTH - effectiveReservedSidebarWidth();
+  const preferredRightX = group.halo.cx + group.halo.rx + 56;
+  const fallbackLeftX = group.halo.cx - group.halo.rx - 56;
+  const knowledgeX = isMobileLayout()
+    ? clamp(group.halo.cx, 90, BOARD_WIDTH - 90)
+    : preferredRightX > safeRightEdge
+      ? Math.max(86, fallbackLeftX)
+      : Math.min(safeRightEdge - 24, preferredRightX);
+  const preferredKnowledgeY = isMobileLayout()
+    ? group.halo.cy + group.halo.ry + 12
+    : Math.max(18, group.halo.cy - 16);
+  const knowledgeY = isMobileLayout() && preferredKnowledgeY > safeBoardMaxY() - 48
+    ? Math.max(safeBoardMinY(), group.halo.cy - group.halo.ry - 64)
+    : preferredKnowledgeY;
+  knowledge.style.left = `${(knowledgeX / BOARD_WIDTH) * 100}%`;
+  knowledge.style.top = `${(knowledgeY / BOARD_HEIGHT) * 100}%`;
+  knowledge.innerHTML = `
+    <span class="group-knowledge-label">${isTeam ? (tutorialStep?.hideControls ? "Known compounds" : "Team knowledge") : "Known compounds"}</span>
+    <div class="potion-list">${sharedGroupKnowledge(group).map((potionId) => renderPotionToken(potionId, "sm")).join("")}</div>
+  `;
+  els.workersLayer.appendChild(knowledge);
 }
 
 function clampWorkersToPlayableArea() {
@@ -649,6 +684,7 @@ function renderOnboarding() {
   els.onboardingCard.className = "onboarding-card";
 
   if (state.onboardingStage === "done") {
+    stopTutorialNarration();
     resetOnboardingCardPosition();
     els.onboardingOverlay.classList.remove("visible");
     els.tutorialSpotlight.classList.remove("visible");
@@ -658,10 +694,11 @@ function renderOnboarding() {
   els.onboardingOverlay.classList.add("visible");
 
   if (state.onboardingStage === "mode") {
+    stopTutorialNarration();
     resetOnboardingCardPosition();
     els.onboardingStep.textContent = "Tutorial";
     els.onboardingTitle.textContent = "Would you like to complete the tutorial?";
-    els.onboardingBody.textContent = "The tutorial walks through the lab, company funds, payroll, participant earnings, hiring, firing, and team arrangement. You can skip it if you already know how the task works.";
+    els.onboardingBody.textContent = "Please turn on your browser or device audio before continuing. The tutorial includes spoken narration and walks through the lab, company funds, payroll, participant earnings, hiring, firing, and team arrangement. You can skip it if you already know how the task works.";
     els.onboardingStep.style.display = "block";
     els.tutorialProgress.classList.remove("visible");
     els.modePicker.style.display = "none";
@@ -677,6 +714,7 @@ function renderOnboarding() {
 
   const step = TUTORIAL_STEPS[state.tutorialStep];
   const displayContent = tutorialDisplayContent(step);
+  playTutorialNarrationForCurrentState(step);
   els.onboardingOverlay.classList.add("tutorial-stage");
   els.onboardingStep.textContent = displayContent.step;
   els.onboardingStep.style.display = "none";
@@ -935,12 +973,14 @@ function startRealGameAfterTutorial() {
 }
 
 function selectMode(mode) {
+  startBackgroundMusic();
   state.mode = mode;
   state.unlimitedRounds = Boolean(els.endlessRoundsCheckbox.checked);
   renderOnboarding();
 }
 
 function handleTutorialBack() {
+  stopTutorialNarration({ keepKey: true });
   if (state.onboardingStage === "mode") {
     return;
   }
@@ -954,6 +994,8 @@ function handleTutorialBack() {
 }
 
 async function handleTutorialNext() {
+  startBackgroundMusic();
+  stopTutorialNarration({ keepKey: true });
   if (state.onboardingStage === "mode") {
     state.mode = "mode1";
     state.unlimitedRounds = false;
@@ -1213,6 +1255,8 @@ function startDragging(event, workerId) {
   const worker = getWorkerById(workerId);
   dragState = {
     workerId,
+    startX: worker.x,
+    startY: worker.y,
     offsetX: worker.x - scaleToBoardX(event.clientX - rect.left, rect.width),
     offsetY: worker.y - scaleToBoardY(event.clientY - rect.top, rect.height)
   };
@@ -1237,7 +1281,12 @@ function stopDragging() {
   if (!dragState) {
     return;
   }
+  const worker = getWorkerById(dragState.workerId);
+  const moved = distance(worker, { x: dragState.startX, y: dragState.startY }) > 8;
   dragState = null;
+  if (moved) {
+    playPlopSound();
+  }
   updateTutorialGroupingMessage();
   render();
 }
@@ -1270,7 +1319,9 @@ function updateTutorialGroupingMessage() {
 }
 
 async function runRoundSequence() {
+  startBackgroundMusic();
   if (isTutorialActive()) {
+    playRoundSound();
     await runTutorialRound();
     return;
   }
@@ -1286,6 +1337,7 @@ async function runRoundSequence() {
     return;
   }
 
+  playRoundSound();
   applyPayroll();
   if (applyImmediateCompletionIfNeeded()) {
     render();
@@ -1758,6 +1810,7 @@ function clearTransient() {
 }
 
 function triggerMoneyBurst(worker) {
+  playChachingSound();
   const now = Date.now();
   worker.moneyBurstStartedAt = now;
   worker.moneyBurstUntil = now + 2000;
@@ -1775,6 +1828,237 @@ function renderMoneyBurstSymbols(worker) {
   return symbols
     .map((symbol) => `<span class="money-symbol ${symbol.className}" style="animation-delay:${(symbol.delay - elapsedSeconds).toFixed(3)}s">$</span>`)
     .join("");
+}
+
+function getAudioContext() {
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) {
+    return null;
+  }
+  if (!audioContext) {
+    audioContext = new AudioContextClass();
+  }
+  if (audioContext.state === "suspended") {
+    audioContext.resume();
+  }
+  return audioContext;
+}
+
+function tutorialNarrationFileForCurrentState(step = currentTutorialStep()) {
+  if (!step) {
+    return null;
+  }
+  if (step.kind === "roundDiscovery" && state.tutorialFlags.roundComplete) {
+    return TUTORIAL_DYNAMIC_AUDIO_FILES.discoveryFound;
+  }
+  if (step.kind === "roundNoDiscovery") {
+    if (state.tutorialFlags.roundPhase === "tested") {
+      return TUTORIAL_DYNAMIC_AUDIO_FILES.testCombination;
+    }
+    if (state.tutorialFlags.roundPhase === "result") {
+      return TUTORIAL_DYNAMIC_AUDIO_FILES.noProduct;
+    }
+  }
+  if (step.kind === "roundTrioDiscovery") {
+    if (state.tutorialFlags.roundPhase === "tested") {
+      return TUTORIAL_DYNAMIC_AUDIO_FILES.independentTests;
+    }
+    if (state.tutorialFlags.roundPhase === "result") {
+      return TUTORIAL_DYNAMIC_AUDIO_FILES.teamLearns;
+    }
+  }
+  return TUTORIAL_AUDIO_FILES[state.tutorialStep] || null;
+}
+
+function playTutorialNarrationForCurrentState(step = currentTutorialStep()) {
+  if (state.onboardingStage !== "tutorial") {
+    stopTutorialNarration();
+    return;
+  }
+
+  const fileName = tutorialNarrationFileForCurrentState(step);
+  if (!fileName) {
+    stopTutorialNarration();
+    return;
+  }
+
+  const key = `${state.tutorialStep}:${state.tutorialFlags.roundPhase || ""}:${state.tutorialFlags.roundComplete ? "complete" : ""}:${fileName}`;
+  if (key === tutorialNarrationKey) {
+    return;
+  }
+
+  stopTutorialNarration({ keepKey: true });
+  tutorialNarrationKey = key;
+  tutorialNarration = new Audio(`./assets/audio/tutorial/${fileName}`);
+  tutorialNarration.volume = 0.92;
+  tutorialNarration.play().catch(() => {});
+}
+
+function stopTutorialNarration(options = {}) {
+  if (tutorialNarration) {
+    tutorialNarration.pause();
+    tutorialNarration.currentTime = 0;
+  }
+  tutorialNarration = null;
+  if (!options.keepKey) {
+    tutorialNarrationKey = "";
+  }
+}
+
+function playTone({ frequency, start = 0, duration = 0.12, type = "sine", gain = 0.08, endGain = 0.001 }) {
+  const context = getAudioContext();
+  if (!context) {
+    return;
+  }
+
+  const oscillator = context.createOscillator();
+  const gainNode = context.createGain();
+  const startTime = context.currentTime + start;
+  const endTime = startTime + duration;
+  oscillator.type = type;
+  oscillator.frequency.setValueAtTime(frequency, startTime);
+  gainNode.gain.setValueAtTime(0.001, startTime);
+  gainNode.gain.exponentialRampToValueAtTime(gain, startTime + 0.012);
+  gainNode.gain.exponentialRampToValueAtTime(endGain, endTime);
+  oscillator.connect(gainNode);
+  gainNode.connect(context.destination);
+  oscillator.start(startTime);
+  oscillator.stop(endTime + 0.02);
+}
+
+function playNoise({ start = 0, duration = 0.08, gain = 0.04, filterFrequency = 900 }) {
+  const context = getAudioContext();
+  if (!context) {
+    return;
+  }
+
+  const sampleCount = Math.max(1, Math.floor(context.sampleRate * duration));
+  const buffer = context.createBuffer(1, sampleCount, context.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let index = 0; index < sampleCount; index += 1) {
+    data[index] = (Math.random() * 2 - 1) * (1 - index / sampleCount);
+  }
+
+  const source = context.createBufferSource();
+  const filter = context.createBiquadFilter();
+  const gainNode = context.createGain();
+  const startTime = context.currentTime + start;
+  source.buffer = buffer;
+  filter.type = "lowpass";
+  filter.frequency.setValueAtTime(filterFrequency, startTime);
+  gainNode.gain.setValueAtTime(gain, startTime);
+  gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+  source.connect(filter);
+  filter.connect(gainNode);
+  gainNode.connect(context.destination);
+  source.start(startTime);
+}
+
+function playChachingSound() {
+  playTone({ frequency: 1318.51, duration: 0.09, type: "triangle", gain: 0.06 });
+  playTone({ frequency: 1760, start: 0.08, duration: 0.14, type: "triangle", gain: 0.075 });
+  playTone({ frequency: 2637.02, start: 0.16, duration: 0.18, type: "sine", gain: 0.045 });
+  playNoise({ start: 0.03, duration: 0.16, gain: 0.025, filterFrequency: 4200 });
+}
+
+function playRoundSound() {
+  playTone({ frequency: 392, duration: 0.11, type: "sine", gain: 0.035 });
+  playTone({ frequency: 523.25, start: 0.055, duration: 0.12, type: "sine", gain: 0.035 });
+}
+
+function playPlopSound() {
+  playNoise({ start: 0, duration: 0.028, gain: 0.07, filterFrequency: 2400 });
+  playTone({ frequency: 520, start: 0.006, duration: 0.035, type: "square", gain: 0.045 });
+  playTone({ frequency: 190, start: 0.028, duration: 0.075, type: "triangle", gain: 0.09 });
+  playTone({ frequency: 125, start: 0.055, duration: 0.07, type: "sine", gain: 0.055 });
+}
+
+function startBackgroundMusic() {
+  if (musicStarted) {
+    getAudioContext();
+    return;
+  }
+
+  const context = getAudioContext();
+  if (!context) {
+    return;
+  }
+  musicStarted = true;
+  musicStep = 0;
+  scheduleMusicStep();
+}
+
+function scheduleMusicStep() {
+  playMusicStep(musicStep);
+  musicStep = (musicStep + 1) % 192;
+  musicTimer = window.setTimeout(scheduleMusicStep, 135);
+}
+
+function playMusicStep(step) {
+  const beat = 0.135;
+  const hz = {
+    C4: 261.63, D4: 293.66, E4: 329.63, G4: 392, A4: 440, B4: 493.88,
+    C5: 523.25, D5: 587.33, E5: 659.25, G5: 783.99, A5: 880, B5: 987.77, C6: 1046.5
+  };
+  const chords = [
+    [261.63, 329.63, 392],
+    [220, 261.63, 329.63],
+    [246.94, 293.66, 392],
+    [196, 246.94, 293.66],
+    [261.63, 329.63, 392],
+    [220, 261.63, 329.63],
+    [293.66, 392, 493.88],
+    [246.94, 329.63, 392],
+    [220, 261.63, 329.63],
+    [196, 246.94, 293.66],
+    [246.94, 293.66, 392],
+    [261.63, 329.63, 392]
+  ];
+  const melodyEvents = [
+    [0, "E5", 4], [6, "G5", 2], [10, "E5", 2], [14, "D5", 4],
+    [22, "C5", 3], [27, "D5", 1], [29, "E5", 5],
+    [38, "G5", 3], [43, "A5", 2], [47, "G5", 5],
+    [56, "E5", 2], [60, "D5", 2], [64, "E5", 4], [70, "G5", 2],
+    [74, "A5", 2], [78, "G5", 4], [86, "E5", 2], [90, "C5", 5],
+    [100, "D5", 3], [105, "E5", 2], [109, "G5", 4], [117, "E5", 5],
+    [128, "G5", 4], [134, "A5", 2], [138, "B5", 3], [144, "C6", 6],
+    [154, "B5", 2], [158, "A5", 3], [164, "G5", 4],
+    [172, "E5", 3], [177, "D5", 2], [181, "C5", 6]
+  ];
+  const bassEvents = [
+    [0, 130.81, 6], [8, 98, 5], [16, 123.47, 6], [24, 98, 5],
+    [32, 130.81, 6], [40, 98, 5], [48, 146.83, 6], [56, 123.47, 5],
+    [64, 130.81, 6], [72, 98, 5], [80, 123.47, 6], [88, 98, 5],
+    [96, 130.81, 6], [104, 98, 5], [112, 146.83, 6], [120, 123.47, 5],
+    [128, 110, 6], [136, 98, 5], [144, 123.47, 6], [152, 130.81, 5],
+    [160, 146.83, 6], [168, 123.47, 5], [176, 98, 6], [184, 130.81, 5]
+  ];
+  const melodyEvent = melodyEvents.find(([start]) => start === step);
+  const bassEvent = bassEvents.find(([start]) => start === step);
+  const chord = chords[Math.floor(step / 16) % chords.length];
+  const arpPattern = [0, null, 1, null, 2, null, 1, null, 0, null, 2, null, 1, null, 2, null];
+  const arpIndex = arpPattern[step % 16];
+  if (arpIndex !== null) {
+    const phraseBoost = step >= 128 ? 1.15 : 1;
+    playTone({ frequency: chord[arpIndex] * 2, duration: 0.07, type: "triangle", gain: 0.0048 * phraseBoost, endGain: 0.0007 });
+  }
+  if (melodyEvent) {
+    const [, noteName, lengthSteps] = melodyEvent;
+    const frequency = hz[noteName];
+    playTone({ frequency, duration: beat * lengthSteps * 0.86, type: "square", gain: 0.017, endGain: 0.0008 });
+    playTone({ frequency: frequency * 2, start: 0.018, duration: Math.min(beat * lengthSteps * 0.38, 0.16), type: "triangle", gain: 0.0035, endGain: 0.0008 });
+  }
+  if (bassEvent) {
+    const [, frequency, lengthSteps] = bassEvent;
+    playTone({ frequency, duration: beat * lengthSteps * 0.8, type: "triangle", gain: 0.018, endGain: 0.0008 });
+  }
+  if (step % 16 === 0) {
+    playNoise({ duration: 0.028, gain: 0.014, filterFrequency: 480 });
+  } else if ([6, 14].includes(step % 16)) {
+    playNoise({ duration: 0.018, gain: 0.009, filterFrequency: 3400 });
+  } else if ([3, 11].includes(step % 16)) {
+    playNoise({ duration: 0.014, gain: 0.006, filterFrequency: 5200 });
+  }
 }
 
 function scheduleMoneyBurstCleanup() {
@@ -1980,6 +2264,7 @@ function hireWorker() {
   const worker = createWorker(state.workers, state.nextWorkerIndex);
   state.workers.push(worker);
   state.nextWorkerIndex += 1;
+  playPlopSound();
   if (isTutorialActive()) {
     state.tutorialFlags.hired = true;
     if (currentTutorialStep()?.kind === "trioGroup") {
