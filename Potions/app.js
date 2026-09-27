@@ -15,8 +15,15 @@ const STARTING_EMPLOYEE_COUNT = 2;
 const MAX_EMPLOYEES = 16;
 const PLAYER_VALUE_MULTIPLIER = 10000;
 const INITIAL_COMPANY_CASH = 5000000;
-const PARTICIPANT_ROUND_EARNING = 0.05;
-const PARTICIPANT_CURE_BONUS_MAX = 5;
+const PARTICIPANT_STAGE_EARNINGS = {
+  A1: 0.50,
+  A2: 1.10,
+  A3: 1.90,
+  B1: 0.50,
+  B2: 1.10,
+  B3: 1.90,
+  CURE: 3.60
+};
 
 const WORKER_PROFILES = [
   { id: "W1", name: "Maya", avatarIndex: 1 },
@@ -205,7 +212,7 @@ const TUTORIAL_STEPS = [
   {
     step: "Your earnings",
     title: "Your earnings are separate.",
-    body: "Your earnings are what you receive as the participant. You earn <strong>$0.05 for every completed round</strong>. If the company discovers the final crossover product, you can earn an additional bonus of <strong>up to $5.00</strong>, based on how much company money remains.",
+    body: "Your earnings are what you receive as the participant. You earn bonuses only when the company discovers a new product for the first time: <strong>$0.50</strong> for Tier 1 products, <strong>$1.10</strong> for Tier 2 products, <strong>$1.90</strong> for Tier 3 products, and <strong>$3.60</strong> for the final crossover product. Rediscoveries do not add to your earnings.",
     target: ".hud-earnings",
     kind: "read",
     completeLabel: "Hit Next"
@@ -263,7 +270,7 @@ const TUTORIAL_STEPS = [
   {
     step: "Begin",
     title: "Your job is to lead the R&D lab.",
-    body: "You will start fresh with a company budget and a small team of chemists. Arrange teams or leave chemists working alone, hire or fire chemists when you think it helps, and decide when to continue rounds. You earn <strong>$0.05 for every completed round</strong>. If the company discovers the final crossover product, you can earn an additional bonus of <strong>up to $5.00</strong>, based on remaining company funds.",
+    body: "You will start fresh with a company budget and a small team of chemists. Arrange teams or leave chemists working alone, hire or fire chemists when you think it helps, and decide when to continue rounds. Your earnings come from first-time product discoveries: <strong>$0.50</strong> for Tier 1, <strong>$1.10</strong> for Tier 2, <strong>$1.90</strong> for Tier 3, and <strong>$3.60</strong> for the final crossover product.",
     target: "#board",
     kind: "read",
     hideControls: true,
@@ -336,6 +343,7 @@ const els = {
 
 let state = createInitialState();
 let dragState = null;
+let dragRenderFrame = null;
 let cashAnimationTimer = null;
 let moneyBurstCleanupTimer = null;
 let audioContext = null;
@@ -382,9 +390,6 @@ function createInitialState() {
     totalRevenue: 0,
     totalPayroll: 0,
     participantEarnings: 0,
-    participantRoundEarnings: 0,
-    participantCureBonus: 0,
-    cureBonusApplied: false,
     nextWorkerIndex: STARTING_EMPLOYEE_COUNT,
     discoveredStageRewards: new Set(),
     story: "No round has run yet. Arrange your chemists into groups, adjust staffing if needed, then press <strong>Next round</strong>."
@@ -447,6 +452,7 @@ function renderHeader() {
 function renderBoard() {
   const tutorialStep = currentTutorialStep();
   clampWorkersToPlayableArea();
+  els.board.classList.toggle("dragging-board", Boolean(dragState));
   els.board.classList.toggle("tutorial-basics", Boolean(tutorialStep?.hideControls));
   els.board.classList.toggle("tutorial-basics-round", Boolean(tutorialStep?.hideControls && tutorialStep?.showRoundControl));
   els.board.classList.toggle("tutorial-intro", Boolean(tutorialStep?.hideWorkers));
@@ -573,26 +579,34 @@ function renderGroupKnowledgeDisplay(group, tutorialStep) {
   const knowledge = document.createElement("div");
   knowledge.className = `group-knowledge ${isTeam ? "" : "solo-knowledge"}`.trim();
   const safeRightEdge = BOARD_WIDTH - effectiveReservedSidebarWidth();
-  const preferredRightX = group.halo.cx + group.halo.rx + 56;
-  const fallbackLeftX = group.halo.cx - group.halo.rx - 56;
+  const horizontalGap = isTeam ? 56 : 30;
+  const preferredRightX = group.halo.cx + group.halo.rx + horizontalGap;
+  const fallbackLeftX = group.halo.cx - group.halo.rx - horizontalGap;
   const knowledgeX = isMobileLayout()
     ? clamp(group.halo.cx, 90, BOARD_WIDTH - 90)
     : preferredRightX > safeRightEdge
       ? Math.max(86, fallbackLeftX)
       : Math.min(safeRightEdge - 24, preferredRightX);
+  const verticalGap = isTeam ? 12 : 18;
+  const verticalLift = isTeam ? 64 : 42;
   const preferredKnowledgeY = isMobileLayout()
-    ? group.halo.cy + group.halo.ry + 12
+    ? group.halo.cy + group.halo.ry + verticalGap
     : Math.max(18, group.halo.cy - 16);
   const knowledgeY = isMobileLayout() && preferredKnowledgeY > safeBoardMaxY() - 48
-    ? Math.max(safeBoardMinY(), group.halo.cy - group.halo.ry - 64)
+    ? Math.max(safeBoardMinY(), group.halo.cy - group.halo.ry - verticalLift)
     : preferredKnowledgeY;
   knowledge.style.left = `${(knowledgeX / BOARD_WIDTH) * 100}%`;
   knowledge.style.top = `${(knowledgeY / BOARD_HEIGHT) * 100}%`;
   knowledge.innerHTML = `
     <span class="group-knowledge-label">${isTeam ? (tutorialStep?.hideControls ? "Known compounds" : "Team knowledge") : "Known compounds"}</span>
-    <div class="potion-list">${sharedGroupKnowledge(group).map((potionId) => renderPotionToken(potionId, "sm")).join("")}</div>
+    ${renderKnowledgePotionList(sharedGroupKnowledge(group), "sm")}
   `;
   els.workersLayer.appendChild(knowledge);
+}
+
+function renderKnowledgePotionList(potionIds, size = "sm") {
+  const columns = potionIds.length <= 6 ? potionIds.length : Math.ceil(potionIds.length / 2);
+  return `<div class="potion-list knowledge-potion-list" style="--potion-columns:${Math.max(1, columns)};">${potionIds.map((potionId) => renderPotionToken(potionId, size)).join("")}</div>`;
 }
 
 function clampWorkersToPlayableArea() {
@@ -623,7 +637,10 @@ function renderPopup() {
   els.eventPopup.hidden = false;
   els.eventPopup.dataset.kind = state.popup.kind || "info";
   els.eventPopupTitle.textContent = state.popup.title;
-  els.eventPopupBody.textContent = state.popup.body;
+  els.eventPopupBody.innerHTML = state.popup.image
+    ? `<img class="event-popup-art" src="${state.popup.image}" alt="" aria-hidden="true"><span>${state.popup.body}</span>`
+    : `<span>${state.popup.body}</span>`;
+  els.eventPopupClose.textContent = state.popup.restart ? "Restart" : "Got it";
 }
 
 function showPopup(title, body, kind = "info") {
@@ -632,7 +649,18 @@ function showPopup(title, body, kind = "info") {
 }
 
 function dismissPopup() {
+  if (state.popup?.restart) {
+    restartGameFromBeginning();
+    return;
+  }
   state.popup = null;
+  render();
+}
+
+function restartGameFromBeginning() {
+  stopTutorialNarration();
+  state = createInitialState();
+  els.skipTutorialCheckbox.checked = false;
   render();
 }
 
@@ -706,7 +734,7 @@ function renderOnboarding() {
     resetOnboardingCardPosition();
     els.onboardingStep.textContent = "Tutorial";
     els.onboardingTitle.textContent = "Would you like to complete the tutorial?";
-    els.onboardingBody.textContent = "The tutorial walks through the lab, company funds, payroll, participant earnings, hiring, firing, and team arrangement. If you keep narration on, please turn on your browser or device audio before continuing.";
+    els.onboardingBody.textContent = "The tutorial walks through the lab, company funds, payroll, discovery-based participant earnings, hiring, firing, and team arrangement. If you keep narration on, please turn on your browser or device audio before continuing.";
     els.onboardingStep.style.display = "block";
     els.tutorialProgress.classList.remove("visible");
     els.modePicker.style.display = "none";
@@ -1050,10 +1078,17 @@ function applyTutorialFocus(step) {
     return;
   }
 
+  const bubbleTargets = tutorialBubbleFocusTargets(step);
+  els.onboardingCard.classList.add("tutorial-focus");
+  if (bubbleTargets.length) {
+    els.tutorialSpotlight.classList.remove("visible");
+    bubbleTargets.forEach((bubbleTarget) => bubbleTarget.classList.add("tutorial-focus"));
+    return;
+  }
+
   const target = document.querySelector(step.target);
   const extraTargets = (step.extraHighlights || [])
     .flatMap((selector) => [...document.querySelectorAll(selector)]);
-  els.onboardingCard.classList.add("tutorial-focus");
   if (!target) {
     els.tutorialSpotlight.classList.remove("visible");
     return;
@@ -1069,6 +1104,23 @@ function applyTutorialFocus(step) {
   els.tutorialSpotlight.style.top = `${rect.top - 8}px`;
   els.tutorialSpotlight.style.width = `${rect.width + 16}px`;
   els.tutorialSpotlight.style.height = `${rect.height + 16}px`;
+}
+
+function tutorialBubbleFocusTargets(step) {
+  if (!step) {
+    return [];
+  }
+
+  const selectors = [];
+  if (["roundNoDiscovery", "roundTrioDiscovery"].includes(step.kind) && state.tutorialFlags.roundPhase) {
+    selectors.push(".worker-node .bubble");
+  } else if (step.kind === "roundDiscovery" && state.tutorialFlags.roundComplete) {
+    selectors.push(".worker-node .spark.persistent");
+  }
+
+  return selectors
+    .flatMap((selector) => [...document.querySelectorAll(selector)])
+    .filter((element) => element.offsetParent !== null || element.getClientRects().length);
 }
 
 function clearTutorialFocus() {
@@ -1272,15 +1324,18 @@ function startDragging(event, workerId) {
     workerId,
     startX: worker.x,
     startY: worker.y,
+    lastRenderAt: 0,
     offsetX: worker.x - scaleToBoardX(event.clientX - rect.left, rect.width),
     offsetY: worker.y - scaleToBoardY(event.clientY - rect.top, rect.height)
   };
+  event.currentTarget.setPointerCapture?.(event.pointerId);
 }
 
 function handlePointerMove(event) {
   if (!dragState) {
     return;
   }
+  event.preventDefault();
 
   const rect = els.board.getBoundingClientRect();
   const worker = getWorkerById(dragState.workerId);
@@ -1289,12 +1344,17 @@ function handlePointerMove(event) {
 
   worker.x = clamp(nextX, WORKER_RADIUS + 12, safeBoardMaxX());
   worker.y = clamp(nextY, safeBoardMinY(), safeBoardMaxY());
-  render();
+  moveRenderedWorkerNode(worker);
+  scheduleDragRender();
 }
 
 function stopDragging() {
   if (!dragState) {
     return;
+  }
+  if (dragRenderFrame) {
+    cancelAnimationFrame(dragRenderFrame);
+    dragRenderFrame = null;
   }
   const worker = getWorkerById(dragState.workerId);
   const moved = distance(worker, { x: dragState.startX, y: dragState.startY }) > 8;
@@ -1304,6 +1364,35 @@ function stopDragging() {
   }
   updateTutorialGroupingMessage();
   render();
+}
+
+function scheduleDragRender() {
+  const now = performance.now();
+  if (dragState && now - dragState.lastRenderAt < 120) {
+    return;
+  }
+  if (dragState) {
+    dragState.lastRenderAt = now;
+  }
+  if (dragRenderFrame) {
+    return;
+  }
+
+  dragRenderFrame = requestAnimationFrame(() => {
+    dragRenderFrame = null;
+    render();
+  });
+}
+
+function moveRenderedWorkerNode(worker) {
+  const node = [...els.workersLayer.querySelectorAll(".worker-node")]
+    .find((entry) => entry.dataset.workerId === worker.id);
+  if (!node) {
+    return;
+  }
+
+  node.style.left = `${(worker.x / BOARD_WIDTH) * 100}%`;
+  node.style.top = `${(worker.y / BOARD_HEIGHT) * 100}%`;
 }
 
 function updateTutorialGroupingMessage() {
@@ -1444,10 +1533,7 @@ async function continueGuidedNoDiscoveryRound() {
     state.roundHistory.push(roundRecord);
     state.round += 1;
     if (interaction.discovery) {
-      interaction.discoverers.forEach((workerId) => {
-        const worker = getWorkerById(workerId);
-        triggerMoneyBurst(worker);
-      });
+      triggerFirstTimeDiscoveryMoneyBurst(interaction);
       applyStageRewards();
       scheduleMoneyBurstCleanup();
     }
@@ -1498,6 +1584,7 @@ function applyInteractionDiscovery(interaction) {
     return;
   }
 
+  interaction.firstCompanyDiscovery = !state.discoveredStageRewards.has(stageIdForPotion(interaction.discovery));
   const worker = getWorkerById(interaction.worker);
   const group = state.groups.find((entry) => entry.members.some((member) => member.id === worker.id));
   const discoverers = [];
@@ -1526,6 +1613,21 @@ function applyInteractionDiscovery(interaction) {
   interaction.applied = true;
 }
 
+function stageIdForPotion(potionId) {
+  return TERMINAL_POTIONS.includes(potionId) ? "CURE" : potionId;
+}
+
+function triggerFirstTimeDiscoveryMoneyBurst(interaction) {
+  if (!interaction.firstCompanyDiscovery) {
+    return;
+  }
+
+  interaction.discoverers.forEach((workerId) => {
+    const worker = getWorkerById(workerId);
+    triggerMoneyBurst(worker);
+  });
+}
+
 async function animateTutorialInteraction(interaction, shouldDiscover) {
   const worker = getWorkerById(interaction.worker);
 
@@ -1537,10 +1639,7 @@ async function animateTutorialInteraction(interaction, shouldDiscover) {
   clearTransient();
   if (shouldDiscover) {
     applyInteractionDiscovery(interaction);
-    interaction.discoverers.forEach((workerId) => {
-      const discoverer = getWorkerById(workerId);
-      triggerMoneyBurst(discoverer);
-    });
+    triggerFirstTimeDiscoveryMoneyBurst(interaction);
     scheduleMoneyBurstCleanup();
     worker.transient.push({ kind: "spark", html: `new product ${renderPotionGroup([interaction.discovery], "xs")}` });
   } else {
@@ -1661,8 +1760,8 @@ async function playSingleRound(showAnimation) {
         interaction.discoverers.forEach((workerId) => {
           const worker = getWorkerById(workerId);
           worker.transient.push({ kind: "spark", html: `&#10024; ${renderPotionToken(interaction.discovery, "xs")}` });
-          triggerMoneyBurst(worker);
         });
+        triggerFirstTimeDiscoveryMoneyBurst(interaction);
       });
     }
 
@@ -1689,14 +1788,10 @@ async function playSingleRound(showAnimation) {
 
 function finalizeRoundState() {
   applyStageRewards();
-  applyParticipantRoundEarning();
-  applyParticipantCureBonusIfNeeded();
   const completion = currentCompletionState();
   if (completion.finished) {
-    state.gameOver = true;
-    state.autoRunning = false;
-    state.status = "Game complete";
     state.story = completion.message;
+    applyImmediateCompletionIfNeeded();
     return;
   }
 
@@ -2147,17 +2242,30 @@ function applyImmediateCompletionIfNeeded() {
   state.autoRunning = false;
   state.stopRequested = false;
   state.status = state.companyCash <= 0 && !hasCure(discoveredPotions()) ? "Bankrupt" : "Game complete";
-  if (state.companyCash <= 0 && !hasCure(discoveredPotions())) {
+  const succeeded = hasCure(discoveredPotions());
+  if (state.companyCash <= 0 && !succeeded) {
     state.popup = {
       title: "Bankrupt",
       body: "The company ran out of cash before reaching the crossover breakthrough.",
-      kind: "danger"
+      kind: "danger",
+      image: "./assets/factory-bankrupt.png",
+      restart: true
     };
-  } else if (hasCure(discoveredPotions())) {
+  } else if (succeeded) {
     state.popup = {
       title: "Breakthrough found",
-      body: `Your company reached the final crossover compound, finished with ${formatMoney(state.companyCash)} in company funds, and earned you ${formatParticipantMoney(state.participantEarnings)}.`,
-      kind: "success"
+      body: `Your company reached the final crossover compound, finished with ${formatMoney(state.companyCash)} in company funds, and earned you ${formatParticipantMoney(state.participantEarnings)} in discovery bonuses.`,
+      kind: "success",
+      image: "./assets/factory-success.png",
+      restart: true
+    };
+  } else {
+    state.popup = {
+      title: "Game complete",
+      body: completion.message || `The company finished with ${formatMoney(state.companyCash)} in company funds and earned you ${formatParticipantMoney(state.participantEarnings)}.`,
+      kind: "danger",
+      image: "./assets/factory-bankrupt.png",
+      restart: true
     };
   }
   return true;
@@ -2324,12 +2432,6 @@ function removeWorker(workerId) {
 }
 
 function positionNewTutorialWorker(worker) {
-  if (!isMobileLayout()) {
-    worker.x = 706;
-    worker.y = 330;
-    return;
-  }
-
   const cardRect = els.onboardingCard?.getBoundingClientRect();
   const boardRect = els.board?.getBoundingClientRect();
   const cardBoardRect = cardRect && boardRect
@@ -2358,7 +2460,11 @@ function positionNewTutorialWorker(worker) {
       ? Math.min(...otherWorkers.map((entry) => distance(candidate, entry)))
       : effectiveProximityThreshold();
     const cardPenalty = cardBoardRect && pointInsidePaddedRect(candidate, cardBoardRect, 80) ? 900 : 0;
-    return nearestWorkerDistance - cardPenalty;
+    const groupPenalty = nearestWorkerDistance < effectiveProximityThreshold()
+      ? (effectiveProximityThreshold() - nearestWorkerDistance) * 5
+      : 0;
+    const overlapPenalty = nearestWorkerDistance < WORKER_RADIUS * 2.4 ? 1200 : 0;
+    return nearestWorkerDistance - cardPenalty - groupPenalty - overlapPenalty;
   };
   const best = candidates.reduce((winner, candidate) => (
     scoreCandidate(candidate) > scoreCandidate(winner) ? candidate : winner
@@ -2376,7 +2482,7 @@ function pointInsidePaddedRect(point, rect, padding) {
 
 function createWorker(activeWorkers = [], positionIndex = 0) {
   const profile = chooseAvailableWorkerProfile(activeWorkers);
-  const position = initialPositionForIndex(positionIndex);
+  const position = chooseNewWorkerPosition(activeWorkers, positionIndex);
   return {
     id: profile.id,
     name: profile.name,
@@ -2392,6 +2498,59 @@ function createWorker(activeWorkers = [], positionIndex = 0) {
     lastRound: emptyLastRound(),
     transient: []
   };
+}
+
+function chooseNewWorkerPosition(activeWorkers = [], positionIndex = 0) {
+  const fallback = initialPositionForIndex(positionIndex);
+  if (!activeWorkers.length) {
+    return fallback;
+  }
+
+  const minX = WORKER_RADIUS + 56;
+  const maxX = Math.max(minX, safeBoardMaxX() - 36);
+  const minY = safeBoardMinY() + 34;
+  const maxY = Math.max(minY, safeBoardMaxY() - 34);
+  const proximity = effectiveProximityThreshold();
+  const center = { x: (minX + maxX) / 2, y: (minY + maxY) / 2 };
+  const usableWidth = Math.max(1, maxX - minX);
+  const usableHeight = Math.max(1, maxY - minY);
+  const candidates = [];
+
+  for (let column = 0; column <= 5; column += 1) {
+    for (let row = 0; row <= 4; row += 1) {
+      candidates.push({
+        x: minX + (usableWidth * column) / 5,
+        y: minY + (usableHeight * row) / 4
+      });
+    }
+  }
+
+  [
+    fallback,
+    { x: center.x, y: center.y },
+    { x: center.x - usableWidth * 0.2, y: center.y },
+    { x: center.x + usableWidth * 0.2, y: center.y },
+    { x: center.x, y: center.y - usableHeight * 0.18 },
+    { x: center.x, y: center.y + usableHeight * 0.18 }
+  ].forEach((candidate) => candidates.push({
+    x: clamp(candidate.x, minX, maxX),
+    y: clamp(candidate.y, minY, maxY)
+  }));
+
+  const scoreCandidate = (candidate) => {
+    const nearest = Math.min(...activeWorkers.map((worker) => distance(candidate, worker)));
+    const edgeDistance = Math.min(candidate.x - minX, maxX - candidate.x, candidate.y - minY, maxY - candidate.y);
+    const centerDistance = distance(candidate, center);
+    const groupPenalty = nearest < proximity ? (proximity - nearest) * 5 : 0;
+    const overlapPenalty = nearest < WORKER_RADIUS * 2.4 ? 1200 : 0;
+    const edgePenalty = Math.max(0, 42 - edgeDistance) * 3;
+    const cornerPenalty = centerDistance / Math.max(usableWidth, usableHeight);
+    return nearest - groupPenalty - overlapPenalty - edgePenalty - cornerPenalty + Math.random() * 0.001;
+  };
+
+  return candidates.reduce((winner, candidate) => (
+    scoreCandidate(candidate) > scoreCandidate(winner) ? candidate : winner
+  ), candidates[0]);
 }
 
 function chooseAvailableWorkerProfile(activeWorkers = []) {
@@ -2429,7 +2588,7 @@ function isMobileLayout() {
 }
 
 function effectiveProximityThreshold() {
-  return isMobileLayout() ? 235 : PROXIMITY_THRESHOLD;
+  return isMobileLayout() ? 170 : PROXIMITY_THRESHOLD;
 }
 
 function effectiveReservedSidebarWidth() {
@@ -2499,23 +2658,6 @@ function payrollForCount(count) {
   return Math.round(PAYROLL_PER_EMPLOYEE * count);
 }
 
-function applyParticipantRoundEarning() {
-  state.participantRoundEarnings += PARTICIPANT_ROUND_EARNING;
-  state.participantEarnings += PARTICIPANT_ROUND_EARNING;
-}
-
-function applyParticipantCureBonusIfNeeded() {
-  if (state.cureBonusApplied || !hasCure(discoveredPotions())) {
-    return;
-  }
-
-  const cashRatio = clamp(state.companyCash / INITIAL_COMPANY_CASH, 0, 1);
-  const bonus = Math.round((PARTICIPANT_CURE_BONUS_MAX * cashRatio) * 100) / 100;
-  state.participantCureBonus = bonus;
-  state.participantEarnings += bonus;
-  state.cureBonusApplied = true;
-}
-
 function applyStageRewards() {
   const discovered = discoveredPotions();
   const progress = trackerProgress(discovered);
@@ -2528,6 +2670,7 @@ function applyStageRewards() {
   newStageIds.forEach((stageId) => state.discoveredStageRewards.add(stageId));
   state.totalRevenue += revenue;
   state.companyCash += revenue;
+  state.participantEarnings += newStageIds.reduce((sum, stageId) => sum + (PARTICIPANT_STAGE_EARNINGS[stageId] || 0), 0);
   triggerCashAnimation("up");
 }
 

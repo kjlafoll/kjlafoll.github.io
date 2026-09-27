@@ -30,7 +30,7 @@ Company funds show how much money the company has available. You can keep playin
 Payroll is the company's cost for keeping chemists active. Each time a round is completed, payroll is deducted from company funds. Hiring more chemists increases payroll; firing chemists lowers payroll.
 
 10. `tutorial_10_earnings.mp3`
-Your earnings are what you receive as the participant. You earn $0.05 for every completed round. If the company discovers the final crossover product, you can earn an additional bonus of up to $5.00, based on how much company money remains.
+Your earnings are what you receive as the participant. You earn bonuses only when the company discovers a new product for the first time: Your earnings are what you receive as the participant. You earn $0.05 for every completed round. If the company discovers the final crossover product, you can earn an additional bonus of up to $5.00, based on how much company money remains..50 for Tier 1 products, $1.10 for Tier 2 products, $1.90 for Tier 3 products, and $3.60 for the final crossover product. Rediscoveries do not add to your earnings.
 
 11. `tutorial_11_staffing.mp3`
 Click the + button to hire one chemist. Then click the - button on any chemist to fire one. This teaches how payroll can grow or shrink.
@@ -48,7 +48,7 @@ Now hire two more chemists, then arrange the practice lab into one pair and one 
 First-time discoveries fill the tracker and add revenue to company funds. Rediscovering something the company already found may change who knows it, but it does not pay again.
 
 16. `tutorial_16_begin.mp3`
-You will start fresh with a company budget and a small team of chemists. Arrange teams or leave chemists working alone, hire or fire chemists when you think it helps, and decide when to continue rounds. You earn $0.05 for every completed round. If the company discovers the final crossover product, you can earn an additional bonus of up to $5.00, based on remaining company funds.
+You will start fresh with a company budget and a small team of chemists. Arrange teams or leave chemists working alone, hire or fire chemists when you think it helps, and decide when to continue rounds. Your earnings come from first-time product discoveries: You will start fresh with a company budget and a small team of chemists. Arrange teams or leave chemists working alone, hire or fire chemists when you think it helps, and decide when to continue rounds. You earn $0.05 for every completed round. If the company discovers the final crossover product, you can earn an additional bonus of up to $5.00, based on remaining company funds..50 for Tier 1, $1.10 for Tier 2, $1.90 for Tier 3, and $3.60 for the final crossover product.
 
 17. `tutorial_dynamic_discovery_found.mp3`
 The team created a new product, and both chemists now know it. The company earns revenue for first-time discoveries, and that new knowledge can affect what chemists try in later rounds. Hit Next to continue.
@@ -64,3 +64,4 @@ This bubble shows one chemist's tested combination. Notice that the chemist incl
 
 21. `tutorial_dynamic_team_learns.mp3`
 This chemist discovered a new product. Because all three chemists are on the same team, the other team members learn that new product too. Hit Next to continue.
+
