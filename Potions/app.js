@@ -14,7 +14,7 @@ const BASELINE_EMPLOYEE_COUNT = 8;
 const STARTING_EMPLOYEE_COUNT = 2;
 const MAX_EMPLOYEES = 16;
 const PLAYER_VALUE_MULTIPLIER = 10000;
-const INITIAL_COMPANY_CASH = 5000000;
+const INITIAL_COMPANY_CASH = 2000000;
 const PARTICIPANT_STAGE_EARNINGS = {
   A1: 0.50,
   A2: 1.10,
@@ -1251,6 +1251,7 @@ function connectedGroups(edges, workers) {
 
   const seen = new Set();
   const groups = [];
+  const usedTeamNames = new Set();
 
   workers.forEach((worker) => {
     if (seen.has(worker.id)) {
@@ -1276,7 +1277,7 @@ function connectedGroups(edges, workers) {
     groups.push({
       members,
       halo: calculateHalo(members),
-      teamName: teamNameForMembers(members)
+      teamName: teamNameForMembers(members, usedTeamNames)
     });
   });
 
@@ -1533,6 +1534,7 @@ async function continueGuidedNoDiscoveryRound() {
     state.roundHistory.push(roundRecord);
     state.round += 1;
     if (interaction.discovery) {
+      triggerDiscoveryChime(interaction);
       triggerFirstTimeDiscoveryMoneyBurst(interaction);
       applyStageRewards();
       scheduleMoneyBurstCleanup();
@@ -1617,6 +1619,12 @@ function stageIdForPotion(potionId) {
   return TERMINAL_POTIONS.includes(potionId) ? "CURE" : potionId;
 }
 
+function triggerDiscoveryChime(interaction) {
+  if (interaction.discovery && interaction.discoverers && interaction.discoverers.length) {
+    playChachingSound();
+  }
+}
+
 function triggerFirstTimeDiscoveryMoneyBurst(interaction) {
   if (!interaction.firstCompanyDiscovery) {
     return;
@@ -1639,6 +1647,7 @@ async function animateTutorialInteraction(interaction, shouldDiscover) {
   clearTransient();
   if (shouldDiscover) {
     applyInteractionDiscovery(interaction);
+    triggerDiscoveryChime(interaction);
     triggerFirstTimeDiscoveryMoneyBurst(interaction);
     scheduleMoneyBurstCleanup();
     worker.transient.push({ kind: "spark", html: `new product ${renderPotionGroup([interaction.discovery], "xs")}` });
@@ -1761,6 +1770,7 @@ async function playSingleRound(showAnimation) {
           const worker = getWorkerById(workerId);
           worker.transient.push({ kind: "spark", html: `&#10024; ${renderPotionToken(interaction.discovery, "xs")}` });
         });
+        triggerDiscoveryChime(interaction);
         triggerFirstTimeDiscoveryMoneyBurst(interaction);
       });
     }
@@ -1920,7 +1930,6 @@ function clearTransient() {
 }
 
 function triggerMoneyBurst(worker) {
-  playChachingSound();
   const now = Date.now();
   worker.moneyBurstStartedAt = now;
   worker.moneyBurstUntil = now + 2000;
@@ -2832,11 +2841,26 @@ function shuffled(items) {
   return clone;
 }
 
-function teamNameForMembers(members) {
-  const adjectives = ["Aurora", "Juniper", "Harbor", "Cinder", "Willow", "Comet", "Ember", "Silver", "Moss", "Lumen"];
+function teamNameForMembers(members, usedNames = new Set()) {
+  const adjectives = ["Aurora", "Juniper", "Harbor", "Cinder", "Willow", "Comet", "Ember", "Silver", "Moss", "Lumen", "Nova", "Quartz", "Sable", "Opal", "Atlas", "Vega", "Solace", "Fable", "Marble", "Echo", "Copper", "Clover", "Indigo", "Nimbus"];
   const key = members.map((member) => member.id).sort().join("");
   const hash = [...key].reduce((sum, char) => sum + char.charCodeAt(0), 0);
-  return `Team ${adjectives[hash % adjectives.length]}`;
+  for (let offset = 0; offset < adjectives.length; offset += 1) {
+    const teamName = `Team ${adjectives[(hash + offset) % adjectives.length]}`;
+    if (!usedNames.has(teamName)) {
+      usedNames.add(teamName);
+      return teamName;
+    }
+  }
+
+  let fallbackIndex = adjectives.length + 1;
+  let fallbackName = `Team ${fallbackIndex}`;
+  while (usedNames.has(fallbackName)) {
+    fallbackIndex += 1;
+    fallbackName = `Team ${fallbackIndex}`;
+  }
+  usedNames.add(fallbackName);
+  return fallbackName;
 }
 
 function scaleToBoardX(pixelX, renderedWidth) {
@@ -2858,3 +2882,7 @@ function clamp(value, min, max) {
 function wait(ms) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
+
+
+
+
