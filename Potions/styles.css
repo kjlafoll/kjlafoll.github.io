@@ -869,6 +869,10 @@ body.mode-screen .game-shell {
   pointer-events: none;
 }
 
+
+.team-label.below {
+  transform: translate(-50%, 0);
+}
 .group-knowledge {
   position: absolute;
   transform: translate(-50%, 0);
@@ -2215,3 +2219,4 @@ body.mode-screen .game-shell {
     --mobile-field-scale: 0.66;
   }
 }
+
