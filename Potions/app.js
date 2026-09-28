@@ -145,7 +145,7 @@ const TUTORIAL_STEPS = [
     completeLabel: "Hit Next"
   },
   {
-    step: "Known compounds",
+    step: "Knowledge",
     title: "Chemists test combinations.",
     body: "Right now both chemists know the same six starting compounds. In each round, each chemist independently chooses a small set of compounds to test. Some combinations create new products; many do not.",
     target: ".group-knowledge",
@@ -559,25 +559,6 @@ function renderBoard() {
 
 function renderGroupKnowledgeDisplay(group, tutorialStep) {
   const isTeam = group.members.length >= 2;
-  if (isTeam) {
-    const halo = document.createElementNS("http://www.w3.org/2000/svg", "ellipse");
-    halo.setAttribute("class", "group-halo");
-    halo.setAttribute("cx", String(group.halo.cx));
-    halo.setAttribute("cy", String(group.halo.cy));
-    halo.setAttribute("rx", String(group.halo.rx));
-    halo.setAttribute("ry", String(group.halo.ry));
-    els.halos.appendChild(halo);
-
-    const teamLabel = document.createElement("div");
-    teamLabel.className = "team-label";
-    teamLabel.style.left = `${(group.halo.cx / BOARD_WIDTH) * 100}%`;
-    teamLabel.style.top = `${(Math.max(24, group.halo.cy - group.halo.ry - 10) / BOARD_HEIGHT) * 100}%`;
-    teamLabel.textContent = group.teamName;
-    els.workersLayer.appendChild(teamLabel);
-  }
-
-  const knowledge = document.createElement("div");
-  knowledge.className = `group-knowledge ${isTeam ? "" : "solo-knowledge"}`.trim();
   const safeRightEdge = BOARD_WIDTH - effectiveReservedSidebarWidth();
   const horizontalGap = isTeam ? 56 : 30;
   const preferredRightX = group.halo.cx + group.halo.rx + horizontalGap;
@@ -595,17 +576,44 @@ function renderGroupKnowledgeDisplay(group, tutorialStep) {
   const knowledgeY = isMobileLayout() && preferredKnowledgeY > safeBoardMaxY() - 48
     ? Math.max(safeBoardMinY(), group.halo.cy - group.halo.ry - verticalLift)
     : preferredKnowledgeY;
+
+  if (isTeam) {
+    const halo = document.createElementNS("http://www.w3.org/2000/svg", "ellipse");
+    halo.setAttribute("class", "group-halo");
+    halo.setAttribute("cx", String(group.halo.cx));
+    halo.setAttribute("cy", String(group.halo.cy));
+    halo.setAttribute("rx", String(group.halo.rx));
+    halo.setAttribute("ry", String(group.halo.ry));
+    els.halos.appendChild(halo);
+
+    const knowledgeIsAboveTeam = knowledgeY < group.halo.cy;
+    const teamLabel = document.createElement("div");
+    teamLabel.className = `team-label ${knowledgeIsAboveTeam ? "below" : ""}`.trim();
+    teamLabel.style.left = `${(group.halo.cx / BOARD_WIDTH) * 100}%`;
+    teamLabel.style.top = `${((knowledgeIsAboveTeam
+      ? Math.min(safeBoardMaxY() - 24, group.halo.cy + group.halo.ry + 10)
+      : Math.max(24, group.halo.cy - group.halo.ry - 10)) / BOARD_HEIGHT) * 100}%`;
+    teamLabel.textContent = group.teamName;
+    els.workersLayer.appendChild(teamLabel);
+  }
+
+  const knowledge = document.createElement("div");
+  knowledge.className = `group-knowledge ${isTeam ? "" : "solo-knowledge"}`.trim();
   knowledge.style.left = `${(knowledgeX / BOARD_WIDTH) * 100}%`;
   knowledge.style.top = `${(knowledgeY / BOARD_HEIGHT) * 100}%`;
   knowledge.innerHTML = `
-    <span class="group-knowledge-label">${isTeam ? (tutorialStep?.hideControls ? "Known compounds" : "Team knowledge") : "Known compounds"}</span>
+    <span class="group-knowledge-label">${isTeam ? "Team knowledge" : "Knowledge"}</span>
     ${renderKnowledgePotionList(sharedGroupKnowledge(group), "sm")}
   `;
   els.workersLayer.appendChild(knowledge);
 }
 
 function renderKnowledgePotionList(potionIds, size = "sm") {
-  const columns = potionIds.length <= 6 ? potionIds.length : Math.ceil(potionIds.length / 2);
+  const columns = isMobileLayout()
+    ? Math.min(4, Math.ceil(potionIds.length / 2))
+    : potionIds.length <= 6
+      ? potionIds.length
+      : Math.ceil(potionIds.length / 2);
   return `<div class="potion-list knowledge-potion-list" style="--potion-columns:${Math.max(1, columns)};">${potionIds.map((potionId) => renderPotionToken(potionId, size)).join("")}</div>`;
 }
 
@@ -1227,12 +1235,12 @@ function renderTutorialProgress() {
 
 function computeNetwork() {
   const edges = [];
-  const proximityThreshold = effectiveProximityThreshold();
+  const linkRadii = effectiveLinkRadii();
   for (let index = 0; index < state.workers.length; index += 1) {
     for (let nextIndex = index + 1; nextIndex < state.workers.length; nextIndex += 1) {
       const a = state.workers[index];
       const b = state.workers[nextIndex];
-      if (distance(a, b) <= proximityThreshold) {
+      if (workersAreLinked(a, b, linkRadii)) {
         edges.push({ a, b });
       }
     }
@@ -1661,12 +1669,15 @@ async function animateTutorialInteraction(interaction, shouldDiscover) {
 function buildTutorialRoundRecord(shouldDiscover, discoveryId = "A1") {
   computeNetwork();
   const group = state.groups.find((entry) => entry.members.length >= MIN_GROUP_SIZE);
-  const worker = discoveryId === "A2"
-    ? (group.members.find((member) => member.inventory.has("A1")) || group.members[0])
-    : group.members[0];
   state.workers.forEach((entry) => {
     entry.lastRound = emptyLastRound();
   });
+  if (discoveryId === "A2" && group) {
+    diffuseKnowledgeAcrossGroup(group, "tutorial-regroup");
+  }
+  const worker = discoveryId === "A2"
+    ? (group.members.find((member) => member.inventory.has("A1")) || group.members[0])
+    : group.members[0];
 
   const discoveryTriads = {
     A1: ["a1", "a2", "a3"],
@@ -2597,7 +2608,22 @@ function isMobileLayout() {
 }
 
 function effectiveProximityThreshold() {
-  return isMobileLayout() ? 170 : PROXIMITY_THRESHOLD;
+  const radii = effectiveLinkRadii();
+  return Math.max(radii.x, radii.y);
+}
+
+function effectiveLinkRadii() {
+  const proportion = isMobileLayout() ? 0.13 : 0.17;
+  return {
+    x: BOARD_WIDTH * proportion,
+    y: BOARD_HEIGHT * proportion
+  };
+}
+
+function workersAreLinked(a, b, radii = effectiveLinkRadii()) {
+  const normalizedX = (a.x - b.x) / radii.x;
+  const normalizedY = (a.y - b.y) / radii.y;
+  return Math.hypot(normalizedX, normalizedY) <= 1;
 }
 
 function effectiveReservedSidebarWidth() {
@@ -2882,6 +2908,13 @@ function clamp(value, min, max) {
 function wait(ms) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
+
+
+
+
+
+
+
 
 
 
