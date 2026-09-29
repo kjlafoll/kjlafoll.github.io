@@ -52,6 +52,7 @@ body.mode-screen .game-shell {
 
 .worker-remove-btn.tutorial-focus,
 .specialization-badge.tutorial-focus,
+.group-knowledge.tutorial-focus,
 .bubble.tutorial-focus,
 .spark.tutorial-focus {
   z-index: 24;
@@ -2219,4 +2220,5 @@ body.mode-screen .game-shell {
     --mobile-field-scale: 0.66;
   }
 }
+
 

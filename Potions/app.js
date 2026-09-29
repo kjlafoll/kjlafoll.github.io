@@ -9,7 +9,6 @@ const MAIN_ROUND_BUBBLE_MS = 650;
 const AUTO_ROUND_BUBBLE_MS = 320;
 const MAIN_DISCOVERY_HOLD_MS = 650;
 const AUTO_DISCOVERY_HOLD_MS = 360;
-const MAX_ROUNDS = 72;
 const BASELINE_EMPLOYEE_COUNT = 8;
 const STARTING_EMPLOYEE_COUNT = 2;
 const MAX_EMPLOYEES = 16;
@@ -187,7 +186,7 @@ const TUTORIAL_STEPS = [
   {
     step: "Innovation tracks",
     title: "The company tracks product paths.",
-    body: "The tracker shows two product tracks, A and B. Compounds farther to the right are more valuable, and the final crossover product requires progress on both tracks. Chemists do not know the hidden recipes; they choose from compounds they know, with higher-value compounds more likely to be selected.",
+    body: "The tracker shows two product tracks, A and B. Compounds farther to the right are more valuable. The final crossover product can only be found when at least one chemist has access to Tier 3 knowledge from both product tracks. Chemists do not know the hidden recipes; they choose from compounds they know, with higher-value compounds more likely to be selected.",
     target: ".board-reward-track",
     extraHighlights: [".specialization-badge"],
     kind: "read",
@@ -243,7 +242,6 @@ const TUTORIAL_STEPS = [
     body: "Press Next round. Each chemist will test their own combination, and the whole team can learn from any new product discovered by a teammate.",
     target: "#next-round-wrap",
     kind: "roundTrioDiscovery",
-    hideControls: true,
     showRoundControl: true,
     incompleteLabel: "Press Next round",
     completeLabel: "Hit Next"
@@ -259,6 +257,16 @@ const TUTORIAL_STEPS = [
     completeLabel: "Hit Next"
   },
   {
+    step: "Reassigning",
+    title: "You can move chemists between teams.",
+    body: "Between rounds, you may keep teams as they are or change them. To practice this control, move one chemist from one current team into the other team while still ending with one pair and one trio.",
+    target: "#board",
+    extraHighlights: [".worker-node"],
+    kind: "reassignWorker",
+    incompleteLabel: "Move one chemist between teams",
+    completeLabel: "Hit Next"
+  },
+  {
     step: "Discovery payoff",
     title: "Discoveries change the company.",
     body: "First-time discoveries fill the tracker and add revenue to company funds. Rediscovering something the company already found may change who knows it, but it does not pay again.",
@@ -270,7 +278,7 @@ const TUTORIAL_STEPS = [
   {
     step: "Begin",
     title: "Your job is to lead the R&D lab.",
-    body: "You will start fresh with a company budget and a small team of chemists. Arrange teams or leave chemists working alone, hire or fire chemists when you think it helps, and decide when to continue rounds. Your earnings come from first-time product discoveries: <strong>$0.50</strong> for Tier 1, <strong>$1.10</strong> for Tier 2, <strong>$1.90</strong> for Tier 3, and <strong>$3.60</strong> for the final crossover product.",
+    body: "You will start fresh with a company budget and a small team of chemists. Arrange teams or leave chemists working alone, hire or fire chemists when you think it helps, and decide when to continue rounds. The final crossover product requires Tier 3 knowledge from both product tracks to come together. Your earnings come from first-time product discoveries: <strong>$0.50</strong> for Tier 1, <strong>$1.10</strong> for Tier 2, <strong>$1.90</strong> for Tier 3, and <strong>$3.60</strong> for the final crossover product.",
     target: "#board",
     kind: "read",
     hideControls: true,
@@ -293,15 +301,18 @@ const TUTORIAL_AUDIO_FILES = [
   "tutorial_12_trio.mp3",
   "tutorial_13_team_discovery.mp3",
   "tutorial_14_teams.mp3",
-  "tutorial_15_discovery_payoff.mp3",
-  "tutorial_16_begin.mp3"
+  "tutorial_15_reassigning.mp3",
+  "tutorial_16_discovery_payoff.mp3",
+  "tutorial_17_begin.mp3"
 ];
 const TUTORIAL_DYNAMIC_AUDIO_FILES = {
   discoveryFound: "tutorial_dynamic_discovery_found.mp3",
   testCombination: "tutorial_dynamic_test_combination.mp3",
   noProduct: "tutorial_dynamic_no_product.mp3",
   independentTests: "tutorial_dynamic_independent_tests.mp3",
-  teamLearns: "tutorial_dynamic_team_learns.mp3"
+  teamLearns: "tutorial_dynamic_team_learns.mp3",
+  transferTest: "tutorial_dynamic_transfer_test.mp3",
+  transferResult: "tutorial_dynamic_transfer_result.mp3"
 };
 
 const els = {
@@ -383,7 +394,7 @@ function createInitialState() {
     isAnimating: false,
     autoRunning: false,
     stopRequested: false,
-    unlimitedRounds: false,
+    unlimitedRounds: true,
     tutorialNarrationEnabled: true,
     popup: null,
     companyCash: INITIAL_COMPANY_CASH,
@@ -770,9 +781,15 @@ function renderOnboarding() {
   els.tutorialActions.style.display = "flex";
   els.tutorialBackBtn.disabled = false;
   els.tutorialNextBtn.disabled = !tutorialStepComplete(step);
-  els.tutorialNextBtn.textContent = tutorialStepComplete(step)
-    ? (state.tutorialStep === TUTORIAL_STEPS.length - 1 ? "Start game" : "Next")
-    : (step.incompleteLabel || "Complete this step");
+  const reassignReadyForRound = step.kind === "reassignWorker"
+    && hasGroupSizes([2, 3])
+    && tutorialTeamMembershipChanged()
+    && !state.tutorialFlags.roundComplete;
+  els.tutorialNextBtn.textContent = reassignReadyForRound
+    ? "Press Next round"
+    : tutorialStepComplete(step)
+      ? (state.tutorialStep === TUTORIAL_STEPS.length - 1 ? "Start game" : "Next")
+      : (step.incompleteLabel || "Complete this step");
   applyTutorialFocus(step);
   positionTutorialCard();
 }
@@ -829,6 +846,23 @@ function tutorialDisplayContent(step) {
     }
   }
 
+  if (step.kind === "reassignWorker") {
+    if (state.tutorialFlags.roundComplete) {
+      return {
+        step: "Knowledge transfer",
+        title: "Team knowledge can spread.",
+        body: "<span>No new product was found, but chemists on the same team now share access to knowledge held by their teammates. Moving chemists between teams can change who has access to which discoveries. Hit Next to continue.</span>"
+      };
+    }
+    if (hasGroupSizes([2, 3]) && tutorialTeamMembershipChanged()) {
+      return {
+        step: step.step,
+        title: step.title,
+        body: `<span>${step.body}</span><span class="tutorial-inline-instruction">Good. Now press Next round to see how team knowledge transfers.</span>`
+      };
+    }
+  }
+
   const complete = tutorialStepComplete(step);
   const message = shouldShowTutorialInstruction(step, complete)
     ? (state.tutorialMessage || step.incompleteLabel || "")
@@ -844,7 +878,7 @@ function shouldShowTutorialInstruction(step, complete) {
   if (complete) {
     return false;
   }
-  return ["pairGroup", "hireFire", "trioGroup", "pairAndTrio"].includes(step.kind);
+  return ["pairGroup", "hireFire", "trioGroup", "pairAndTrio", "reassignWorker"].includes(step.kind);
 }
 
 function isTutorialActive() {
@@ -869,10 +903,12 @@ function tutorialAllows(action) {
       || (["trioGroup", "pairAndTrio"].includes(step.kind) && state.workers.length > targetWorkersForTutorialStep(step));
   }
   if (action === "drag") {
-    return ["pairGroup", "trioGroup", "pairAndTrio"].includes(step.kind);
+    return ["pairGroup", "trioGroup", "pairAndTrio", "reassignWorker"].includes(step.kind);
   }
   if (action === "round") {
-    return ["roundNoDiscovery", "roundDiscovery", "roundTrioDiscovery"].includes(step.kind)
+    const canRunGuidedRound = ["roundNoDiscovery", "roundDiscovery", "roundTrioDiscovery"].includes(step.kind)
+      || (step.kind === "reassignWorker" && hasGroupSizes([2, 3]) && tutorialTeamMembershipChanged());
+    return canRunGuidedRound
       && !state.tutorialFlags.roundComplete
       && !state.tutorialFlags.roundPhase;
   }
@@ -898,6 +934,9 @@ function tutorialStepComplete(step = currentTutorialStep()) {
   if (step.kind === "pairAndTrio") {
     return hasGroupSizes([2, 3]);
   }
+  if (step.kind === "reassignWorker") {
+    return Boolean(state.tutorialFlags.roundComplete);
+  }
   if (step.kind === "roundNoDiscovery" || step.kind === "roundDiscovery" || step.kind === "roundTrioDiscovery") {
     return Boolean(state.tutorialFlags.roundComplete || state.tutorialFlags.roundPhase);
   }
@@ -914,6 +953,19 @@ function hasGroupSizes(requiredSizes) {
   return required.length === actual.length && required.every((size, index) => size === actual[index]);
 }
 
+function currentTutorialTeamSignature() {
+  computeNetwork();
+  return state.groups
+    .filter((group) => group.members.length >= MIN_GROUP_SIZE)
+    .map((group) => group.members.map((member) => member.id).sort().join("+"))
+    .sort()
+    .join("|");
+}
+
+function tutorialTeamMembershipChanged() {
+  return Boolean(state.tutorialFlags.startingTeams)
+    && currentTutorialTeamSignature() !== state.tutorialFlags.startingTeams;
+}
 function targetWorkersForTutorialStep(step = currentTutorialStep()) {
   if (!step) {
     return 1;
@@ -921,7 +973,7 @@ function targetWorkersForTutorialStep(step = currentTutorialStep()) {
   if (step.kind === "trioGroup" || step.kind === "roundTrioDiscovery") {
     return 3;
   }
-  if (step.kind === "pairAndTrio") {
+  if (step.kind === "pairAndTrio" || step.kind === "reassignWorker") {
     return 5;
   }
   return 1;
@@ -934,7 +986,7 @@ function maxWorkersForCurrentStep(step = currentTutorialStep()) {
   if (step.kind === "trioGroup") {
     return 3;
   }
-  if (step.kind === "pairAndTrio") {
+  if (step.kind === "pairAndTrio" || step.kind === "reassignWorker") {
     return 5;
   }
   return MAX_EMPLOYEES;
@@ -944,7 +996,7 @@ function minWorkersForCurrentStep(step = currentTutorialStep()) {
   if (state.onboardingStage !== "tutorial" || !step) {
     return 1;
   }
-  if (["trioGroup", "pairAndTrio"].includes(step.kind) && state.workers.length > targetWorkersForTutorialStep(step)) {
+  if (["trioGroup", "pairAndTrio", "reassignWorker"].includes(step.kind) && state.workers.length > targetWorkersForTutorialStep(step)) {
     return targetWorkersForTutorialStep(step);
   }
   return step.kind === "hireFire" ? 1 : state.workers.length;
@@ -969,6 +1021,10 @@ function setupTutorialStep(step) {
   }
 
   computeNetwork();
+  if (step.kind === "reassignWorker") {
+    state.tutorialFlags.startingTeams = currentTutorialTeamSignature();
+    state.tutorialMessage = "Move one chemist from one current team into the other, while keeping one pair and one trio.";
+  }
 }
 
 function positionTutorialStartingPair() {
@@ -1021,7 +1077,7 @@ function startRealGameAfterTutorial() {
 function selectMode(mode) {
   startBackgroundMusic();
   state.mode = mode;
-  state.unlimitedRounds = Boolean(els.endlessRoundsCheckbox.checked);
+  state.unlimitedRounds = true;
   renderOnboarding();
 }
 
@@ -1044,9 +1100,8 @@ async function handleTutorialNext() {
   stopTutorialNarration({ keepKey: true });
   if (state.onboardingStage === "mode") {
     state.mode = "mode1";
-    state.unlimitedRounds = false;
+    state.unlimitedRounds = true;
     state.tutorialNarrationEnabled = Boolean(els.tutorialNarrationCheckbox.checked);
-    els.endlessRoundsCheckbox.checked = false;
     if (els.skipTutorialCheckbox.checked) {
       state.onboardingStage = "done";
       render();
@@ -1068,7 +1123,7 @@ async function handleTutorialNext() {
     return;
   }
 
-  if (["roundNoDiscovery", "roundTrioDiscovery"].includes(step?.kind) && state.tutorialFlags.roundComplete) {
+  if (["roundNoDiscovery", "roundTrioDiscovery", "reassignWorker"].includes(step?.kind) && state.tutorialFlags.roundComplete) {
     await fadeTutorialBubbles();
   }
 
@@ -1094,7 +1149,13 @@ function applyTutorialFocus(step) {
     return;
   }
 
-  const target = document.querySelector(step.target);
+  const readyForReassignRound = step.kind === "reassignWorker"
+    && hasGroupSizes([2, 3])
+    && tutorialTeamMembershipChanged()
+    && !state.tutorialFlags.roundPhase
+    && !state.tutorialFlags.roundComplete;
+  const targetSelector = readyForReassignRound ? "#next-round-wrap" : step.target;
+  const target = document.querySelector(targetSelector);
   const extraTargets = (step.extraHighlights || [])
     .flatMap((selector) => [...document.querySelectorAll(selector)]);
   if (!target) {
@@ -1102,10 +1163,14 @@ function applyTutorialFocus(step) {
     return;
   }
 
-  if (step.target !== "#next-round-wrap") {
+  if (targetSelector !== "#next-round-wrap") {
     target.classList.add("tutorial-focus");
   }
   extraTargets.forEach((extraTarget) => extraTarget.classList.add("tutorial-focus"));
+  if (target.matches(".group-knowledge")) {
+    els.tutorialSpotlight.classList.remove("visible");
+    return;
+  }
   const rect = target.getBoundingClientRect();
   els.tutorialSpotlight.classList.add("visible");
   els.tutorialSpotlight.style.left = `${rect.left - 8}px`;
@@ -1122,6 +1187,8 @@ function tutorialBubbleFocusTargets(step) {
   const selectors = [];
   if (["roundNoDiscovery", "roundTrioDiscovery"].includes(step.kind) && state.tutorialFlags.roundPhase) {
     selectors.push(".worker-node .bubble");
+  } else if (step.kind === "reassignWorker" && state.tutorialFlags.roundComplete) {
+    selectors.push(".group-knowledge");
   } else if (step.kind === "roundDiscovery" && state.tutorialFlags.roundComplete) {
     selectors.push(".worker-node .spark.persistent");
   }
@@ -1410,7 +1477,7 @@ function updateTutorialGroupingMessage() {
   }
 
   const step = currentTutorialStep();
-  if (!step || !["pairGroup", "trioGroup", "pairAndTrio"].includes(step.kind)) {
+  if (!step || !["pairGroup", "trioGroup", "pairAndTrio", "reassignWorker"].includes(step.kind)) {
     return;
   }
 
@@ -1424,6 +1491,12 @@ function updateTutorialGroupingMessage() {
       : state.workers.length < 3
       ? "First hire one more chemist with the + button."
       : "Keep dragging until all three chemists are inside one team circle.";
+  } else if (step.kind === "reassignWorker") {
+    state.tutorialMessage = state.workers.length !== 5
+      ? "Keep five chemists in the practice lab."
+      : hasGroupSizes([2, 3]) && tutorialTeamMembershipChanged()
+        ? "Good. Now press Next round to see how team knowledge transfers."
+        : "Move one chemist from one team into the other while still ending with one pair and one trio.";
   } else {
     state.tutorialMessage = state.workers.length > 5
       ? "Remove extra chemists until only five remain."
@@ -1492,8 +1565,15 @@ async function runTutorialRound() {
 
   const shouldDiscover = step.kind === "roundDiscovery" || step.kind === "roundTrioDiscovery";
   const discoveryId = step.kind === "roundTrioDiscovery" ? "A2" : "A1";
-  const roundRecord = buildTutorialRoundRecord(shouldDiscover, discoveryId);
+  const roundRecord = step.kind === "reassignWorker"
+    ? buildTutorialKnowledgeTransferRoundRecord()
+    : buildTutorialRoundRecord(shouldDiscover, discoveryId);
   state.story = `Practice round ${roundRecord.round}: ${roundRecord.summary}`;
+
+  if (step.kind === "reassignWorker") {
+    await animateTutorialTransferRound(roundRecord);
+    return;
+  }
 
   if (step.kind === "roundNoDiscovery" || step.kind === "roundTrioDiscovery") {
     startGuidedTutorialRound(roundRecord);
@@ -1515,6 +1595,29 @@ async function runTutorialRound() {
   state.tutorialMessage = roundRecord.interactions[0].discovery
     ? "Discovery! The team created a new product, and both chemists now know it."
     : "No discovery this time. The chemist tested a combination, but it did not create anything new.";
+  render();
+}
+
+async function animateTutorialTransferRound(roundRecord) {
+  roundRecord.interactions.forEach((interaction) => animateInteraction(interaction));
+  render();
+  await wait(MAIN_ROUND_BUBBLE_MS + 250);
+
+  clearTransient();
+  roundRecord.interactions.forEach((interaction) => {
+    const worker = getWorkerById(interaction.worker);
+    worker.transient.push({ kind: "bubble", html: "no new product" });
+  });
+  render();
+  await wait(MAIN_DISCOVERY_HOLD_MS + 500);
+
+  clearTransient();
+  state.roundHistory.push(roundRecord);
+  state.round += 1;
+  state.status = "Tutorial";
+  state.isAnimating = false;
+  state.tutorialFlags.roundComplete = true;
+  state.tutorialMessage = "No new product was found, but team knowledge was shared across the new teams.";
   render();
 }
 
@@ -1664,6 +1767,52 @@ async function animateTutorialInteraction(interaction, shouldDiscover) {
   }
   render();
   await wait(1700);
+}
+
+function buildTutorialKnowledgeTransferRoundRecord() {
+  computeNetwork();
+  state.workers.forEach((entry) => {
+    entry.lastRound = emptyLastRound();
+  });
+
+  const diffusions = [];
+  state.groups
+    .filter((group) => group.members.length >= MIN_GROUP_SIZE)
+    .forEach((group) => {
+      diffusions.push(...diffuseKnowledgeAcrossGroup(group, "tutorial-transfer"));
+    });
+
+  const interactions = [];
+  state.groups
+    .filter((group) => group.members.length >= MIN_GROUP_SIZE)
+    .forEach((group) => {
+      group.members.forEach((worker) => {
+        const safeTriad = ["a1", "a1", "b2"];
+        worker.lastRound.interaction = { triad: safeTriad };
+        interactions.push({
+          worker: worker.id,
+          workerName: worker.name,
+          teamName: group.teamName,
+          triad: safeTriad,
+          discovery: null,
+          discoverers: [],
+          groupMemberIds: group.members.map((member) => member.id)
+        });
+      });
+    });
+
+  return {
+    round: state.round,
+    interactions,
+    diffusions,
+    summary: "No new product was discovered, but team knowledge was shared after the reconfiguration.",
+    snapshot: state.workers.map((entry) => ({
+      worker: entry.id,
+      inventory: inventoryArray(entry.inventory),
+      bestTier: entry.bestTier,
+      bestScore: entry.bestScore
+    }))
+  };
 }
 
 function buildTutorialRoundRecord(shouldDiscover, discoveryId = "A1") {
@@ -1997,6 +2146,9 @@ function tutorialNarrationFileForCurrentState(step = currentTutorialStep()) {
       return TUTORIAL_DYNAMIC_AUDIO_FILES.teamLearns;
     }
   }
+  if (step.kind === "reassignWorker" && state.tutorialFlags.roundComplete) {
+    return TUTORIAL_DYNAMIC_AUDIO_FILES.transferResult;
+  }
   return TUTORIAL_AUDIO_FILES[state.tutorialStep] || null;
 }
 
@@ -2236,16 +2388,6 @@ function currentCompletionState() {
     return {
       finished: true,
       message: `Game over: the company went bankrupt before reaching the flagship compound. Final cash: ${formatMoney(state.companyCash)}. Your earnings: ${formatParticipantMoney(state.participantEarnings)}.`
-    };
-  }
-
-  if (state.round >= MAX_ROUNDS) {
-    if (state.unlimitedRounds) {
-      return { finished: false, message: "" };
-    }
-    return {
-      finished: true,
-      message: `Game complete: the ${MAX_ROUNDS}-round limit has been reached. The company completed ${progress.completed} of ${TRACKER_STAGES.length} milestones, earned ${formatMoney(state.totalRevenue)} in discovery revenue, finished with ${formatMoney(state.companyCash)} in cash, and earned you ${formatParticipantMoney(state.participantEarnings)}.`
     };
   }
 
@@ -2908,6 +3050,8 @@ function clamp(value, min, max) {
 function wait(ms) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
+
+
 
 
 
